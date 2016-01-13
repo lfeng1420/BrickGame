@@ -2,7 +2,8 @@
 
 USING_NS_CC;
 
-CRacingGame::CRacingGame() : m_iRowIndex(0), m_iColIndex(0), m_iDirection(DIR_RIGHT), m_iTime(0)
+CRacingGame::CRacingGame() : m_iRowIdx(0), m_iColIdx(0), m_iDirection(DIR_RIGHT), m_iAllCount(0),
+m_iEndRowIdx(ROW_NUM - 1), m_iEndColIdx(COLUMN_NUM - 1), m_iBeginColIdx(-1), m_iBeginRowIdx(0)
 {
 }
 
@@ -153,85 +154,55 @@ void CRacingGame::InitCotroller()
 //播放游戏结束动画
 void CRacingGame::PlayGameOverAnim()
 {
-	m_arrCurBrick[m_iRowIndex][m_iColIndex] = 1;
-	m_pBrick[m_iRowIndex][m_iColIndex]->setSpriteFrame(SpriteFrameCache::getInstance()->getSpriteFrameByName("black.png"));
+	if (m_iAllCount == ROW_NUM * COLUMN_NUM)
+	{
+		return;
+	}
+
+	++m_iAllCount;
+	m_arrCurBrick[m_iRowIdx][m_iColIdx] = 1;
+	m_pBrick[m_iRowIdx][m_iColIdx]->setSpriteFrame(SpriteFrameCache::getInstance()->getSpriteFrameByName("black.png"));
 
 	switch (m_iDirection)
 	{
 	case DIR_RIGHT:
-		++m_iColIndex;
-		if (m_iColIndex >= COLUMN_NUM)
-		{
-			m_iColIndex = COLUMN_NUM - 1;
-			m_iDirection = DIR_DOWN;
-			return;
-		}
-
-		if (m_arrCurBrick[m_iRowIndex][m_iColIndex] == 1)
-		{
-			--m_iColIndex;
-			m_iDirection = DIR_DOWN;
-		}
-
+		++m_iColIdx;
 		break;
 	case DIR_DOWN:
-		++m_iRowIndex;
-		if (m_iRowIndex >= ROW_NUM)
-		{
-			m_iRowIndex = ROW_NUM - 1;
-			m_iDirection = DIR_LEFT;
-			return;
-		}
-
-		if (m_arrCurBrick[m_iRowIndex][m_iColIndex] == 1)
-		{
-			--m_iRowIndex;
-			m_iDirection = DIR_LEFT;
-		}
-
+		++m_iRowIdx;
 		break;
 	case DIR_LEFT:
-		--m_iColIndex;
-		if (m_iColIndex < 0)
-		{
-			m_iColIndex = 0;
-			m_iDirection = DIR_UP;
-			return;
-		}
-
-		if (m_arrCurBrick[m_iRowIndex][m_iColIndex] == 1)
-		{
-			++m_iColIndex;
-			m_iDirection = DIR_UP;
-		}
-
+		--m_iColIdx;
 		break;
 	case DIR_UP:
-		--m_iRowIndex;
-		if (m_iRowIndex < 0)
-		{
-			m_iRowIndex = 0;
-			m_iDirection = DIR_RIGHT;
-			return;
-		}
-
-		if (m_arrCurBrick[m_iRowIndex][m_iColIndex] == 1)
-		{
-			++m_iRowIndex;
-			m_iDirection = DIR_RIGHT;
-		}
+		--m_iRowIdx;
 		break;
 	}
-
+	//到达右上角
+	if (m_iColIdx == m_iEndColIdx && m_iRowIdx == m_iBeginRowIdx)
+	{
+		m_iDirection = DIR_DOWN;
+		++m_iBeginColIdx;
+	}
+	else if (m_iColIdx == m_iEndColIdx && m_iRowIdx == m_iEndRowIdx)
+	{
+		m_iDirection = DIR_LEFT;
+		++m_iBeginRowIdx;
+	}
+	else if (m_iColIdx == m_iBeginColIdx && m_iRowIdx == m_iEndRowIdx)
+	{
+		m_iDirection = DIR_UP;
+		--m_iEndColIdx;
+	}
+	else if (m_iColIdx == m_iBeginColIdx && m_iRowIdx == m_iBeginRowIdx)
+	{
+		m_iDirection = DIR_RIGHT;
+		--m_iEndRowIdx;
+	}
 }
 
 
 void CRacingGame::update(float dt)
 {
-	m_iTime += dt;
-	if (m_iTime > 0.1f)
-	{
-		m_iTime = 0;
-		PlayGameOverAnim();
-	}
+	PlayGameOverAnim();
 }

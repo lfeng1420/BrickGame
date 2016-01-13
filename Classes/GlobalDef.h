@@ -61,7 +61,7 @@ enum
 {
 	//行列
 	ROW_NUM = 20,
-	COLUMN_NUM = 20,
+	COLUMN_NUM = 12,
 
 	//方块宽高
 	BRICK_WIDTH = 32,

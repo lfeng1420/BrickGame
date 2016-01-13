@@ -37,9 +37,15 @@ private:
 
 	cocos2d::Size m_visibleSize;						//ÆÁÄ»´óÐ¡
 
-	int m_iColIndex;									
-	int m_iRowIndex;
+	int m_iColIdx;
+	int m_iRowIdx;
+
+	int m_iBeginColIdx;
+	int m_iBeginRowIdx;
+	int m_iEndColIdx;
+	int m_iEndRowIdx;
 	int m_iDirection;
-	float m_iTime;
+	
+	int m_iAllCount;
 };
 
