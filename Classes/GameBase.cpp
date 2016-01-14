@@ -28,7 +28,7 @@ GAME_INDEX CGameBase::GetGameType()
 }
 
 
-//��ȡ��ǰBrick״̬
+//获取当前Brick状态
 bool CGameBase::GetBrickState(int iRowIndex, int iColIndex)
 {
 	return true;
