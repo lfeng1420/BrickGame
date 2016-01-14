@@ -1,7 +1,13 @@
 #ifndef __GLOBAL_DEF_H_
 #define __GLOBAL_DEF_H_
 
+// ---- 头文件 ----
+#include <map>
+
+
 #define CC_RETURN_FALSE_IF(exp) if (exp){return false;}
+
+#define SAFE_DELETE(p) if (p){delete p; p = NULL;}
 
 
 // ---- cocos 常用函数宏定义 ----
@@ -61,7 +67,7 @@ enum
 {
 	//行列
 	ROW_NUM = 20,
-	COLUMN_NUM = 12,
+	COLUMN_NUM = 13,
 
 	//方块宽高
 	BRICK_WIDTH = 32,
@@ -77,6 +83,17 @@ enum
 	DIR_DOWN,
 	DIR_LEFT,
 	DIR_UP,
+};
+
+
+//游戏索引枚举
+enum GAME_INDEX
+{
+	INVALID_GAME = -1,
+	GAME_OVER,		//游戏结束界面
+	CHOOSE,			//选择界面
+	RACING,			//赛车
+
 };
 
 #endif //__GLOBAL_DEF_H_

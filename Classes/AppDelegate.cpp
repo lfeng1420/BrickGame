@@ -1,5 +1,5 @@
 #include "AppDelegate.h"
-#include "RacingGame.h"
+#include "GameScene.h"
 
 USING_NS_CC;
 
@@ -30,7 +30,7 @@ bool AppDelegate::applicationDidFinishLaunching() {
     director->setAnimationInterval(1.0 / 60);
 
     // create a scene. it's an autorelease object
-	auto scene = CRacingGame::CreateScene();
+	auto scene = CGameScene::CreateScene();
 
     // run
     director->runWithScene(scene);
