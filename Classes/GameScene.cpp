@@ -163,10 +163,18 @@ void CGameScene::update(float dt)
 	bool bRet = m_mapGameObj[m_iGameIndex]->Play();
 	if (bRet)
 	{
-		int iRowIndex = 0;
-		int iColIndex = 0;
-		m_mapGameObj[m_iGameIndex]->GetCurPos(iRowIndex, iColIndex);
-		UpdateBrick(iRowIndex, iColIndex, true);
+		//游戏结束界面，每次仅更新一个Brick
+		if (enGameIdx == GAME_OVER)
+		{
+			int iRowIndex = 0;
+			int iColIndex = 0;
+			m_mapGameObj[m_iGameIndex]->GetCurPos(iRowIndex, iColIndex);
+			UpdateBrick(iRowIndex, iColIndex, true);
+		}
+		else
+		{
+			UpdateBricks();
+		}
 	}
 }
 
@@ -189,5 +197,19 @@ void CGameScene::UpdateBrick(int iRowIndex, int iColIndex, bool bShowFlag)
 	else
 	{
 		m_pBrick[iRowIndex][iColIndex]->setSpriteFrame(SpriteFrameCache::getInstance()->getSpriteFrameByName("empty.png"));
+	}
+}
+
+
+//更新所有Brick状态
+void CGameScene::UpdateBricks()
+{
+	for (int i = 0; i < ROW_NUM; ++i)
+	{
+		for (int j = 0; j < COLUMN_NUM; ++j)
+		{
+			bool bState = m_mapGameObj[m_iGameIndex]->GetBrickState(i, j);
+			UpdateBrick(i, j, bState);
+		}
 	}
 }

@@ -1,6 +1,6 @@
 #include "GameOver.h"
 
-CGameOver::CGameOver() : m_iRowIdx(0), m_iColIdx(0), m_iDirection(DIR_RIGHT), m_iAllCount(0),
+CGameOver::CGameOver() : m_iRowIdx(0), m_iColIdx(-1), m_iDirection(DIR_RIGHT), m_iAllCount(0),
 m_iEndRowIdx(ROW_NUM - 1), m_iEndColIdx(COLUMN_NUM - 1), m_iBeginColIdx(-1), m_iBeginRowIdx(0)
 {
 }

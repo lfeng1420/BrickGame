@@ -13,6 +13,9 @@ public:
 	//提供给每次更新单个Brick游戏（当前只有游戏结束）使用，获取当前改变的Brick行列索引
 	virtual void GetCurPos(int& iRowIndex, int& iColIndex);
 
+	//获取当前Brick状态
+	virtual bool GetBrickState(int iRowIndex, int iColIndex);
+
 	virtual GAME_INDEX GetGameType();
 };
 

@@ -9,6 +9,7 @@ public:
 	//播放结束效果
 	bool Play();
 
+	//获取当前要更新Brick的位置
 	void GetCurPos(int& iRowIndex, int& iColIndex);
 
 	//游戏类型

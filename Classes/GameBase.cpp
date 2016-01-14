@@ -26,3 +26,10 @@ GAME_INDEX CGameBase::GetGameType()
 {
 	return INVALID_GAME;
 }
+
+
+//获取当前Brick状态
+bool CGameBase::GetBrickState(int iRowIndex, int iColIndex)
+{
+	return true;
+}
