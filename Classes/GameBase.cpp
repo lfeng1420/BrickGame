@@ -33,3 +33,4 @@ bool CGameBase::GetBrickState(int iRowIndex, int iColIndex)
 {
 	return true;
 }
+
