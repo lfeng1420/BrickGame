@@ -1,9 +1,10 @@
 #pragma once
 #include "SceneBase.h"
+
 class CGameOver : public CSceneBase
 {
 public:
-	CGameOver();
+	CGameOver(CGameScene* pGameScene);
 	~CGameOver();
 
 	//---------------------    SceneBase    ----------------------
@@ -11,16 +12,13 @@ public:
 	void Init();
 
 	//播放结束效果
-	bool Play();
+	void Play(float dt);
 
 	//获取当前要更新Brick的位置
 	void GetCurPos(int& iRowIndex, int& iColIndex);
 
 	//游戏类型
 	SCENE_INDEX GetSceneType();
-
-	//获取每次执行完Play后等待的时间
-	float GetRefreshTime();
 
 	//左
 	void OnLeft();

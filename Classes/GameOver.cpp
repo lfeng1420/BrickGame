@@ -1,6 +1,6 @@
 #include "GameOver.h"
 
-CGameOver::CGameOver()
+CGameOver::CGameOver(CGameScene* pGameScene) : CSceneBase(pGameScene)
 {
 }
 
@@ -14,7 +14,7 @@ CGameOver::~CGameOver()
 void CGameOver::Init()
 {
 	m_iRowIdx = 0;
-	m_iColIdx = -1;
+	m_iColIdx = 0;
 	m_iDirection = DIR_RIGHT;
 	m_iAllCount = 0;
 	m_iEndRowIdx = ROW_NUM - 1;
@@ -25,15 +25,18 @@ void CGameOver::Init()
 
 
 //播放游戏结束动画
-bool CGameOver::Play()
+void CGameOver::Play(float dt)
 {
 	if (m_iAllCount == ROW_NUM * COLUMN_NUM)
 	{
-		//播放结束
-		return false;
+		m_pGameScene->UpdateScene(SCENE_CHOOSEGAME);
+		return;
 	}
 
 	++m_iAllCount;
+
+	//更新Brick
+	m_pGameScene->UpdateBrick(m_iRowIdx, m_iColIdx, false, true);
 
 	switch (m_iDirection)
 	{
@@ -71,14 +74,12 @@ bool CGameOver::Play()
 		m_iDirection = DIR_RIGHT;
 		--m_iEndRowIdx;
 	}
-
-	return true;
 }
 
 
 SCENE_INDEX CGameOver::GetSceneType()
 {
-	return GAME_OVER;
+	return SCENE_GAMEOVER;
 }
 
 
@@ -86,13 +87,6 @@ void CGameOver::GetCurPos(int& iRowIndex, int& iColIndex)
 {
 	iRowIndex = m_iRowIdx;
 	iColIndex = m_iColIdx;
-}
-
-
-//获取每次执行完Play后等待的时间
-float CGameOver::GetRefreshTime()
-{
-	return 0;
 }
 
 

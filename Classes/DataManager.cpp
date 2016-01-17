@@ -1,7 +1,4 @@
 #include "DataManager.h"
-#include "cocos2d.h"
-
-USING_NS_CC;
 
 CDataManager* _dataManager = nullptr;
 

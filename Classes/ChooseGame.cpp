@@ -1,9 +1,9 @@
 #include "ChooseGame.h"
 #include "DataManager.h"
 
-CChooseGame::CChooseGame() : m_pAnimData(nullptr), m_iAnimIndex(0), m_bFirstAnim(false)
+CChooseGame::CChooseGame(CGameScene* pGameScene) : CSceneBase(pGameScene)
 {
-
+	
 }
 
 
@@ -16,14 +16,33 @@ CChooseGame::~CChooseGame()
 //初始化
 void CChooseGame::Init()
 {
-
+	m_iGameIndex = GET_INTVALUE("GameIndex", GAME_RACING);
+	m_iAnimIndex = 0;
+	m_pAnimData = nullptr;
+	m_bFirstAnim = false;
+	m_iCurTime = 0;
 }
 
 
-//游戏进行，返回false时表示游戏结束
-bool CChooseGame::Play()
+//游戏进行，返回值表示当前状态
+void CChooseGame::Play(float dt)
 {
-	m_pAnimData = CDataManager::getInstance()->GetAnimData(RACING, m_iAnimIndex);
+	m_iCurTime += dt * 1000;
+	if (!m_bFirstAnim)
+	{
+		m_bFirstAnim = true;
+	}
+	else
+	{
+		if (m_iCurTime < 1000)
+		{
+			return;
+		}
+
+		m_iCurTime = 0;
+	}
+
+	m_pAnimData = CDataManager::getInstance()->GetAnimData(m_iGameIndex, m_iAnimIndex);
 	
 	//下一个动画
 	if (++m_iAnimIndex >= ANIM_NUM)
@@ -31,7 +50,8 @@ bool CChooseGame::Play()
 		m_iAnimIndex = 0;
 	}
 
-	return true;
+	//更新所有Brick
+	m_pGameScene->UpdateBricks();
 }
 
 //获取当前Brick状态
@@ -44,17 +64,41 @@ bool CChooseGame::GetBrickState(int iRowIndex, int iColIndex)
 //获取游戏类型
 SCENE_INDEX CChooseGame::GetSceneType()
 {
-	return CHOOSE_GAME;
+	return SCENE_CHOOSEGAME;
 }
 
-
-//获取每次执行完Play后等待的时间
-float CChooseGame::GetRefreshTime()
+//左
+void CChooseGame::OnLeft()
 {
-	if (!m_bFirstAnim)
-	{
-		m_bFirstAnim = true;
-		return 0;
-	}
-	return 1000;
+
+}
+
+//右
+void CChooseGame::OnRight()
+{
+
+}
+
+//上
+void CChooseGame::OnUp()
+{
+
+}
+
+//下
+void CChooseGame::OnDown()
+{
+
+}
+
+//Fire
+void CChooseGame::OnFire()
+{
+
+}
+
+//开始
+void CChooseGame::OnStart()
+{
+
 }

@@ -2,12 +2,16 @@
 #define __GLOBAL_DEF_H_
 
 // ---- 头文件 ----
+#include "cocos2d.h"
+
 #include <map>
 #include <vector>
 #include <fstream>
 #include <iostream>
 
 using namespace std;
+
+USING_NS_CC;
 
 
 #define CC_RETURN_FALSE_IF(exp) if (exp){return false;}
@@ -60,11 +64,11 @@ using namespace std;
 
 #define USERDEFAULT_INSTANCE UserDefault::getInstance
 
-#define GET_INTVALUE(key) UserDefault::getInstance()->getIntegerForKey(key)
+#define GET_INTVALUE(key, value) UserDefault::getInstance()->getIntegerForKey(key, value)
 
 #define SET_INTVALUE(key, value) UserDefault::getInstance()->setIntegerForKey(key, value)
 
-#define GET_BOOLVALUE(key) UserDefault::getInstance()->getBoolForKey(key)
+#define GET_BOOLVALUE(key, value) UserDefault::getInstance()->getBoolForKey(key, value)
 
 #define SET_BOOLVALUE(key, value) UserDefault::getInstance()->setBoolForKey(key, value)
 
@@ -74,7 +78,7 @@ enum
 {
 	//行列
 	ROW_NUM = 20,
-	COLUMN_NUM = 13,
+	COLUMN_NUM = 14,
 
 	//方块宽高
 	BRICK_WIDTH = 32,
@@ -96,17 +100,24 @@ enum
 //游戏索引枚举
 enum SCENE_INDEX
 {
-	INVALID_SCENE = -1,
-	GAME_OVER,		//游戏结束界面
-	CHOOSE_GAME,	//选择界面
-	GAME_RACING,	//游戏界面 - 赛车
+	SCENE_INVALID = -1,
+	SCENE_GAMEOVER,		//游戏结束界面
+	SCENE_CHOOSEGAME,	//选择界面
+	SCENE_RACING,		//游戏界面 - 赛车
 
-	SCENE_MAX,		//最大值
+	SCENE_MAX,			//最大值
 };
 
 enum GAME_LIST
 {
-	RACING,			//赛车
+	GAME_RACING,			//赛车
+};
+
+enum GAME_STATE
+{
+	GAMESTATE_RUNNING,			//进行中
+	GAMESTATE_OVER,				//结束
+	GAMESTATE_LEVELPASS,		//关卡通过
 };
 
 #endif //__GLOBAL_DEF_H_

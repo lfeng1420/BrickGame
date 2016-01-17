@@ -1,7 +1,7 @@
 #include "RacingGame.h"
 
 
-CRacingGame::CRacingGame()
+CRacingGame::CRacingGame(CGameScene* pGameScene) : CSceneBase(pGameScene)
 {
 }
 
@@ -17,10 +17,10 @@ void CRacingGame::Init()
 
 }
 
-//游戏进行，返回false时表示游戏结束
-bool CRacingGame::Play()
+//游戏进行，返回值表示当前状态
+void CRacingGame::Play(float dt)
 {
-	return true;
+	return ;
 }
 
 //获取当前Brick状态
@@ -29,16 +29,11 @@ bool CRacingGame::GetBrickState(int iRowIndex, int iColIndex)
 	return true;
 }
 
+
 //获取游戏类型
 SCENE_INDEX CRacingGame::GetSceneType()
 {
-	return GAME_RACING;
-}
-
-//获取每次执行完Play后等待的时间
-float CRacingGame::GetRefreshTime()
-{
-	return 0;
+	return SCENE_RACING;
 }
 
 

@@ -1,24 +1,56 @@
 #pragma once
-#include "cocos2d.h"
 #include "GlobalDef.h"
 
 class CSceneBase;
 
-class CGameScene : public cocos2d::LayerColor
+class CGameScene : public LayerColor
 {
 public:
 	CGameScene();
 	~CGameScene();
 
-	static cocos2d::Scene* CreateScene();
+	static Scene* CreateScene();
 
 	virtual bool init();
 
+	//更新单个Brick状态，bSmallBrickFlag 是否更新小方块， bShowFlag显示或隐藏
+	void UpdateBrick(int iRowIndex, int iColIndex, bool bSmallBrickFlag, bool bShowFlag);
+
+	//更新所有Brick状态
+	void UpdateBricks();
+
+	//重置所有Brick
+	void ResetBricks();
+
+	//更新场景
+	void UpdateScene(int iSceneIndex);
+
+	//更新分数显示
+	void UpdateScore(int iScore);
+
+	//更新等级显示
+	void UpdateLevel(int iLevel);
+
+	//更新速度显示
+	void UpdateSpeed(int iSpeed);
+
+	//更新小方块序列
+	void UpdateSmallBricks();
+
+	//重置所有小Brick
+	void ResetSmallBricks();
+
+	CREATE_FUNC(CGameScene);
+
+private:
 	//初始化数据
 	void InitData();
 
 	//初始化Brick
 	void InitBrick();
+
+	//初始化UI:分数、等级等
+	void InitUI();
 
 	//根据指定的高度上限创建控制按钮
 	void InitCotroller();
@@ -26,22 +58,11 @@ public:
 	//创建各个游戏对象
 	void CreateGameObj();
 
+	//帧更新
 	void update(float dt);
 
-	//更新单个Brick状态
-	void UpdateBrick(int iRowIndex, int iColIndex, bool bShowFlag);
-
-	//更新所有Brick状态
-	void UpdateBricks();
-
-	//重置所有Brick
-	void ResetAllBricks();
-
-	//按钮响应
+	//按钮响应  iBtnIndex 对应BTN_INDEX索引
 	void OnBtnClick(Ref* pSender, int iBtnIndex);
-
-
-	CREATE_FUNC(CGameScene);
 
 private:
 	typedef map<int, CSceneBase*> TMAP_GAMEOBJ;
@@ -61,16 +82,26 @@ private:
 	};
 
 private:
-	cocos2d::Sprite* m_pBrick[ROW_NUM][COLUMN_NUM];		//Sprite数组
+	Sprite* m_pArrBrick[ROW_NUM][COLUMN_NUM];				//Sprite数组
 
-	cocos2d::Size m_visibleSize;						//屏幕大小
+	Size m_visibleSize;									//屏幕大小
 
 	TMAP_GAMEOBJ m_mapGameObj;							//各个游戏对象指针
 
-	int m_iGameIndex;									//当前游戏索引
+	int m_iSceneIndex;									//当前游戏索引
 
 	bool m_arrBrickState[ROW_NUM][COLUMN_NUM];			//保存的当前所有Brick状态
 
-	float m_fCurTime;									//当前距离上一次触发Play的时间
+	Label* m_pScoreLabel;								//分数序列
+
+	Label* m_pHighScoreLabel;							//分数序列
+
+	Sprite* m_pArrSmallBrick[4][4];						//小方块序列
+
+	Label* m_pLevelLabel;								//等级
+
+	Label* m_pSpeedLabel;								//速度
+
+	Sprite* m_pPauseSpr;								//暂停图标
 };
 

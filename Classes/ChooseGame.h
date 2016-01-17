@@ -4,7 +4,7 @@
 class CChooseGame : public CSceneBase
 {
 public:
-	CChooseGame();
+	CChooseGame(CGameScene* pGameScene);
 	~CChooseGame();
 
 	//---------------------    CSceneBase    ----------------------
@@ -12,7 +12,7 @@ public:
 	void Init();
 	
 	//游戏进行，返回false时表示游戏结束
-	bool Play();
+	void Play(float dt);
 
 	//获取当前Brick状态
 	bool GetBrickState(int iRowIndex, int iColIndex);
@@ -20,8 +20,23 @@ public:
 	//获取游戏类型
 	SCENE_INDEX GetSceneType();
 
-	//获取每次执行完Play后等待的时间
-	float GetRefreshTime();
+	//左
+	void OnLeft();
+
+	//右
+	void OnRight();
+
+	//上
+	void OnUp();
+
+	//下
+	void OnDown();
+
+	//Fire
+	void OnFire();
+
+	//开始
+	void OnStart();
 
 	//---------------------    CSceneBase    ----------------------
 
@@ -36,8 +51,16 @@ private:
 private:
 	TVECTOR_ANIMDATA* m_pAnimData;		//指向动画数据的指针
 
+	int m_iGameIndex;					//游戏索引
+
 	int m_iAnimIndex;					//当前动画索引
 
 	bool m_bFirstAnim;					//第一个动画无需等待
+
+	int m_iSpeed;						//速度
+
+	int m_iLevel;						//等级
+
+	float m_iCurTime;					//当前时间
 };
 
