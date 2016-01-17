@@ -34,10 +34,13 @@ public:
 	//更新所有Brick状态
 	void UpdateBricks();
 
+	//重置所有Brick
+	void ResetAllBricks();
+
 	CREATE_FUNC(CGameScene);
 
 private:
-	typedef std::map<int, CGameBase*> TMAP_GAMEOBJ;
+	typedef map<int, CGameBase*> TMAP_GAMEOBJ;
 	typedef TMAP_GAMEOBJ::iterator TMAP_GAMEOBJ_ITER;
 
 private:
@@ -48,5 +51,9 @@ private:
 	TMAP_GAMEOBJ m_mapGameObj;							//各个游戏对象指针
 
 	int m_iGameIndex;									//当前游戏索引
+
+	bool m_arrBrickState[ROW_NUM][COLUMN_NUM];			//保存的当前所有Brick状态
+
+	float m_fCurTime;									//当前距离上一次触发Play的时间
 };
 

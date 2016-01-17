@@ -7,6 +7,9 @@ public:
 	CGameBase();
 	~CGameBase();
 
+	//初始化
+	virtual void Init();
+
 	//游戏进行，返回false时表示游戏结束
 	virtual bool Play();
 
@@ -16,6 +19,13 @@ public:
 	//获取当前Brick状态
 	virtual bool GetBrickState(int iRowIndex, int iColIndex);
 
-	virtual GAME_INDEX GetGameType();
+	//获取游戏类型
+	virtual SCENE_INDEX GetSceneType();
+
+	//获取每次执行完Play后等待的时间
+	virtual float GetRefreshTime();
+
+protected:
+	int m_iLife = 3;		//生命数
 };
 

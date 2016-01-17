@@ -3,6 +3,11 @@
 
 // ---- 头文件 ----
 #include <map>
+#include <vector>
+#include <fstream>
+#include <iostream>
+
+using namespace std;
 
 
 #define CC_RETURN_FALSE_IF(exp) if (exp){return false;}
@@ -20,6 +25,8 @@
 #define PAUSE_SCENE Director::getInstance()->pause
 
 #define RESUME_SCENE Director::getInstance()->resume
+
+#define SET_TIMESCALE(s) Director::getInstance()->getScheduler()->setTimeScale(s)
 
 #define ADD_ANIM(anim, name) AnimationCache::getInstance()->addAnimation(anim, name)
 
@@ -87,13 +94,19 @@ enum
 
 
 //游戏索引枚举
-enum GAME_INDEX
+enum SCENE_INDEX
 {
-	INVALID_GAME = -1,
+	INVALID_SCENE = -1,
 	GAME_OVER,		//游戏结束界面
-	CHOOSE,			//选择界面
-	RACING,			//赛车
+	CHOOSE_GAME,	//选择界面
+	GAME_RACING,	//游戏界面 - 赛车
 
+	SCENE_MAX,		//最大值
+};
+
+enum GAME_LIST
+{
+	RACING,			//赛车
 };
 
 #endif //__GLOBAL_DEF_H_

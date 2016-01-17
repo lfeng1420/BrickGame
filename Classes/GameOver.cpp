@@ -1,13 +1,26 @@
 #include "GameOver.h"
 
-CGameOver::CGameOver() : m_iRowIdx(0), m_iColIdx(-1), m_iDirection(DIR_RIGHT), m_iAllCount(0),
-m_iEndRowIdx(ROW_NUM - 1), m_iEndColIdx(COLUMN_NUM - 1), m_iBeginColIdx(-1), m_iBeginRowIdx(0)
+CGameOver::CGameOver()
 {
 }
 
 
 CGameOver::~CGameOver()
 {
+}
+
+
+//初始化
+void CGameOver::Init()
+{
+	m_iRowIdx = 0;
+	m_iColIdx = -1;
+	m_iDirection = DIR_RIGHT;
+	m_iAllCount = 0;
+	m_iEndRowIdx = ROW_NUM - 1;
+	m_iEndColIdx = COLUMN_NUM - 1;
+	m_iBeginColIdx = -1;
+	m_iBeginRowIdx = 0;
 }
 
 
@@ -63,7 +76,7 @@ bool CGameOver::Play()
 }
 
 
-GAME_INDEX CGameOver::GetGameType()
+SCENE_INDEX CGameOver::GetSceneType()
 {
 	return GAME_OVER;
 }
@@ -73,4 +86,11 @@ void CGameOver::GetCurPos(int& iRowIndex, int& iColIndex)
 {
 	iRowIndex = m_iRowIdx;
 	iColIndex = m_iColIdx;
+}
+
+
+//获取每次执行完Play后等待的时间
+float CGameOver::GetRefreshTime()
+{
+	return 0;
 }

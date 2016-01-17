@@ -6,6 +6,10 @@ public:
 	CGameOver();
 	~CGameOver();
 
+	//---------------------    GameBase    ----------------------
+	//初始化
+	void Init();
+
 	//播放结束效果
 	bool Play();
 
@@ -13,7 +17,11 @@ public:
 	void GetCurPos(int& iRowIndex, int& iColIndex);
 
 	//游戏类型
-	GAME_INDEX GetGameType();
+	SCENE_INDEX GetSceneType();
+
+	//获取每次执行完Play后等待的时间
+	float GetRefreshTime();
+	//---------------------    GameBase    ----------------------
 
 private:
 	int m_iColIdx;

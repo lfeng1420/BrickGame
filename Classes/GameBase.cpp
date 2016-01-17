@@ -10,6 +10,7 @@ CGameBase::~CGameBase()
 {
 }
 
+
 bool CGameBase::Play()
 {
 	return true;
@@ -22,9 +23,9 @@ void CGameBase::GetCurPos(int& iRowIndex, int& iColIndex)
 }
 
 
-GAME_INDEX CGameBase::GetGameType()
+SCENE_INDEX CGameBase::GetSceneType()
 {
-	return INVALID_GAME;
+	return INVALID_SCENE;
 }
 
 
@@ -34,4 +35,16 @@ bool CGameBase::GetBrickState(int iRowIndex, int iColIndex)
 	return true;
 }
 
- 
+
+//初始化
+void CGameBase::Init()
+{
+
+}
+
+
+//获取每次执行完Play后等待的时间
+float CGameBase::GetRefreshTime()
+{
+	return 0;
+}
