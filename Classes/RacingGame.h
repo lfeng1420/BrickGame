@@ -1,51 +1,47 @@
 #pragma once
-#include "cocos2d.h"
-#include "GlobalDef.h"
+#include "SceneBase.h"
 
-class CRacingGame : public cocos2d::LayerColor
+class CRacingGame : public CSceneBase
 {
 public:
 	CRacingGame();
 	~CRacingGame();
 
-	static cocos2d::Scene* CreateScene();
+	//---------------------    CSceneBase    ----------------------
+	//初始化
+	void Init();
 
-	virtual bool init();
+	//游戏进行，返回false时表示游戏结束
+	bool Play();
 
-	//初始化数据
-	void InitData();
+	//获取当前Brick状态
+	bool GetBrickState(int iRowIndex, int iColIndex);
 
-	//初始化Brick
-	void InitBrick();
+	//获取游戏类型
+	SCENE_INDEX GetSceneType();
 
-	//根据指定的高度上限创建控制按钮
-	void InitCotroller();
+	//获取每次执行完Play后等待的时间
+	float GetRefreshTime();
 
-	//播放游戏结束动画
-	void PlayGameOverAnim();
+	//左
+	void OnLeft();
 
-	void update(float dt);
+	//右
+	void OnRight();
 
-	CREATE_FUNC(CRacingGame);
+	//上
+	void OnUp();
+
+	//下
+	void OnDown();
+
+	//Fire
+	void OnFire();
+
+	//---------------------    CSceneBase    ----------------------
 
 private:
-	cocos2d::Sprite* m_pBrick[ROW_NUM][COLUMN_NUM];		//Sprite数组
-	
-	int m_arrCurBrick[ROW_NUM][COLUMN_NUM];				//当前Brick状态
+	int m_iCarPos;
 
-	int m_arrNextBrick[ROW_NUM][COLUMN_NUM];			//下一次刷新时Birck状态
-
-	cocos2d::Size m_visibleSize;						//屏幕大小
-
-	int m_iColIdx;
-	int m_iRowIdx;
-
-	int m_iBeginColIdx;
-	int m_iBeginRowIdx;
-	int m_iEndColIdx;
-	int m_iEndRowIdx;
-	int m_iDirection;
-	
-	int m_iAllCount;
 };
 

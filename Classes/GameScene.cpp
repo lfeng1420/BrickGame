@@ -5,7 +5,7 @@
 
 USING_NS_CC;
 
-CGameScene::CGameScene() : m_iGameIndex(CHOOSE_GAME), m_fCurTime(0)
+CGameScene::CGameScene() : m_iGameIndex(GAME_OVER), m_fCurTime(0)
 {
 }
 
@@ -91,35 +91,35 @@ void CGameScene::InitCotroller()
 	auto upBtn = MenuItemSprite::create(
 		Sprite::create("lineDark01.png"),
 		Sprite::create("flatDark01.png"),
-		NULL
+		CC_CALLBACK_1(CGameScene::OnBtnClick, this, BTN_UP)
 		);
 	Size upBtnSize = upBtn->getContentSize();
 
 	auto rightBtn = MenuItemSprite::create(
 		Sprite::create("lineDark02.png"),
 		Sprite::create("flatDark02.png"),
-		NULL
+		CC_CALLBACK_1(CGameScene::OnBtnClick, this, BTN_RIGHT)
 		);
 	Size rightBtnSize = rightBtn->getContentSize();
 
 	auto downBtn = MenuItemSprite::create(
 		Sprite::create("lineDark03.png"),
 		Sprite::create("flatDark03.png"),
-		NULL
+		CC_CALLBACK_1(CGameScene::OnBtnClick, this, BTN_DOWN)
 		);
 	Size downBtnSize = downBtn->getContentSize();
 
 	auto leftBtn = MenuItemSprite::create(
 		Sprite::create("lineDark04.png"),
 		Sprite::create("flatDark04.png"),
-		NULL
+		CC_CALLBACK_1(CGameScene::OnBtnClick, this, BTN_LEFT)
 		);
 	Size leftBtnSize = leftBtn->getContentSize();
 
 	auto fireBtn = MenuItemSprite::create(
 		Sprite::create("lineDark05.png"),
 		Sprite::create("flatDark05.png"),
-		NULL
+		CC_CALLBACK_1(CGameScene::OnBtnClick, this, BTN_FIRE)
 		);
 	Size fireBtnSize = fireBtn->getContentSize();
 
@@ -128,7 +128,7 @@ void CGameScene::InitCotroller()
 	auto startBtn = MenuItemSprite::create(
 		Sprite::create("start_0.png"),
 		Sprite::create("start_1.png"),
-		NULL
+		CC_CALLBACK_1(CGameScene::OnBtnClick, this, BTN_START)
 		);
 	startBtn->setScale(fScale);
 	Size startBtnSize = startBtn->getContentSize() * fScale;
@@ -136,7 +136,7 @@ void CGameScene::InitCotroller()
 	auto soundBtn = MenuItemSprite::create(
 		Sprite::create("sound_on_0.png"),
 		Sprite::create("sound_on_1.png"),
-		NULL
+		CC_CALLBACK_1(CGameScene::OnBtnClick, this, BTN_SOUND)
 		);
 	soundBtn->setScale(fScale);
 	Size soundBtnSize = soundBtn->getContentSize() * fScale;
@@ -144,7 +144,7 @@ void CGameScene::InitCotroller()
 	auto resetBtn = MenuItemSprite::create(
 		Sprite::create("reset_0.png"),
 		Sprite::create("reset_1.png"),
-		NULL
+		CC_CALLBACK_1(CGameScene::OnBtnClick, this, BTN_RESET)
 		);
 	resetBtn->setScale(fScale);
 	Size resetBtnSize = resetBtn->getContentSize() * fScale;
@@ -202,7 +202,7 @@ void CGameScene::update(float dt)
 		ResetAllBricks();
 
 		//下一个游戏
-		//++m_iGameIndex;
+		++m_iGameIndex;
 
 		//初始化
 		m_mapGameObj[m_iGameIndex]->Init();
@@ -268,5 +268,36 @@ void CGameScene::ResetAllBricks()
 		{
 			UpdateBrick(i, j, false);
 		}
+	}
+}
+
+
+//按钮响应
+void CGameScene::OnBtnClick(Ref* pSender, int iBtnIndex)
+{
+	switch (iBtnIndex)
+	{
+	case BTN_DOWN:
+		m_mapGameObj[m_iGameIndex]->OnDown();
+		break;
+	case BTN_LEFT:
+		m_mapGameObj[m_iGameIndex]->OnLeft();
+		break;
+	case BTN_RIGHT:
+		m_mapGameObj[m_iGameIndex]->OnRight();
+		break;
+	case BTN_UP:
+		m_mapGameObj[m_iGameIndex]->OnUp();
+		break;
+	case BTN_FIRE:
+		m_mapGameObj[m_iGameIndex]->OnFire();
+		break;
+	case BTN_START:
+		m_mapGameObj[m_iGameIndex]->OnStart();
+		break;
+	case BTN_SOUND:
+		break;
+	case BTN_RESET:
+		break;
 	}
 }

@@ -1,12 +1,12 @@
 #pragma once
-#include "GameBase.h"
-class CGameOver : public CGameBase
+#include "SceneBase.h"
+class CGameOver : public CSceneBase
 {
 public:
 	CGameOver();
 	~CGameOver();
 
-	//---------------------    GameBase    ----------------------
+	//---------------------    SceneBase    ----------------------
 	//初始化
 	void Init();
 
@@ -21,7 +21,25 @@ public:
 
 	//获取每次执行完Play后等待的时间
 	float GetRefreshTime();
-	//---------------------    GameBase    ----------------------
+
+	//左
+	void OnLeft();
+
+	//右
+	void OnRight();
+
+	//上
+	void OnUp();
+
+	//下
+	void OnDown();
+
+	//Fire
+	void OnFire();
+
+	//开始
+	void OnStart();
+	//---------------------    SceneBase    ----------------------
 
 private:
 	int m_iColIdx;

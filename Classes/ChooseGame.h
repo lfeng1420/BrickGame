@@ -1,12 +1,13 @@
 #pragma once
-#include "GameBase.h"
-class CChooseGame : public CGameBase
+#include "SceneBase.h"
+
+class CChooseGame : public CSceneBase
 {
 public:
 	CChooseGame();
 	~CChooseGame();
 
-	//---------------------    GameBase    ----------------------
+	//---------------------    CSceneBase    ----------------------
 	//初始化
 	void Init();
 	
@@ -21,7 +22,8 @@ public:
 
 	//获取每次执行完Play后等待的时间
 	float GetRefreshTime();
-	//---------------------    GameBase    ----------------------
+
+	//---------------------    CSceneBase    ----------------------
 
 private:
 	typedef vector<int> TVECTOR_ANIMDATA;

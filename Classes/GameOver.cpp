@@ -94,3 +94,40 @@ float CGameOver::GetRefreshTime()
 {
 	return 0;
 }
+
+
+void CGameOver::OnLeft()
+{
+	//结束播放，跳转下一个界面
+	m_iAllCount = ROW_NUM * COLUMN_NUM;
+}
+
+void CGameOver::OnRight()
+{
+	//结束播放，跳转下一个界面
+	m_iAllCount = ROW_NUM * COLUMN_NUM;
+}
+
+void CGameOver::OnDown()
+{
+	//结束播放，跳转下一个界面
+	m_iAllCount = ROW_NUM * COLUMN_NUM;
+}
+
+void CGameOver::OnUp()
+{
+	//结束播放，跳转下一个界面
+	m_iAllCount = ROW_NUM * COLUMN_NUM;
+}
+
+void CGameOver::OnFire()
+{
+	//结束播放，跳转下一个界面
+	m_iAllCount = ROW_NUM * COLUMN_NUM;
+}
+
+void CGameOver::OnStart()
+{
+	//结束播放，跳转下一个界面
+	m_iAllCount = ROW_NUM * COLUMN_NUM;
+}

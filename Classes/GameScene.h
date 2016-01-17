@@ -2,7 +2,7 @@
 #include "cocos2d.h"
 #include "GlobalDef.h"
 
-class CGameBase;
+class CSceneBase;
 
 class CGameScene : public cocos2d::LayerColor
 {
@@ -37,11 +37,28 @@ public:
 	//重置所有Brick
 	void ResetAllBricks();
 
+	//按钮响应
+	void OnBtnClick(Ref* pSender, int iBtnIndex);
+
+
 	CREATE_FUNC(CGameScene);
 
 private:
-	typedef map<int, CGameBase*> TMAP_GAMEOBJ;
+	typedef map<int, CSceneBase*> TMAP_GAMEOBJ;
 	typedef TMAP_GAMEOBJ::iterator TMAP_GAMEOBJ_ITER;
+
+	//按钮索引
+	enum BTN_INDEX
+	{
+		BTN_UP,
+		BTN_RIGHT,
+		BTN_DOWN,
+		BTN_LEFT,
+		BTN_FIRE,
+		BTN_START,
+		BTN_SOUND,
+		BTN_RESET,
+	};
 
 private:
 	cocos2d::Sprite* m_pBrick[ROW_NUM][COLUMN_NUM];		//Sprite数组
