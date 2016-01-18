@@ -16,7 +16,20 @@ public:
 	//加载动画
 	bool LoadGameAnim();
 
+	//根据游戏索引和动画索引获取动画数据
 	vector<int>* GetAnimData(int iGameIndex, int iAnimIndex);
+
+	//播放背景音乐
+	void PlayMusic(const char* strName, bool bLoop = false);
+
+	//播放音效
+	void PlayEffect(const char* strName);
+
+	//设置声音状态
+	void SetSoundState(bool bState);
+
+	//获取声音状态
+	bool GetSoundState();
 
 private:
 	typedef vector<int> TVECTOR_ANIMDATA;
@@ -36,5 +49,6 @@ private:
 private:
 	TMAP_GAMEANIM m_mapGameAnim;			//保存每个游戏对应的动画
 
+	bool m_bSoundOn;						//是否打开音乐
 };
 

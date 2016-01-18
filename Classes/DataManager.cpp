@@ -29,26 +29,8 @@ void CDataManager::Init()
 {
 	LoadGameAnim();
 	
-	//测试内容输出
-	/*for (int i = 0; i < m_mapGameAnim.size(); ++i)
-	{
-		string strTemp;
-		TVECTOR_ANIMDATA_ITER pAnimIter = m_mapGameAnim[i].begin();
-		log("%d", m_mapGameAnim[i].size());
-		for (int iCount = 0; pAnimIter != m_mapGameAnim[i].end(); ++pAnimIter, ++iCount)
-		{
-			if (iCount == COLUMN_NUM)
-			{
-				log("%s", strTemp.c_str());
-				strTemp = "";
-				iCount = 0;
-			}
-
-			char ch = *pAnimIter + 48;
-			strTemp += ch;
-		}
-	}*/
-	
+	//获取上一次的声音设置
+	m_bSoundOn = GET_BOOLVALUE("SOUND", true);
 }
 
 //加载动画
@@ -96,4 +78,38 @@ vector<int>* CDataManager::GetAnimData(int iGameIndex, int iAnimIndex)
 {
 	int iIndex = iGameIndex * ANIM_NUM + iAnimIndex;
 	return &m_mapGameAnim[iIndex];
+}
+
+
+//播放背景音乐
+void CDataManager::PlayMusic(const char* strName, bool bLoop)
+{
+	if (m_bSoundOn)
+	{
+		CocosDenshion::SimpleAudioEngine::getInstance()->playBackgroundMusic(strName, bLoop);
+	}
+}
+
+//播放音效
+void CDataManager::PlayEffect(const char* strName)
+{
+	if (m_bSoundOn)
+	{
+		CocosDenshion::SimpleAudioEngine::getInstance()->playEffect(strName);
+	}
+}
+
+
+//设置声音状态
+void CDataManager::SetSoundState(bool bState)
+{
+	m_bSoundOn = bState;
+	SET_BOOLVALUE("SOUND", m_bSoundOn);
+}
+
+
+//获取声音状态
+bool CDataManager::GetSoundState()
+{
+	return m_bSoundOn;
 }

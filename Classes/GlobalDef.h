@@ -48,9 +48,9 @@ USING_NS_CC;
 
 #define PRELOAD_BGMUSIC(name) CocosDenshion::SimpleAudioEngine::getInstance()->preloadBackgroundMusic(name)
 
-#define PLAY_BGMUSIC(name) CocosDenshion::SimpleAudioEngine::getInstance()->playBackgroundMusic(name)
+#define PLAY_BGMUSIC(name) CDataManager::getInstance()->PlayMusic(name)
 
-#define LOOP_PLAY_BGMUSIC(name) CocosDenshion::SimpleAudioEngine::getInstance()->playBackgroundMusic(name, true)
+#define LOOP_PLAY_BGMUSIC(name) CDataManager::getInstance()->PlayMusic(name, true)
 
 #define STOP_BGMUSIC CocosDenshion::SimpleAudioEngine::getInstance()->stopBackgroundMusic
 
@@ -58,7 +58,11 @@ USING_NS_CC;
 
 #define PRELOAD_EFFECT(name) CocosDenshion::SimpleAudioEngine::getInstance()->preloadEffect(name)
 
-#define PLAY_EFFECT(name) CocosDenshion::SimpleAudioEngine::getInstance()->playEffect(name)
+#define PLAY_EFFECT(name) CDataManager::getInstance()->PlayEffect(name)
+
+#define SET_SOUNDSTATE(state) CDataManager::getInstance()->SetSoundState(state)
+
+#define GET_SOUNDSTATE CDataManager::getInstance()->GetSoundState
 
 #define GET_CONTENTSIZE(sprite) sprite->getContentSize()
 

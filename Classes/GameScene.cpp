@@ -192,6 +192,7 @@ void CGameScene::InitCotroller()
 	//剩余高度，用于调整控制按钮位置
 	float fHeight = m_visibleSize.height - BRICK_HEIGHT * ROW_NUM;
 
+	//上
 	auto upBtn = MenuItemSprite::create(
 		Sprite::create("lineDark01.png"),
 		Sprite::create("flatDark01.png"),
@@ -199,6 +200,7 @@ void CGameScene::InitCotroller()
 		);
 	Size upBtnSize = upBtn->getContentSize();
 
+	//右
 	auto rightBtn = MenuItemSprite::create(
 		Sprite::create("lineDark02.png"),
 		Sprite::create("flatDark02.png"),
@@ -206,6 +208,7 @@ void CGameScene::InitCotroller()
 		);
 	Size rightBtnSize = rightBtn->getContentSize();
 
+	//下
 	auto downBtn = MenuItemSprite::create(
 		Sprite::create("lineDark03.png"),
 		Sprite::create("flatDark03.png"),
@@ -213,6 +216,7 @@ void CGameScene::InitCotroller()
 		);
 	Size downBtnSize = downBtn->getContentSize();
 
+	//左
 	auto leftBtn = MenuItemSprite::create(
 		Sprite::create("lineDark04.png"),
 		Sprite::create("flatDark04.png"),
@@ -220,6 +224,7 @@ void CGameScene::InitCotroller()
 		);
 	Size leftBtnSize = leftBtn->getContentSize();
 
+	//Fire
 	auto fireBtn = MenuItemSprite::create(
 		Sprite::create("lineDark05.png"),
 		Sprite::create("flatDark05.png"),
@@ -227,7 +232,7 @@ void CGameScene::InitCotroller()
 		);
 	Size fireBtnSize = fireBtn->getContentSize();
 
-
+	//开始
 	float fScale = 1.5f;
 	auto startBtn = MenuItemSprite::create(
 		Sprite::create("start_0.png"),
@@ -237,14 +242,31 @@ void CGameScene::InitCotroller()
 	startBtn->setScale(fScale);
 	Size startBtnSize = startBtn->getContentSize() * fScale;
 
-	auto soundBtn = MenuItemSprite::create(
+	//获取声音状态
+	bool bSoundState = GET_SOUNDSTATE();
+	auto pSoundOnMenu = MenuItemSprite::create(
 		Sprite::create("sound_on_0.png"),
 		Sprite::create("sound_on_1.png"),
-		CC_CALLBACK_1(CGameScene::OnBtnClick, this, BTN_SOUND)
+		nullptr
 		);
+	auto pSoundOffMenu = MenuItemSprite::create(
+		Sprite::create("sound_off_0.png"),
+		Sprite::create("sound_off_1.png"),
+		nullptr
+		);
+
+	//声音开关
+	auto soundBtn = MenuItemToggle::createWithCallback(
+		CC_CALLBACK_1(CGameScene::OnBtnClick, this, BTN_SOUND),
+		bSoundState ? pSoundOffMenu : pSoundOnMenu,
+		bSoundState ? pSoundOnMenu : pSoundOffMenu,
+		nullptr
+	);
 	soundBtn->setScale(fScale);
 	Size soundBtnSize = soundBtn->getContentSize() * fScale;
+	log("%d", soundBtn);
 
+	//重置
 	auto resetBtn = MenuItemSprite::create(
 		Sprite::create("reset_0.png"),
 		Sprite::create("reset_1.png"),
@@ -384,6 +406,7 @@ void CGameScene::OnBtnClick(Ref* pSender, int iBtnIndex)
 		break;
 
 	case BTN_SOUND:
+		SET_SOUNDSTATE(!GET_SOUNDSTATE());
 		break;
 
 	case BTN_RESET:
