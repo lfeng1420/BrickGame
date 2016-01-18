@@ -397,7 +397,7 @@ void CGameScene::UpdateScene(int iSceneIndex)
 //更新分数显示
 void CGameScene::UpdateScore(int iScore)
 {
-	log("Current Speed: %d", iScore);
+	log("Current Score: %d", iScore);
 	m_pScoreLabel->setString(StringUtils::format("%06d", iScore));
 }
 
@@ -405,7 +405,7 @@ void CGameScene::UpdateScore(int iScore)
 //更新等级显示
 void CGameScene::UpdateLevel(int iLevel)
 {
-	log("Current Speed: %d", iLevel);
+	log("Current Level: %d", iLevel);
 	m_pLevelLabel->setString(StringUtils::format("%d", iLevel));
 }
 

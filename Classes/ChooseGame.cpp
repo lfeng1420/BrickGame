@@ -21,6 +21,9 @@ void CChooseGame::Init()
 	m_pAnimData = nullptr;
 	m_bFirstAnim = false;
 	m_iCurTime = 0;
+
+	m_iSpeed = 0;
+	m_iLevel = 0;
 }
 
 
@@ -70,25 +73,41 @@ SCENE_INDEX CChooseGame::GetSceneType()
 //вС
 void CChooseGame::OnLeft()
 {
-
+	if (m_iLevel > 0)
+	{
+		--m_iLevel;
+		m_pGameScene->UpdateLevel(m_iLevel);
+	}
 }
 
 //ср
 void CChooseGame::OnRight()
 {
-
+	if (m_iLevel < 10)
+	{
+		++m_iLevel;
+		m_pGameScene->UpdateLevel(m_iLevel);
+	}
 }
 
 //ио
 void CChooseGame::OnUp()
 {
-
+	if (m_iSpeed < 10)
+	{
+		++m_iSpeed;
+		m_pGameScene->UpdateSpeed(m_iSpeed);
+	}
 }
 
 //об
 void CChooseGame::OnDown()
 {
-
+	if (m_iSpeed > 0)
+	{
+		--m_iSpeed;
+		m_pGameScene->UpdateSpeed(m_iSpeed);
+	}
 }
 
 //Fire
