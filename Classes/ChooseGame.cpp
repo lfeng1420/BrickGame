@@ -16,14 +16,14 @@ CChooseGame::~CChooseGame()
 //初始化
 void CChooseGame::Init()
 {
-	m_iGameIndex = GET_INTVALUE("GameIndex", GAME_RACING);
+	m_iGameIndex = GET_INTVALUE("GAME", GAME_RACING);
+	m_iSpeed = GET_INTVALUE("SPEED", 0);
+	m_iLevel = GET_INTVALUE("LEVEL", 0);
+
 	m_iAnimIndex = 0;
 	m_pAnimData = nullptr;
 	m_bFirstAnim = false;
 	m_iCurTime = 0;
-
-	m_iSpeed = 0;
-	m_iLevel = 0;
 }
 
 
@@ -116,8 +116,21 @@ void CChooseGame::OnFire()
 
 }
 
+
+//游戏索引转换场景索引
+const int GAMEIDX_TO_SCENEIDX[] = 
+{
+	SCENE_RACING,	//对应GAME_RACING
+};
+
 //开始
 void CChooseGame::OnStart()
 {
+	//设置游戏索引，等级和速度
+	SET_INTVALUE("GAME", m_iGameIndex);
+	SET_INTVALUE("SPEED", m_iSpeed);
+	SET_INTVALUE("LEVEL", m_iLevel);
 
+	//切换新游戏
+	m_pGameScene->ShowNewScene(GAMEIDX_TO_SCENEIDX[m_iGameIndex]);
 }

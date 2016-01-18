@@ -2,6 +2,7 @@
 #include "GameOver.h"
 #include "DataManager.h"
 #include "ChooseGame.h"
+#include "RacingGame.h"
 
 CGameScene::CGameScene() : m_iSceneIndex(SCENE_GAMEOVER)
 {
@@ -281,12 +282,17 @@ void CGameScene::CreateGameObj()
 	//游戏结束
 	CGameOver* pGameOver = new CGameOver(this);
 	pGameOver->Init();
-	m_mapGameObj[0] = pGameOver;
+	m_mapGameObj[SCENE_GAMEOVER] = pGameOver;
 
 	//选择游戏
 	CChooseGame* pChooseGame = new CChooseGame(this);
 	pChooseGame->Init();
-	m_mapGameObj[1] = pChooseGame;
+	m_mapGameObj[SCENE_CHOOSEGAME] = pChooseGame;
+
+	//赛车
+	CRacingGame* pRacingGame = new CRacingGame(this);
+	pRacingGame->Init();
+	m_mapGameObj[SCENE_RACING] = pRacingGame;
 }
 
 
@@ -385,8 +391,8 @@ void CGameScene::OnBtnClick(Ref* pSender, int iBtnIndex)
 	}
 }
 
-//设置游戏索引
-void CGameScene::UpdateScene(int iSceneIndex)
+//显示新场景
+void CGameScene::ShowNewScene(int iSceneIndex)
 {
 	log("Old Scene: %d   Current Scene: %d", m_iSceneIndex, iSceneIndex);
 	m_iSceneIndex = iSceneIndex;

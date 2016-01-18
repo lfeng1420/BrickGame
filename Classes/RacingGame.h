@@ -36,25 +36,30 @@ public:
 	void OnFire();
 
 	//---------------------    CSceneBase    ----------------------
+
+private:
+
+	
+
+
 private:
 	enum 
 	{
 		CAR_MAXNUM = 3,		//同时出现的车最大数量
 
 		ROAD_MAXINDEX = 3,	//车道最大索引，从0开始
-
-
 	};
 
 
 private:
-	int m_iCarPos;			//车当前位置
+	int m_iCarPos;								//车当前位置
 
-	int m_iSpeed;			//速度
+	int m_iSpeed;								//速度
 
-	int m_iLevel;			//关卡
+	int m_iLevel;								//关卡
 
+	bool m_arrBrickState[ROW_NUM][COLUMN_NUM];	//Brick状态
 
-
+	int m_iLife;								//剩余生命
 };
 

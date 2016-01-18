@@ -101,23 +101,19 @@ enum
 enum SCENE_INDEX
 {
 	SCENE_INVALID = -1,
-	SCENE_GAMEOVER,		//游戏结束界面
-	SCENE_CHOOSEGAME,	//选择界面
-	SCENE_RACING,		//游戏界面 - 赛车
+	SCENE_GAMEOVER,				//游戏结束界面
+	SCENE_CHOOSEGAME,			//选择界面
 
-	SCENE_MAX,			//最大值
+	SCENE_RACING,				//游戏界面 - 赛车
+
+	SCENE_MAX,					//最大值
 };
 
 enum GAME_LIST
 {
-	GAME_RACING,			//赛车
+	GAME_INVALID = -1,			//无效
+	GAME_RACING,				//赛车
 };
 
-enum GAME_STATE
-{
-	GAMESTATE_RUNNING,			//进行中
-	GAMESTATE_OVER,				//结束
-	GAMESTATE_LEVELPASS,		//关卡通过
-};
 
 #endif //__GLOBAL_DEF_H_

@@ -29,7 +29,7 @@ void CGameOver::Play(float dt)
 {
 	if (m_iAllCount == ROW_NUM * COLUMN_NUM)
 	{
-		m_pGameScene->UpdateScene(SCENE_CHOOSEGAME);
+		m_pGameScene->ShowNewScene(SCENE_CHOOSEGAME);
 		return;
 	}
 

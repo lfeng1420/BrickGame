@@ -22,8 +22,8 @@ public:
 	//重置所有Brick
 	void ResetBricks();
 
-	//更新场景
-	void UpdateScene(int iSceneIndex);
+	//显示新场景
+	void ShowNewScene(int iSceneIndex);
 
 	//更新分数显示
 	void UpdateScore(int iScore);
