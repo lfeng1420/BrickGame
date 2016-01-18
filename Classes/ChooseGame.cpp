@@ -126,10 +126,11 @@ const int GAMEIDX_TO_SCENEIDX[] =
 //开始
 void CChooseGame::OnStart()
 {
-	//设置游戏索引，等级和速度
+	//设置游戏索引，生命，等级和速度
 	SET_INTVALUE("GAME", m_iGameIndex);
 	SET_INTVALUE("SPEED", m_iSpeed);
 	SET_INTVALUE("LEVEL", m_iLevel);
+	SET_INTVALUE("LIFE", 4);			//默认生命：4
 
 	//切换新游戏
 	m_pGameScene->ShowNewScene(GAMEIDX_TO_SCENEIDX[m_iGameIndex]);

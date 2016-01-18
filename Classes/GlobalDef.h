@@ -16,7 +16,7 @@ USING_NS_CC;
 
 #define CC_RETURN_FALSE_IF(exp) if (exp){return false;}
 
-#define SAFE_DELETE(p) if (p){delete p; p = NULL;}
+#define SAFE_DELETE(p) do{ delete p; p = nullptr; } while(0)
 
 
 // ---- cocos 常用函数宏定义 ----
