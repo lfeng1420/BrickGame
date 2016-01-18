@@ -24,7 +24,7 @@ void CGameOver::Init()
 }
 
 
-//播放游戏结束动画
+//更新
 void CGameOver::Play(float dt)
 {
 	if (m_iAllCount == ROW_NUM * COLUMN_NUM)
