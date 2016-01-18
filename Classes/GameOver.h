@@ -11,7 +11,7 @@ public:
 	//初始化
 	void Init();
 
-	//播放结束效果
+	//更新
 	void Play(float dt);
 
 	//获取当前要更新Brick的位置

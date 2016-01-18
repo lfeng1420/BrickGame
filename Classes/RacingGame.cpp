@@ -17,7 +17,7 @@ void CRacingGame::Init()
 
 }
 
-//游戏进行，返回值表示当前状态
+//更新
 void CRacingGame::Play(float dt)
 {
 	return ;

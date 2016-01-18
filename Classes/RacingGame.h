@@ -11,7 +11,7 @@ public:
 	//初始化
 	void Init();
 
-	//游戏进行，返回值表示当前状态
+	//更新
 	void Play(float dt);
 
 	//获取当前Brick状态

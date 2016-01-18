@@ -11,7 +11,7 @@ public:
 	//初始化
 	virtual void Init();
 
-	//游戏进行，返回值表示当前状态
+	//更新
 	virtual void Play(float dt);
 
 	//提供给每次更新单个Brick游戏（当前只有游戏结束）使用，获取当前改变的Brick行列索引

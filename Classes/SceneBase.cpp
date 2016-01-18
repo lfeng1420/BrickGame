@@ -10,7 +10,7 @@ CSceneBase::~CSceneBase()
 {
 }
 
-
+//更新
 void CSceneBase::Play(float dt)
 {
 
