@@ -71,7 +71,7 @@ SCENE_INDEX CChooseGame::GetSceneType()
 }
 
 //左
-void CChooseGame::OnLeft()
+void CChooseGame::OnLeftBtnPressed()
 {
 	if (m_iLevel > 0)
 	{
@@ -80,8 +80,9 @@ void CChooseGame::OnLeft()
 	}
 }
 
+
 //右
-void CChooseGame::OnRight()
+void CChooseGame::OnRightBtnPressed()
 {
 	if (m_iLevel < 10)
 	{
@@ -90,8 +91,9 @@ void CChooseGame::OnRight()
 	}
 }
 
+
 //上
-void CChooseGame::OnUp()
+void CChooseGame::OnUpBtnPressed()
 {
 	if (m_iSpeed < 10)
 	{
@@ -100,8 +102,9 @@ void CChooseGame::OnUp()
 	}
 }
 
+
 //下
-void CChooseGame::OnDown()
+void CChooseGame::OnDownPressed()
 {
 	if (m_iSpeed > 0)
 	{
@@ -110,8 +113,9 @@ void CChooseGame::OnDown()
 	}
 }
 
+
 //Fire
-void CChooseGame::OnFire()
+void CChooseGame::OnFireBtnPressed()
 {
 
 }
@@ -133,5 +137,5 @@ void CChooseGame::OnStart()
 	SET_INTVALUE("LIFE", 4);			//默认生命：4
 
 	//切换新游戏
-	m_pGameScene->ShowNewScene(GAMEIDX_TO_SCENEIDX[m_iGameIndex]);
+	m_pGameScene->RunScene(GAMEIDX_TO_SCENEIDX[m_iGameIndex]);
 }

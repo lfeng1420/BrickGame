@@ -20,6 +20,14 @@ void CRacingGame::Init()
 	//默认生命数为4
 	m_iLife = GET_INTVALUE("LIFE", 4);
 
+	//初始化当前分数
+	m_iScore = 0;
+
+	//更新界面
+	m_pGameScene->UpdateScore(m_iScore);
+	m_pGameScene->UpdateLevel(m_iLevel);
+	m_pGameScene->UpdateSmallBricks();
+
 	//默认顶部三行已有路标
 	m_iRoadSignCount = 3;
 
@@ -32,38 +40,79 @@ void CRacingGame::Init()
 	//游戏结束标记
 	m_bGameOver = false;
 
-	//初始化当前分数
-	m_iScore = 0;
-
+	//设置记录的最近两个赛车行位置
 	m_arrRowIdx[0] = -1;
 	m_arrRowIdx[1] = -1;
 
+	//初始化加速标记
+	m_bImproveSpeed = false;
+
+	//初始化爆炸显示/隐藏标记，默认显示
+	m_bShowBoom = true;
+
+	//初始化闪烁爆炸效果次数
+	m_iShowBoomCount = 0;
+
 	InitBrick();
-
-
 }
 
 //更新
 void CRacingGame::Play(float dt)
 {
-	RandSeed();
-
-	if (!m_bFirstShow)
+	if (!m_bGameOver)
 	{
-		m_fWaitTime += dt * 1000;
-		if (m_fWaitTime < DEFAULT_INTERVAL)
+		RandSeed();
+
+		//检查是否游戏结束
+		if (m_arrCurBrick[ROW_NUM - 4][m_iCarPos * 3 + 2] == 1 && m_arrCurBrick[ROW_NUM - 5][m_iCarPos * 3 + 2] == 1)
 		{
-			return;
+			m_bGameOver = true;
 		}
 
-		//重置时间
-		m_fWaitTime = 0;
-		UpdateBricks();
+		if (!m_bFirstShow)
+		{
+			m_fWaitTime += dt * 1000;
+			if (m_fWaitTime < GetWaitInterval())
+			{
+				return;
+			}
+
+			//重置时间
+			m_fWaitTime = 0;
+			UpdateBricks();
+		}
+		else
+		{
+			RandCreateCars();
+			m_bFirstShow = false;
+		}
 	}
 	else
 	{
-		RandCreateCars();
-		m_bFirstShow = false;
+		if (m_iShowBoomCount < BOOM_SHOWCOUNT)
+		{
+			m_bShowBoom = !m_bShowBoom;
+			if (m_bShowBoom)
+			{
+				++m_iShowBoomCount;
+			}
+		}
+		else
+		{
+			//检查是否有剩余生命，没有则返回游戏结束界面
+			if (m_iLife <= 0)
+			{
+				m_pGameScene->RunScene(SCENE_GAMEOVER);
+				return;
+			}
+			else
+			{
+				//设置剩余生命
+				SET_INTVALUE("LIFE", --m_iLife);
+				Init();
+				return;
+			}
+		}
 	}
 
 	m_pGameScene->UpdateBricks();
@@ -80,17 +129,27 @@ bool CRacingGame::GetBrickState(int iRowIndex, int iColIndex)
 	if (m_bGameOver)
 	{
 		//爆炸
-		if (   (iRowIndex == iCarRowIdx + 1 && iColIndex == iCarColIdx + 1)	//四个角
-			|| (iRowIndex == iCarRowIdx + 1 && iColIndex == iCarColIdx - 2)
-			|| (iRowIndex == iCarRowIdx - 2 && iColIndex == iCarColIdx + 1)
-			|| (iRowIndex == iCarRowIdx - 2 && iColIndex == iCarColIdx - 2)
-			|| (iRowIndex == iCarRowIdx		&& iColIndex == iCarColIdx - 1)	//中间
-			|| (iRowIndex == iCarRowIdx - 1 && iColIndex == iCarColIdx	  )
-			|| (iRowIndex == iCarRowIdx - 1 && iColIndex == iCarColIdx - 1)
-			|| (iRowIndex == iCarRowIdx		&& iColIndex == iCarColIdx	  )
+		if (iRowIndex - iColIndex == iCarRowIdx - iCarColIdx && iRowIndex >= iCarRowIdx - 2 && iRowIndex <= iCarRowIdx + 1)
+		{
+			return m_bShowBoom;
+		}
+
+		if (iRowIndex + iColIndex == iCarColIdx + iCarRowIdx - 1 && iRowIndex >= iCarRowIdx - 2 && iRowIndex <= iCarRowIdx + 1)
+		{
+			return m_bShowBoom;
+		}
+
+		if (   (iRowIndex == iCarRowIdx		&& iColIndex == iCarColIdx + 1)
+			|| (iRowIndex == iCarRowIdx - 1 && iColIndex == iCarColIdx + 1)
+			|| (iRowIndex == iCarRowIdx		&& iColIndex == iCarColIdx - 2)
+			|| (iRowIndex == iCarRowIdx - 1 && iColIndex == iCarColIdx - 2)
+			|| (iRowIndex == iCarRowIdx - 2 && iColIndex == iCarColIdx	  )
+			|| (iRowIndex == iCarRowIdx - 2 && iColIndex == iCarColIdx - 1)
+			|| (iRowIndex == iCarRowIdx + 1 && iColIndex == iCarColIdx	  )
+			|| (iRowIndex == iCarRowIdx + 1 && iColIndex == iCarColIdx - 1)
 			)
 		{
-			return true;
+			return false;
 		}
 	}
 	else
@@ -122,41 +181,68 @@ SCENE_INDEX CRacingGame::GetSceneType()
 
 
 //左
-void CRacingGame::OnLeft()
+void CRacingGame::OnLeftBtnPressed()
 {
-	if (m_iCarPos > 0)
+	if (m_iCarPos == 0)
 	{
-		--m_iCarPos;
-		m_pGameScene->UpdateBricks();
+		return;
 	}
+
+	//检查目标车道是否被占用
+	if (m_arrCurBrick[ROW_NUM - 2][(m_iCarPos - 1) * 3 + 2] == 1)
+	{
+		m_bGameOver = true;
+	}
+
+	--m_iCarPos;
+	m_pGameScene->UpdateBricks();
 }
+
 
 //右
-void CRacingGame::OnRight()
+void CRacingGame::OnRightBtnPressed()
 {
-	if (m_iCarPos < ROAD_COUNT - 1)
+	if (m_iCarPos == ROAD_COUNT - 1)
 	{
-		++m_iCarPos;
-		m_pGameScene->UpdateBricks();
+		return;
 	}
+
+	//检查目标车道是否被占用
+	if (m_arrCurBrick[ROW_NUM - 2][(m_iCarPos + 1) * 3 + 2] == 1)
+	{
+		m_bGameOver = true;
+	}
+
+	++m_iCarPos;
+	m_pGameScene->UpdateBricks();
 }
+
 
 //上
-void CRacingGame::OnUp()
+void CRacingGame::OnUpBtnPressed()
 {
 
 }
+
 
 //下
-void CRacingGame::OnDown()
+void CRacingGame::OnDownPressed()
 {
 
 }
 
+
 //Fire
-void CRacingGame::OnFire()
+void CRacingGame::OnFireBtnPressed()
 {
 	//加速
+	m_bImproveSpeed = true;
+}
+
+
+void CRacingGame::OnFireBtnReleased()
+{
+	m_bImproveSpeed = false;
 }
 
 
@@ -278,4 +364,38 @@ void CRacingGame::InitBrick()
 void CRacingGame::RandSeed()
 {
 	srand((unsigned)time(nullptr));
+}
+
+
+//获取等待时长
+int CRacingGame::GetWaitInterval()
+{
+	//游戏结束时播放结束动画
+	if (m_bGameOver)
+	{
+		return 80;
+	}
+
+	//加速
+	if (m_bImproveSpeed)
+	{
+		return 30;
+	}
+	else
+	{
+		//正常速度
+		return DEFAULT_INTERVAL - 13 * m_iSpeed;
+	}
+}
+
+
+//生命数
+bool CRacingGame::GetSmallBrickState(int iRowIndex, int iColIndex)
+{
+	if (iRowIndex == 0 && iColIndex < m_iLife)
+	{
+		return true;
+	}
+	
+	return false;
 }

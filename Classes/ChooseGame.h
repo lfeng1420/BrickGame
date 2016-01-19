@@ -20,20 +20,20 @@ public:
 	//获取游戏类型
 	SCENE_INDEX GetSceneType();
 
-	//左
-	void OnLeft();
+	//左按下
+	virtual void OnLeftBtnPressed();
 
-	//右
-	void OnRight();
+	//右按下
+	virtual void OnRightBtnPressed();
 
-	//上
-	void OnUp();
+	//上按下
+	virtual void OnUpBtnPressed();
 
-	//下
-	void OnDown();
+	//下按下
+	virtual void OnDownPressed();
 
-	//Fire
-	void OnFire();
+	//Fire按下
+	virtual void OnFireBtnPressed();
 
 	//开始
 	void OnStart();

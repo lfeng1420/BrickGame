@@ -17,23 +17,29 @@ public:
 	//获取当前Brick状态
 	bool GetBrickState(int iRowIndex, int iColIndex);
 
+	//生命数
+	bool GetSmallBrickState(int iRowIndex, int iColIndex);
+
 	//获取游戏类型
 	SCENE_INDEX GetSceneType();
 
-	//左
-	void OnLeft();
+	//左按下
+	virtual void OnLeftBtnPressed();
 
-	//右
-	void OnRight();
+	//右按下
+	virtual void OnRightBtnPressed();
 
-	//上
-	void OnUp();
+	//上按下
+	virtual void OnUpBtnPressed();
 
-	//下
-	void OnDown();
+	//下按下
+	virtual void OnDownPressed();
 
-	//Fire
-	void OnFire();
+	//Fire按下
+	virtual void OnFireBtnPressed();
+
+	//Fire释放
+	virtual void OnFireBtnReleased();
 
 	//---------------------    CSceneBase    ----------------------
 
@@ -50,6 +56,9 @@ private:
 	//获取随机值
 	void RandSeed();
 
+	//获取等待时长
+	int GetWaitInterval();
+
 private:
 	enum 
 	{
@@ -65,9 +74,11 @@ private:
 
 		ROW_DISTANCE = 11,			//超过11行生成新的赛车
 
-		DEFAULT_INTERVAL = 400,		//默认等待时间
+		DEFAULT_INTERVAL = 160,		//默认等待时间
 
-		CAR_DEFAULTROW = 2,		//默认所在行
+		CAR_DEFAULTROW = 2,			//默认所在行
+
+		BOOM_SHOWCOUNT = 6,			//闪烁显示爆炸效果次数
 	};
 
 
@@ -86,9 +97,15 @@ private:
 
 	bool m_bFirstShow;							//是否是第一次显示
 
-	int m_fWaitTime;							//等待更新间隔
+	int m_fWaitTime;							//当前等待更新时间
+
+	bool m_bImproveSpeed;						//是否加速
 
 	bool m_bGameOver;							//是否游戏结束
+
+	bool m_bShowBoom;							//爆炸显示/隐藏标记（闪烁）
+
+	int m_iShowBoomCount;						//闪烁显示爆炸效果次数
 
 	int m_iScore;								//分数
 

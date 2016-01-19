@@ -23,7 +23,7 @@ public:
 	void ResetBricks();
 
 	//显示新场景
-	void ShowNewScene(int iSceneIndex);
+	void RunScene(int iSceneIndex);
 
 	//更新分数显示
 	void UpdateScore(int iScore);
@@ -65,10 +65,10 @@ private:
 	void OnButtonEvent(Ref* pSender, Widget::TouchEventType enType, int iBtnIndex);
 
 	//按钮按下
-	void OnButtonDown(int iBtnIndex);
+	void OnButtonPressed(int iBtnIndex);
 
 	//按钮释放
-	void OnButtonUp(int iBtnIndex);
+	void OnButtonReleased(int iBtnIndex);
 	
 	//按钮按下 iBtnIndex 对应BTN_INDEX索引
 	void OnButtonClick(Ref* pSender, int iBtnIndex);

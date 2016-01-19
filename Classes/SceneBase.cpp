@@ -33,14 +33,12 @@ SCENE_INDEX CSceneBase::GetSceneType()
 //获取当前Brick状态
 bool CSceneBase::GetBrickState(int iRowIndex, int iColIndex)
 {
-	log("Error: %s Current function is not implemented in CSceneBase class.", __FUNCTION__);
 	return false;
 }
 
 
 bool CSceneBase::GetSmallBrickState(int iRowIndex, int iColIndex)
 {
-	log("Error: %s Current function is not implemented in CSceneBase class.", __FUNCTION__);
 	return false;
 }
 
@@ -53,38 +51,63 @@ void CSceneBase::Init()
 
 
 //左
-void CSceneBase::OnLeft()
+void CSceneBase::OnLeftBtnPressed()
 {
-	log("Error: %s Current function is not implemented in CSceneBase class.", __FUNCTION__);
+	
+}
+
+void CSceneBase::OnLeftBtnReleased()
+{
+	
 }
 
 //右
-void CSceneBase::OnRight()
+void CSceneBase::OnRightBtnPressed()
 {
-	log("Error: %s Current function is not implemented in CSceneBase class.", __FUNCTION__);
+	
+}
+
+void CSceneBase::OnRightBtnReleased()
+{
+
 }
 
 //上
-void CSceneBase::OnUp()
+void CSceneBase::OnUpBtnPressed()
 {
-	log("Error: %s Current function is not implemented in CSceneBase class.", __FUNCTION__);
+	
+}
+
+void CSceneBase::OnUpBtnReleased()
+{
+
 }
 
 //下
-void CSceneBase::OnDown()
+void CSceneBase::OnDownPressed()
 {
-	log("Error: %s Current function is not implemented in CSceneBase class.", __FUNCTION__);
+	
+}
+
+void CSceneBase::OnDownReleased()
+{
+
 }
 
 //Fire
-void CSceneBase::OnFire()
+void CSceneBase::OnFireBtnPressed()
 {
-	log("Error: %s Current function is not implemented in CSceneBase class.", __FUNCTION__);
+	
+}
+
+void CSceneBase::OnFireBtnReleased()
+{
+
 }
 
 //开始
 void CSceneBase::OnStart()
 {
-	log("Error: %s Current function is not implemented in CSceneBase class.", __FUNCTION__);
+	
 }
 

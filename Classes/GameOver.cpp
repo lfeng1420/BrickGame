@@ -29,7 +29,7 @@ void CGameOver::Play(float dt)
 {
 	if (m_iAllCount == ROW_NUM * COLUMN_NUM)
 	{
-		m_pGameScene->ShowNewScene(SCENE_CHOOSEGAME);
+		m_pGameScene->RunScene(SCENE_CHOOSEGAME);
 		return;
 	}
 
@@ -90,35 +90,40 @@ void CGameOver::GetCurPos(int& iRowIndex, int& iColIndex)
 }
 
 
-void CGameOver::OnLeft()
+void CGameOver::OnLeftBtnPressed()
 {
 	//结束播放，跳转下一个界面
 	m_iAllCount = ROW_NUM * COLUMN_NUM;
 }
 
-void CGameOver::OnRight()
+
+void CGameOver::OnRightBtnPressed()
 {
 	//结束播放，跳转下一个界面
 	m_iAllCount = ROW_NUM * COLUMN_NUM;
 }
 
-void CGameOver::OnDown()
+
+void CGameOver::OnDownPressed()
 {
 	//结束播放，跳转下一个界面
 	m_iAllCount = ROW_NUM * COLUMN_NUM;
 }
 
-void CGameOver::OnUp()
+
+void CGameOver::OnUpBtnPressed()
 {
 	//结束播放，跳转下一个界面
 	m_iAllCount = ROW_NUM * COLUMN_NUM;
 }
 
-void CGameOver::OnFire()
+
+void CGameOver::OnFireBtnPressed()
 {
 	//结束播放，跳转下一个界面
 	m_iAllCount = ROW_NUM * COLUMN_NUM;
 }
+
 
 void CGameOver::OnStart()
 {

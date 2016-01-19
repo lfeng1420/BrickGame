@@ -26,20 +26,35 @@ public:
 	//获取游戏类型
 	virtual SCENE_INDEX GetSceneType();
 
-	//左
-	virtual void OnLeft();
+	//左按下
+	virtual void OnLeftBtnPressed();
 
-	//右
-	virtual void OnRight();
+	//左释放
+	virtual void OnLeftBtnReleased();
 
-	//上
-	virtual void OnUp();
+	//右按下
+	virtual void OnRightBtnPressed();
 
-	//下
-	virtual void OnDown();
+	//右释放
+	virtual void OnRightBtnReleased();
 
-	//Fire
-	virtual void OnFire();
+	//上按下
+	virtual void OnUpBtnPressed();
+
+	//上释放
+	virtual void OnUpBtnReleased();
+
+	//下按下
+	virtual void OnDownPressed();
+
+	//下释放
+	virtual void OnDownReleased();
+
+	//Fire按下
+	virtual void OnFireBtnPressed();
+
+	//Fire释放
+	virtual void OnFireBtnReleased();
 
 	//开始
 	virtual void OnStart();

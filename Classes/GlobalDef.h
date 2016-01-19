@@ -3,6 +3,7 @@
 
 // ---- м╥нд╪Ч ----
 #include "cocos2d.h"
+#include "cocos-ext.h"
 #include "../cocos/ui/CocosGUI.h"
 
 #include <map>
@@ -13,6 +14,7 @@
 using namespace std;
 
 USING_NS_CC;
+USING_NS_CC_EXT;
 using namespace ui;
 
 
