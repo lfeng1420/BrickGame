@@ -29,6 +29,9 @@ void CRacingGame::Init()
 	//初始化第一次显示标记
 	m_bFirstShow = true;
 
+	//游戏结束标记
+	m_bGameOver = false;
+
 	InitBrick();
 }
 
@@ -55,9 +58,47 @@ void CRacingGame::Play(float dt)
 	m_pGameScene->UpdateBricks();
 }
 
+
 //获取当前Brick状态
 bool CRacingGame::GetBrickState(int iRowIndex, int iColIndex)
 {
+	//赛车位置
+	int iCarColIdx = m_iCarPos * 3 + 2;
+	int iCarRowIdx = ROW_NUM - 2;
+
+	if (m_bGameOver)
+	{
+		//爆炸
+		if (   (iRowIndex == iCarRowIdx + 1 && iColIndex == iCarColIdx + 1)	//四个角
+			|| (iRowIndex == iCarRowIdx + 1 && iColIndex == iCarColIdx - 2)
+			|| (iRowIndex == iCarRowIdx - 2 && iColIndex == iCarColIdx + 1)
+			|| (iRowIndex == iCarRowIdx - 2 && iColIndex == iCarColIdx - 2)
+			|| (iRowIndex == iCarRowIdx		&& iColIndex == iCarColIdx - 1)	//中间
+			|| (iRowIndex == iCarRowIdx - 1 && iColIndex == iCarColIdx	  )
+			|| (iRowIndex == iCarRowIdx - 1 && iColIndex == iCarColIdx - 1)
+			|| (iRowIndex == iCarRowIdx		&& iColIndex == iCarColIdx	  )
+			)
+		{
+			return true;
+		}
+	}
+	else
+	{
+		//画赛车自己
+		if (   (iRowIndex == iCarRowIdx		&& iColIndex == iCarColIdx	  )
+			|| (iRowIndex == iCarRowIdx + 1 && iColIndex == iCarColIdx	  )
+			|| (iRowIndex == iCarRowIdx + 1 && iColIndex == iCarColIdx - 1)
+			|| (iRowIndex == iCarRowIdx + 1 && iColIndex == iCarColIdx + 1)
+			|| (iRowIndex == iCarRowIdx - 1 && iColIndex == iCarColIdx - 1)
+			|| (iRowIndex == iCarRowIdx - 1 && iColIndex == iCarColIdx	  )
+			|| (iRowIndex == iCarRowIdx - 1 && iColIndex == iCarColIdx + 1)
+			|| (iRowIndex == iCarRowIdx - 2 && iColIndex == iCarColIdx	  )
+			)
+		{
+			return true;
+		}
+
+	}
 	return m_arrCurBrick[iRowIndex][iColIndex];
 }
 
@@ -72,13 +113,21 @@ SCENE_INDEX CRacingGame::GetSceneType()
 //左
 void CRacingGame::OnLeft()
 {
-
+	if (m_iCarPos > 0)
+	{
+		--m_iCarPos;
+		m_pGameScene->UpdateBricks();
+	}
 }
 
 //右
 void CRacingGame::OnRight()
 {
-
+	if (m_iCarPos < ROAD_MAXINDEX)
+	{
+		++m_iCarPos;
+		m_pGameScene->UpdateBricks();
+	}
 }
 
 //上
@@ -136,9 +185,25 @@ void CRacingGame::AddNewLine()
 
 
 //画赛车
-void CRacingGame::DrawCar(int iRoadIdx, int iRowIdx, bool bSelf)
+void CRacingGame::DrawCar(int iRoadIdx, int iRowIdx)
 {
+	//　口
+	//口口口
+	//　口		位置以该行为准
+	//口　口
+	int iColIdx = iRoadIdx * 3 + 1;
 
+	//第四行
+	m_arrCurBrick[iRowIdx + 1][iColIdx - 1] = 1;
+	m_arrCurBrick[iRowIdx + 1][iColIdx + 1] = 1;
+	//第三行
+	m_arrCurBrick[iRowIdx][iColIdx] = 1;
+	//第二行
+	m_arrCurBrick[iRowIdx - 1][iColIdx] = 1;
+	m_arrCurBrick[iRowIdx - 1][iColIdx - 1] = 1;
+	m_arrCurBrick[iRowIdx - 1][iColIdx + 1] = 1;
+	//第一行
+	m_arrCurBrick[iRowIdx - 2][iColIdx] = 1;
 }
 
 

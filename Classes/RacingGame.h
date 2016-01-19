@@ -41,8 +41,8 @@ private:
 	//添加新行
 	void AddNewLine();
 	
-	//画赛车，iRoadIdx表示车道索引，iRowIdx表示行索引，bSelf表示是否是自己
-	void DrawCar(int iRoadIdx, int iRowIdx, bool bSelf);
+	//画赛车，iRoadIdx表示车道索引，iRowIdx表示行索引
+	void DrawCar(int iRoadIdx, int iRowIdx);
 
 	//初始化Brick
 	void InitBrick();
@@ -82,5 +82,7 @@ private:
 	bool m_bFirstShow;							//是否是第一次显示
 
 	int m_fWaitTime;							//等待更新间隔
+
+	bool m_bGameOver;							//是否游戏结束
 };
 
