@@ -3,6 +3,7 @@
 
 // ---- м╥нд╪Ч ----
 #include "cocos2d.h"
+#include "../cocos/ui/CocosGUI.h"
 
 #include <map>
 #include <vector>
@@ -12,6 +13,7 @@
 using namespace std;
 
 USING_NS_CC;
+using namespace ui;
 
 
 #define CC_RETURN_FALSE_IF(exp) if (exp){return false;}

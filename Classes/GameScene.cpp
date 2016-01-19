@@ -118,7 +118,7 @@ void CGameScene::InitUI()
 	fCurY -= highScoreSize.height * 3 / 2;
 	pHighScore->setPosition(fCurX, fCurY + highScoreSize.height / 2);
 	this->addChild(pHighScore);
-
+	
 	//分数Label
 	m_pHighScoreLabel = Label::createWithTTF(ttfConfig, "000000", TextHAlignment::CENTER);
 	Size highScoreLabelSize = GET_CONTENTSIZE(m_pHighScoreLabel);
@@ -126,7 +126,7 @@ void CGameScene::InitUI()
 	m_pHighScoreLabel->setPosition(fCurX, fCurY + highScoreLabelSize.height / 2);
 	m_pHighScoreLabel->setTextColor(Color4B::BLACK);
 	this->addChild(m_pHighScoreLabel);
-
+	
 	//小方块序列
 	float fBrickScale = 0.7f;
 	float fPadding = 4;
@@ -160,7 +160,7 @@ void CGameScene::InitUI()
 	m_pSpeedLabel->setPosition(fCurX, fCurY + speedLabelSize.height / 2);
 	m_pSpeedLabel->setTextColor(Color4B::BLACK);
 	this->addChild(m_pSpeedLabel);
-
+	
 	//等级Label
 	m_pLevelLabel = Label::createWithTTF(ttfConfig, "10", TextHAlignment::CENTER);
 	Size levelLabelSize = GET_CONTENTSIZE(m_pLevelLabel);
@@ -191,53 +191,46 @@ void CGameScene::InitCotroller()
 {
 	//剩余高度，用于调整控制按钮位置
 	float fHeight = m_visibleSize.height - BRICK_HEIGHT * ROW_NUM;
-
+	
 	//上
-	auto upBtn = MenuItemSprite::create(
-		Sprite::create("lineDark01.png"),
-		Sprite::create("flatDark01.png"),
-		CC_CALLBACK_1(CGameScene::OnBtnClick, this, BTN_UP)
-		);
+	Button* upBtn = Button::create("lineDark01.png", "flatDark01.png");
+	upBtn->addTouchEventListener(CC_CALLBACK_2(CGameScene::OnButtonEvent, this, BTN_UP));
 	Size upBtnSize = upBtn->getContentSize();
 
 	//右
-	auto rightBtn = MenuItemSprite::create(
-		Sprite::create("lineDark02.png"),
-		Sprite::create("flatDark02.png"),
-		CC_CALLBACK_1(CGameScene::OnBtnClick, this, BTN_RIGHT)
-		);
+	Button* rightBtn = Button::create("lineDark02.png", "flatDark02.png");
+	rightBtn->addTouchEventListener(CC_CALLBACK_2(CGameScene::OnButtonEvent, this, BTN_RIGHT));
 	Size rightBtnSize = rightBtn->getContentSize();
 
 	//下
-	auto downBtn = MenuItemSprite::create(
-		Sprite::create("lineDark03.png"),
-		Sprite::create("flatDark03.png"),
-		CC_CALLBACK_1(CGameScene::OnBtnClick, this, BTN_DOWN)
-		);
+	Button* downBtn = Button::create("lineDark03.png", "flatDark03.png");
+	downBtn->addTouchEventListener(CC_CALLBACK_2(CGameScene::OnButtonEvent, this, BTN_DOWN));
 	Size downBtnSize = downBtn->getContentSize();
 
 	//左
-	auto leftBtn = MenuItemSprite::create(
-		Sprite::create("lineDark04.png"),
-		Sprite::create("flatDark04.png"),
-		CC_CALLBACK_1(CGameScene::OnBtnClick, this, BTN_LEFT)
-		);
+	Button* leftBtn = Button::create("lineDark03.png", "flatDark03.png");
+	leftBtn->addTouchEventListener(CC_CALLBACK_2(CGameScene::OnButtonEvent, this, BTN_LEFT));
 	Size leftBtnSize = leftBtn->getContentSize();
 
 	//Fire
-	auto fireBtn = MenuItemSprite::create(
-		Sprite::create("lineDark05.png"),
-		Sprite::create("flatDark05.png"),
-		CC_CALLBACK_1(CGameScene::OnBtnClick, this, BTN_FIRE)
-		);
+	Button* fireBtn = Button::create("lineDark03.png", "flatDark03.png");
+	fireBtn->addTouchEventListener(CC_CALLBACK_2(CGameScene::OnButtonEvent, this, BTN_FIRE));
 	Size fireBtnSize = fireBtn->getContentSize();
+
+	//设置位置
+	leftBtn->setPosition(Vec2(leftBtnSize.width, downBtnSize.height * 2.0f + 6));
+	rightBtn->setPosition(Vec2(leftBtnSize.width * 1.5f + rightBtnSize.width / 2 + 12, downBtnSize.height * 2.0f + 6));
+	downBtn->setPosition(Vec2(leftBtnSize.width * 1.5f + 6, downBtnSize.height * 1.5f));
+	upBtn->setPosition(Vec2(leftBtnSize.width * 1.5f + 6, downBtnSize.height * 2.0f + 12 + upBtnSize.height / 2));
+	fireBtn->setPosition(Vec2(m_visibleSize.width - (leftBtnSize.width * 1.5f + 6), downBtnSize.height * 2.0f + 6));
+
 
 	//开始
 	float fScale = 1.5f;
 	auto startBtn = MenuItemSprite::create(
 		Sprite::create("start_0.png"),
 		Sprite::create("start_1.png"),
-		CC_CALLBACK_1(CGameScene::OnBtnClick, this, BTN_START)
+		CC_CALLBACK_1(CGameScene::OnButtonClick, this, BTN_START)
 		);
 	startBtn->setScale(fScale);
 	Size startBtnSize = startBtn->getContentSize() * fScale;
@@ -257,11 +250,11 @@ void CGameScene::InitCotroller()
 
 	//声音开关
 	auto soundBtn = MenuItemToggle::createWithCallback(
-		CC_CALLBACK_1(CGameScene::OnBtnClick, this, BTN_SOUND),
+		CC_CALLBACK_1(CGameScene::OnButtonClick, this, BTN_SOUND),
 		bSoundState ? pSoundOffMenu : pSoundOnMenu,
 		bSoundState ? pSoundOnMenu : pSoundOffMenu,
 		nullptr
-	);
+		);
 	soundBtn->setScale(fScale);
 	Size soundBtnSize = soundBtn->getContentSize() * fScale;
 	log("%d", soundBtn);
@@ -270,22 +263,16 @@ void CGameScene::InitCotroller()
 	auto resetBtn = MenuItemSprite::create(
 		Sprite::create("reset_0.png"),
 		Sprite::create("reset_1.png"),
-		CC_CALLBACK_1(CGameScene::OnBtnClick, this, BTN_RESET)
+		CC_CALLBACK_1(CGameScene::OnButtonClick, this, BTN_RESET)
 		);
 	resetBtn->setScale(fScale);
 	Size resetBtnSize = resetBtn->getContentSize() * fScale;
-
-	leftBtn->setPosition(leftBtnSize.width, downBtnSize.height * 2.0f + 6);
-	rightBtn->setPosition(leftBtnSize.width * 1.5f + rightBtnSize.width / 2 + 12, downBtnSize.height * 2.0f + 6);
-	downBtn->setPosition(leftBtnSize.width * 1.5f + 6, downBtnSize.height * 1.5f);
-	upBtn->setPosition(leftBtnSize.width * 1.5f + 6, downBtnSize.height * 2.0f + 12 + upBtnSize.height / 2);
-	fireBtn->setPosition(m_visibleSize.width - (leftBtnSize.width * 1.5f + 6), downBtnSize.height * 2.0f + 6);
 
 	soundBtn->setPosition(m_visibleSize.width / 2, soundBtnSize.height / 2);
 	startBtn->setPosition(m_visibleSize.width / 2 - 20 - soundBtnSize.width / 2 - startBtnSize.width / 2, soundBtnSize.height / 2);
 	resetBtn->setPosition(m_visibleSize.width / 2 + 20 + soundBtnSize.width / 2 + resetBtnSize.width / 2, soundBtnSize.height / 2);
 
-	auto menu = Menu::create(leftBtn, upBtn, rightBtn, downBtn, fireBtn, soundBtn, startBtn, resetBtn, NULL);
+	auto menu = Menu::create(soundBtn, startBtn, resetBtn, NULL);
 	float fCurHeight = downBtnSize.height * 2.0f + 12 + upBtnSize.height;
 	menu->setPosition(Vec2(0, (fHeight - fCurHeight) / 3));
 	this->addChild(menu);
@@ -377,7 +364,30 @@ void CGameScene::ResetBricks()
 
 
 //按钮响应
-void CGameScene::OnBtnClick(Ref* pSender, int iBtnIndex)
+void CGameScene::OnButtonEvent(Ref* pSender, Widget::TouchEventType enType, int iBtnIndex)
+{
+	switch (enType)
+	{
+	case Widget::TouchEventType::BEGAN:
+		OnButtonDown(iBtnIndex);
+		break;
+
+	case Widget::TouchEventType::MOVED:
+		break;
+
+	case Widget::TouchEventType::ENDED:
+		OnButtonUp(iBtnIndex);
+		break;
+
+	case Widget::TouchEventType::CANCELED:
+		OnButtonUp(iBtnIndex);
+		break;
+	}
+}
+
+
+//按钮按下
+void CGameScene::OnButtonDown(int iBtnIndex)
 {
 	switch (iBtnIndex)
 	{
@@ -400,7 +410,43 @@ void CGameScene::OnBtnClick(Ref* pSender, int iBtnIndex)
 	case BTN_FIRE:
 		m_mapGameObj[m_iSceneIndex]->OnFire();
 		break;
+	}
+}
 
+
+//按钮释放
+void CGameScene::OnButtonUp(int iBtnIndex)
+{
+	switch (iBtnIndex)
+	{
+	case BTN_DOWN:
+		m_mapGameObj[m_iSceneIndex]->OnDown();
+		break;
+
+	case BTN_LEFT:
+		m_mapGameObj[m_iSceneIndex]->OnLeft();
+		break;
+
+	case BTN_RIGHT:
+		m_mapGameObj[m_iSceneIndex]->OnRight();
+		break;
+
+	case BTN_UP:
+		m_mapGameObj[m_iSceneIndex]->OnUp();
+		break;
+
+	case BTN_FIRE:
+		m_mapGameObj[m_iSceneIndex]->OnFire();
+		break;
+	}
+}
+
+
+//按钮按下 iBtnIndex 对应BTN_INDEX索引
+void CGameScene::OnButtonClick(Ref* pSender, int iBtnIndex)
+{
+	switch (iBtnIndex)
+	{
 	case BTN_START:
 		m_mapGameObj[m_iSceneIndex]->OnStart();
 		break;

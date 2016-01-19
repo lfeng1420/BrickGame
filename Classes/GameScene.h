@@ -62,7 +62,16 @@ private:
 	void update(float dt);
 
 	//按钮响应  iBtnIndex 对应BTN_INDEX索引
-	void OnBtnClick(Ref* pSender, int iBtnIndex);
+	void OnButtonEvent(Ref* pSender, Widget::TouchEventType enType, int iBtnIndex);
+
+	//按钮按下
+	void OnButtonDown(int iBtnIndex);
+
+	//按钮释放
+	void OnButtonUp(int iBtnIndex);
+	
+	//按钮按下 iBtnIndex 对应BTN_INDEX索引
+	void OnButtonClick(Ref* pSender, int iBtnIndex);
 
 private:
 	typedef map<int, CSceneBase*> TMAP_GAMEOBJ;

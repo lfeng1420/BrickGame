@@ -32,29 +32,40 @@ void CRacingGame::Init()
 	//游戏结束标记
 	m_bGameOver = false;
 
+	//初始化当前分数
+	m_iScore = 0;
+
+	m_arrRowIdx[0] = -1;
+	m_arrRowIdx[1] = -1;
+
 	InitBrick();
+
+
 }
 
 //更新
 void CRacingGame::Play(float dt)
 {
+	RandSeed();
+
 	if (!m_bFirstShow)
 	{
 		m_fWaitTime += dt * 1000;
-		if (m_fWaitTime < 500)
+		if (m_fWaitTime < DEFAULT_INTERVAL)
 		{
 			return;
 		}
 
 		//重置时间
 		m_fWaitTime = 0;
+		UpdateBricks();
 	}
 	else
 	{
+		RandCreateCars();
 		m_bFirstShow = false;
 	}
-	
-	AddNewLine();
+
 	m_pGameScene->UpdateBricks();
 }
 
@@ -123,7 +134,7 @@ void CRacingGame::OnLeft()
 //右
 void CRacingGame::OnRight()
 {
-	if (m_iCarPos < ROAD_MAXINDEX)
+	if (m_iCarPos < ROAD_COUNT - 1)
 	{
 		++m_iCarPos;
 		m_pGameScene->UpdateBricks();
@@ -145,12 +156,12 @@ void CRacingGame::OnDown()
 //Fire
 void CRacingGame::OnFire()
 {
-
+	//加速
 }
 
 
-//添加新行
-void CRacingGame::AddNewLine()
+//更新Brick，添加新行
+void CRacingGame::UpdateBricks()
 {
 	//将上一行挪到下一行
 	for (int i = ROW_NUM - 1; i >= 1; --i)
@@ -181,29 +192,51 @@ void CRacingGame::AddNewLine()
 	}
 
 	++m_iRoadSignCount;
+
+	m_arrRowIdx[0] += m_arrRowIdx[0] > 0 ? 1 : 0;
+	m_arrRowIdx[1] += m_arrRowIdx[1] > 0 ? 1 : 0;
+	if (m_arrRowIdx[1] == ROW_DISTANCE * 2)
+	{
+		m_iScore += 100;
+		m_pGameScene->UpdateScore(m_iScore);
+	}
+	
+	if (m_arrRowIdx[0] == 2 + ROW_DISTANCE)
+	{
+		RandCreateCars();
+	}
 }
 
 
 //画赛车
-void CRacingGame::DrawCar(int iRoadIdx, int iRowIdx)
+void CRacingGame::RandCreateCars()
 {
 	//　口
 	//口口口
 	//　口		位置以该行为准
 	//口　口
-	int iColIdx = iRoadIdx * 3 + 1;
 
-	//第四行
-	m_arrCurBrick[iRowIdx + 1][iColIdx - 1] = 1;
-	m_arrCurBrick[iRowIdx + 1][iColIdx + 1] = 1;
-	//第三行
-	m_arrCurBrick[iRowIdx][iColIdx] = 1;
-	//第二行
-	m_arrCurBrick[iRowIdx - 1][iColIdx] = 1;
-	m_arrCurBrick[iRowIdx - 1][iColIdx - 1] = 1;
-	m_arrCurBrick[iRowIdx - 1][iColIdx + 1] = 1;
-	//第一行
-	m_arrCurBrick[iRowIdx - 2][iColIdx] = 1;
+	int iCount = rand() % CAR_MAXNUM + 1;
+	for (int i = 0; i < iCount; ++i)
+	{
+		int iRoadIdx = rand() % ROAD_COUNT;
+		int iColIdx = iRoadIdx * 3 + 2;
+
+		//第四行
+		m_arrCurBrick[CAR_DEFAULTROW + 1][iColIdx - 1] = 1;
+		m_arrCurBrick[CAR_DEFAULTROW + 1][iColIdx + 1] = 1;
+		//第三行
+		m_arrCurBrick[CAR_DEFAULTROW][iColIdx] = 1;
+		//第二行
+		m_arrCurBrick[CAR_DEFAULTROW - 1][iColIdx] = 1;
+		m_arrCurBrick[CAR_DEFAULTROW - 1][iColIdx - 1] = 1;
+		m_arrCurBrick[CAR_DEFAULTROW - 1][iColIdx + 1] = 1;
+		//第一行
+		m_arrCurBrick[CAR_DEFAULTROW - 2][iColIdx] = 1;
+	}
+
+	m_arrRowIdx[1] = m_arrRowIdx[0];
+	m_arrRowIdx[0] = CAR_DEFAULTROW;
 }
 
 
@@ -237,20 +270,12 @@ void CRacingGame::InitBrick()
 	}
 
 	//随机自己赛车的位置
-	srand((unsigned)time(nullptr));
 	m_iCarPos = rand() % 4;
 }
 
 
-//是否游戏结束
-bool CRacingGame::IsGameOver()
+//获取随机值
+void CRacingGame::RandSeed()
 {
-	return false;
-}
-
-
-//更新Brick
-void CRacingGame::UpdateBricks()
-{
-
+	srand((unsigned)time(nullptr));
 }

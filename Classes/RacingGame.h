@@ -38,31 +38,36 @@ public:
 	//---------------------    CSceneBase    ----------------------
 
 private:
-	//添加新行
-	void AddNewLine();
+	//更新Brick，添加新行
+	void UpdateBricks();
 	
 	//画赛车，iRoadIdx表示车道索引，iRowIdx表示行索引
-	void DrawCar(int iRoadIdx, int iRowIdx);
+	void RandCreateCars();
 
 	//初始化Brick
 	void InitBrick();
 
-	//是否游戏结束
-	bool IsGameOver();
-
-	//更新Brick
-	void UpdateBricks();
+	//获取随机值
+	void RandSeed();
 
 private:
 	enum 
 	{
-		CAR_MAXNUM = 3,		//同时出现的车最大数量
+		CAR_MAXNUM = 3,				//同时出现的车最大数量
 
-		ROAD_MAXINDEX = 3,	//车道最大索引，从0开始
+		ROAD_COUNT = 4,				//车道数量
 
-		CAR_WIDTH = 3,		//车宽度
+		CAR_WIDTH = 3,				//车宽度
 
-		CAR_HEIGHT = 4,		//车高度
+		CAR_HEIGHT = 4,				//车高度
+
+		GAMEOVER_REMAINTIME = 3000,	//游戏结束画面持续3秒
+
+		ROW_DISTANCE = 11,			//超过11行生成新的赛车
+
+		DEFAULT_INTERVAL = 400,		//默认等待时间
+
+		CAR_DEFAULTROW = 2,		//默认所在行
 	};
 
 
@@ -84,5 +89,9 @@ private:
 	int m_fWaitTime;							//等待更新间隔
 
 	bool m_bGameOver;							//是否游戏结束
+
+	int m_iScore;								//分数
+
+	int m_arrRowIdx[2];							//行记录
 };
 
