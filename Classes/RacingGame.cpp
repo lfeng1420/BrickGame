@@ -183,7 +183,7 @@ SCENE_INDEX CRacingGame::GetSceneType()
 //左
 void CRacingGame::OnLeftBtnPressed()
 {
-	if (m_iCarPos == 0)
+	if (m_bGameOver || m_iCarPos == 0)
 	{
 		return;
 	}
@@ -202,7 +202,7 @@ void CRacingGame::OnLeftBtnPressed()
 //右
 void CRacingGame::OnRightBtnPressed()
 {
-	if (m_iCarPos == ROAD_COUNT - 1)
+	if (m_bGameOver || m_iCarPos == ROAD_COUNT - 1)
 	{
 		return;
 	}
@@ -373,7 +373,7 @@ int CRacingGame::GetWaitInterval()
 	//游戏结束时播放结束动画
 	if (m_bGameOver)
 	{
-		return 80;
+		return DEFAULT_INTERVAL * 3;
 	}
 
 	//加速

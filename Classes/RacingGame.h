@@ -78,7 +78,7 @@ private:
 
 		CAR_DEFAULTROW = 2,			//默认所在行
 
-		BOOM_SHOWCOUNT = 6,			//闪烁显示爆炸效果次数
+		BOOM_SHOWCOUNT = 12,		//闪烁显示爆炸效果次数
 	};
 
 
