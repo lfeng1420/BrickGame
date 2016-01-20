@@ -112,5 +112,7 @@ private:
 	Label* m_pSpeedLabel;								//速度
 
 	Sprite* m_pPauseSpr;								//暂停图标
+
+	bool m_bGamePause;									//暂停标志
 };
 

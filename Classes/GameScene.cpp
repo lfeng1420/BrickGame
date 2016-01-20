@@ -29,7 +29,7 @@ Scene* CGameScene::CreateScene()
 
 bool CGameScene::init()
 {
-	SpriteFrameCache::getInstance()->addSpriteFramesWithFile("Brick.plist");
+	SpriteFrameCache::getInstance()->addSpriteFramesWithFile("Plists/Brick.plist");
 
 	CC_RETURN_FALSE_IF(!LayerColor::initWithColor(Color4B::WHITE));
 
@@ -60,6 +60,9 @@ bool CGameScene::init()
 void CGameScene::InitData()
 {
 	m_visibleSize = Director::getInstance()->getVisibleSize();
+	
+	//初始化暂停标记
+	m_bGamePause = false;
 }
 
 
@@ -73,7 +76,7 @@ void CGameScene::InitBrick()
 		for (int j = 0; j < COLUMN_NUM; ++j)
 		{
 			m_arrBrickState[i][j] = false;
-			m_pArrBrick[i][j] = Sprite::create("empty.png");
+			m_pArrBrick[i][j] = Sprite::createWithSpriteFrameName("empty.png");
 			m_pArrBrick[i][j]->setPosition(fCurX + BRICK_WIDTH * 1.0f / 2, fCurY - BRICK_HEIGHT * 1.0f / 2);
 			this->addChild(m_pArrBrick[i][j]);
 
@@ -184,6 +187,9 @@ void CGameScene::InitUI()
 	fCurY -= pauseSize.height;
 	m_pPauseSpr->setPosition(fCurX, fCurY + pauseSize.height / 2);
 	this->addChild(m_pPauseSpr);
+
+	//默认非暂停状态
+	m_pPauseSpr->setVisible(m_bGamePause);
 }
 
 
@@ -193,27 +199,27 @@ void CGameScene::InitCotroller()
 	float fHeight = m_visibleSize.height - BRICK_HEIGHT * ROW_NUM;
 	
 	//上
-	Button* pUpBtn = Button::create("lineDark01.png", "flatDark01.png");
+	Button* pUpBtn = Button::create("up_0.png", "up_1.png");
 	pUpBtn->addTouchEventListener(CC_CALLBACK_2(CGameScene::OnButtonEvent, this, BTN_UP));
 	Size upBtnSize = pUpBtn->getContentSize();
 
 	//右
-	Button* pRightBtn = Button::create("lineDark02.png", "flatDark02.png");
+	Button* pRightBtn = Button::create("right_0.png", "right_1.png");
 	pRightBtn->addTouchEventListener(CC_CALLBACK_2(CGameScene::OnButtonEvent, this, BTN_RIGHT));
 	Size rightBtnSize = pRightBtn->getContentSize();
 
 	//下
-	Button* pDownBtn = Button::create("lineDark03.png", "flatDark03.png");
+	Button* pDownBtn = Button::create("down_0.png", "down_1.png");
 	pDownBtn->addTouchEventListener(CC_CALLBACK_2(CGameScene::OnButtonEvent, this, BTN_DOWN));
 	Size downBtnSize = pDownBtn->getContentSize();
 
 	//左
-	Button* pLeftBtn = Button::create("lineDark04.png", "flatDark04.png");
+	Button* pLeftBtn = Button::create("left_0.png", "left_1.png");
 	pLeftBtn->addTouchEventListener(CC_CALLBACK_2(CGameScene::OnButtonEvent, this, BTN_LEFT));
 	Size leftBtnSize = pLeftBtn->getContentSize();
 
 	//Fire
-	Button* pFireBtn = Button::create("lineDark05.png", "flatDark05.png");
+	Button* pFireBtn = Button::create("fire_0.png", "fire_1.png");
 	pFireBtn->addTouchEventListener(CC_CALLBACK_2(CGameScene::OnButtonEvent, this, BTN_FIRE));
 	Size fireBtnSize = pFireBtn->getContentSize();
 
@@ -370,6 +376,12 @@ void CGameScene::ResetBricks()
 //按钮响应
 void CGameScene::OnButtonEvent(Ref* pSender, Widget::TouchEventType enType, int iBtnIndex)
 {
+	//如果暂停，则不响应按钮事件
+	if (m_bGamePause)
+	{
+		return;
+	}
+
 	switch (enType)
 	{
 	case Widget::TouchEventType::BEGAN:
@@ -452,7 +464,24 @@ void CGameScene::OnButtonClick(Ref* pSender, int iBtnIndex)
 	switch (iBtnIndex)
 	{
 	case BTN_START:
-		m_mapGameObj[m_iSceneIndex]->OnStart();
+		if (m_iSceneIndex < SCENE_RACING)
+		{
+			m_mapGameObj[m_iSceneIndex]->OnStart();
+		}
+		else
+		{
+			m_bGamePause = !m_bGamePause;
+			m_pPauseSpr->setVisible(m_bGamePause);
+			//如果暂停，则停止更新
+			if (m_bGamePause)
+			{
+				this->unscheduleUpdate();
+			}
+			else
+			{
+				this->scheduleUpdate();
+			}
+		}
 		break;
 
 	case BTN_SOUND:
