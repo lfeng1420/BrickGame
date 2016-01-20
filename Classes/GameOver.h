@@ -21,19 +21,19 @@ public:
 	SCENE_INDEX GetSceneType();
 
 	//左按下
-	virtual void OnLeftBtnPressed();
+	void OnLeftBtnPressed();
 
 	//右按下
-	virtual void OnRightBtnPressed();
+	void OnRightBtnPressed();
 
 	//上按下
-	virtual void OnUpBtnPressed();
+	void OnUpBtnPressed();
 
 	//下按下
-	virtual void OnDownPressed();
+	void OnDownPressed();
 
 	//Fire按下
-	virtual void OnFireBtnPressed();
+	void OnFireBtnPressed();
 
 	//开始
 	void OnStart();
