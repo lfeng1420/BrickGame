@@ -38,5 +38,8 @@ public:
 	void OnFireBtnPressed();
 
 	//---------------------    CSceneBase    ----------------------
+
+private:
+	
 };
 

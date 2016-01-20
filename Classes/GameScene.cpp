@@ -3,6 +3,7 @@
 #include "DataManager.h"
 #include "ChooseGame.h"
 #include "RacingGame.h"
+#include "FroggerGame.h"
 
 CGameScene::CGameScene() : m_iSceneIndex(SCENE_GAMEOVER)
 {
@@ -49,6 +50,9 @@ bool CGameScene::init()
 
 	//创建游戏对象
 	CreateGameObj();
+
+	//开始场景
+	RunScene(SCENE_GAMEOVER);
 
 	//帧更新
 	this->scheduleUpdate();
@@ -300,18 +304,19 @@ void CGameScene::CreateGameObj()
 {
 	//游戏结束
 	CGameOver* pGameOver = new CGameOver(this);
-	pGameOver->Init();
 	m_mapGameObj[SCENE_GAMEOVER] = pGameOver;
 
 	//选择游戏
 	CChooseGame* pChooseGame = new CChooseGame(this);
-	pChooseGame->Init();
 	m_mapGameObj[SCENE_CHOOSEGAME] = pChooseGame;
 
 	//赛车
 	CRacingGame* pRacingGame = new CRacingGame(this);
-	pRacingGame->Init();
 	m_mapGameObj[SCENE_RACING] = pRacingGame;
+
+	//青蛙过河
+	CFroggerGame* pFroggerGame = new CFroggerGame(this);
+	m_mapGameObj[SCENE_FROGGER] = pFroggerGame;
 }
 
 

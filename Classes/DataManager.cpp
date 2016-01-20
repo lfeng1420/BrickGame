@@ -43,6 +43,10 @@ bool CDataManager::LoadGameAnim()
 		"Anims/b1_2.txt",
 		"Anims/b1_3.txt",
 		"Anims/b1_4.txt",
+		"Anims/e1_1.txt",
+		"Anims/e1_2.txt",
+		"Anims/e1_3.txt",
+		"Anims/e1_4.txt",
 	};
 
 	for (int i = 0; i < GAME_NUM * ANIM_NUM; ++i)

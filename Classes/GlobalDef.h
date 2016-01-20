@@ -118,6 +118,8 @@ enum SCENE_INDEX
 
 	SCENE_RACING,				//游戏界面 - 赛车
 
+	SCENE_FROGGER,				//游戏界面 - 青蛙过河
+
 	SCENE_MAX,					//最大值
 };
 
@@ -126,6 +128,10 @@ enum GAME_LIST
 	GAME_INVALID = -1,			//无效
 
 	GAME_RACING,				//赛车
+
+	GAME_FROGGER,				//青蛙过河
+
+	GAME_MAX,					//最大值
 };
 
 enum GAME_STATE

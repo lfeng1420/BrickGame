@@ -45,6 +45,9 @@
     <ClCompile Include="..\Classes\RacingGame.cpp">
       <Filter>Classes\Scene</Filter>
     </ClCompile>
+    <ClCompile Include="..\Classes\FroggerGame.cpp">
+      <Filter>Classes\Scene</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="main.h">
@@ -72,6 +75,9 @@
       <Filter>Classes\Scene\Base</Filter>
     </ClInclude>
     <ClInclude Include="..\Classes\RacingGame.h">
+      <Filter>Classes\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\FroggerGame.h">
       <Filter>Classes\Scene</Filter>
     </ClInclude>
   </ItemGroup>

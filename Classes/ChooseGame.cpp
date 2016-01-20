@@ -37,7 +37,7 @@ void CChooseGame::Play(float dt)
 	}
 	else
 	{
-		if (m_iCurTime < 1000)
+		if (m_iCurTime < REFRESH_INTERVAL)
 		{
 			return;
 		}
@@ -117,7 +117,14 @@ void CChooseGame::OnDownPressed()
 //Fire
 void CChooseGame::OnFireBtnPressed()
 {
+	if (++m_iGameIndex >= GAME_MAX)
+	{
+		m_iGameIndex = 0;
+	}
 
+	m_iAnimIndex = 0;
+
+	Play(REFRESH_INTERVAL);
 }
 
 
@@ -125,6 +132,7 @@ void CChooseGame::OnFireBtnPressed()
 const int GAMEIDX_TO_SCENEIDX[] = 
 {
 	SCENE_RACING,	//对应GAME_RACING
+	SCENE_FROGGER,	//对应GAME_FROGGER
 };
 
 //开始
