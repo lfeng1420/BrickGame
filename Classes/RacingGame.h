@@ -50,6 +50,9 @@ private:
 	//画赛车，iRoadIdx表示车道索引，iRowIdx表示行索引
 	void RandCreateCars();
 
+	//初始化数据，与Init不同，Init在切换到该场景时调用，InitData在重置时调用
+	void InitData();
+
 	//初始化Brick
 	void InitBrick();
 
@@ -78,7 +81,13 @@ private:
 
 		CAR_DEFAULTROW = 2,			//默认所在行
 
-		BOOM_SHOWCOUNT = 12,		//闪烁显示爆炸效果次数
+		BOOM_SHOWCOUNT = 10,		//闪烁显示爆炸效果次数
+
+		GAMEPASS_ADDSCORE = 100,	//通过时增加100
+
+		GAMEPASS_ADDCOUNT = 10,		//增加10次
+
+		GAMEPASS_CARCOUNT = 16,		//经过的赛车数达到16时通过
 	};
 
 
@@ -95,13 +104,15 @@ private:
 
 	int m_iRoadSignCount;						//路标行数
 
+	int m_iPassCarCount;						//经过的赛车数量
+
 	bool m_bFirstShow;							//是否是第一次显示
 
 	int m_fWaitTime;							//当前等待更新时间
 
 	bool m_bImproveSpeed;						//是否加速
 
-	bool m_bGameOver;							//是否游戏结束
+	GAME_STATE m_enGameState;					//游戏状态
 
 	bool m_bShowBoom;							//爆炸显示/隐藏标记（闪烁）
 
@@ -110,5 +121,7 @@ private:
 	int m_iScore;								//分数
 
 	int m_arrRowIdx[2];							//行记录
+
+	int m_iAddScoreCount;						//当前添加次数
 };
 

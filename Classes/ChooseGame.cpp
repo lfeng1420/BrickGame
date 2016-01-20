@@ -84,7 +84,7 @@ void CChooseGame::OnLeftBtnPressed()
 //ср
 void CChooseGame::OnRightBtnPressed()
 {
-	if (m_iLevel < 10)
+	if (m_iLevel < LEVEL_MAX)
 	{
 		++m_iLevel;
 		m_pGameScene->UpdateLevel(m_iLevel);
@@ -95,7 +95,7 @@ void CChooseGame::OnRightBtnPressed()
 //ио
 void CChooseGame::OnUpBtnPressed()
 {
-	if (m_iSpeed < 10)
+	if (m_iSpeed < SPEED_MAX)
 	{
 		++m_iSpeed;
 		m_pGameScene->UpdateSpeed(m_iSpeed);

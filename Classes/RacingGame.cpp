@@ -14,19 +14,29 @@ CRacingGame::~CRacingGame()
 //初始化
 void CRacingGame::Init()
 {
+	//获取在选择游戏界面设置的速度和等级
 	m_iSpeed = GET_INTVALUE("SPEED", 0);
 	m_iLevel = GET_INTVALUE("LEVEL", 0);
 
 	//默认生命数为4
 	m_iLife = GET_INTVALUE("LIFE", 4);
 
-	//初始化当前分数
+	//初始化当前分数，经过的赛车数量
 	m_iScore = 0;
 
-	//更新界面
+	//更新界面，分数、等级和生命
 	m_pGameScene->UpdateScore(m_iScore);
 	m_pGameScene->UpdateLevel(m_iLevel);
 	m_pGameScene->UpdateSmallBricks();
+
+	InitData();
+}
+
+
+void CRacingGame::InitData()
+{
+	//初始化经过的赛车数量
+	m_iPassCarCount = 0;
 
 	//默认顶部三行已有路标
 	m_iRoadSignCount = 3;
@@ -37,8 +47,8 @@ void CRacingGame::Init()
 	//初始化第一次显示标记
 	m_bFirstShow = true;
 
-	//游戏结束标记
-	m_bGameOver = false;
+	//初始化游戏状态
+	m_enGameState = GAMESTATE_RUNNING;
 
 	//设置记录的最近两个赛车行位置
 	m_arrRowIdx[0] = -1;
@@ -59,35 +69,36 @@ void CRacingGame::Init()
 //更新
 void CRacingGame::Play(float dt)
 {
-	if (!m_bGameOver)
+	RandSeed();
+
+	//检查是否游戏结束
+	if (m_arrCurBrick[ROW_NUM - 4][m_iCarPos * 3 + 2] == 1 && m_arrCurBrick[ROW_NUM - 5][m_iCarPos * 3 + 2] == 1)
 	{
-		RandSeed();
+		m_enGameState = GAMESTATE_OVER;
+	}
 
-		//检查是否游戏结束
-		if (m_arrCurBrick[ROW_NUM - 4][m_iCarPos * 3 + 2] == 1 && m_arrCurBrick[ROW_NUM - 5][m_iCarPos * 3 + 2] == 1)
+	if (!m_bFirstShow)
+	{
+		m_fWaitTime += dt * 1000;
+		if (m_fWaitTime < GetWaitInterval())
 		{
-			m_bGameOver = true;
+			return;
 		}
 
-		if (!m_bFirstShow)
-		{
-			m_fWaitTime += dt * 1000;
-			if (m_fWaitTime < GetWaitInterval())
-			{
-				return;
-			}
-
-			//重置时间
-			m_fWaitTime = 0;
-			UpdateBricks();
-		}
-		else
-		{
-			RandCreateCars();
-			m_bFirstShow = false;
-		}
+		//重置时间
+		m_fWaitTime = 0;
 	}
 	else
+	{
+		RandCreateCars();
+		m_bFirstShow = false;
+	}
+
+	if (m_enGameState == GAMESTATE_RUNNING)
+	{
+		UpdateBricks();
+	}
+	else if (m_enGameState == GAMESTATE_OVER)
 	{
 		if (m_iShowBoomCount < BOOM_SHOWCOUNT)
 		{
@@ -105,13 +116,42 @@ void CRacingGame::Play(float dt)
 				m_pGameScene->RunScene(SCENE_GAMEOVER);
 				return;
 			}
-			else
+
+			//设置剩余生命
+			--m_iLife;
+			m_pGameScene->UpdateSmallBricks();
+
+			//重置数据
+			InitData();
+		}
+	}
+	else if(m_enGameState == GAMESTATE_PASS)
+	{
+		if (m_iAddScoreCount < GAMEPASS_ADDCOUNT)
+		{
+			++m_iAddScoreCount;
+			m_iScore += GAMEPASS_ADDSCORE;
+			m_pGameScene->UpdateScore(m_iScore);
+			return;
+		}
+		else
+		{
+			//更新速度和等级
+			if (++m_iSpeed >= 10)
 			{
-				//设置剩余生命
-				SET_INTVALUE("LIFE", --m_iLife);
-				Init();
-				return;
+				m_iSpeed = 0;
+				if (++m_iLevel >= 10)
+				{
+					m_iLevel = 0;
+				}
 			}
+			
+			//更新显示
+			m_pGameScene->UpdateLevel(m_iLevel);
+			m_pGameScene->UpdateSpeed(m_iSpeed);
+
+			//重置数据
+			InitData();
 		}
 	}
 
@@ -126,7 +166,7 @@ bool CRacingGame::GetBrickState(int iRowIndex, int iColIndex)
 	int iCarColIdx = m_iCarPos * 3 + 2;
 	int iCarRowIdx = ROW_NUM - 2;
 
-	if (m_bGameOver)
+	if (m_enGameState == GAMESTATE_OVER)
 	{
 		//爆炸
 		if (iRowIndex - iColIndex == iCarRowIdx - iCarColIdx && iRowIndex >= iCarRowIdx - 2 && iRowIndex <= iCarRowIdx + 1)
@@ -183,7 +223,7 @@ SCENE_INDEX CRacingGame::GetSceneType()
 //左
 void CRacingGame::OnLeftBtnPressed()
 {
-	if (m_bGameOver || m_iCarPos == 0)
+	if (m_enGameState == GAMESTATE_OVER || m_iCarPos == 0)
 	{
 		return;
 	}
@@ -191,7 +231,7 @@ void CRacingGame::OnLeftBtnPressed()
 	//检查目标车道是否被占用
 	if (m_arrCurBrick[ROW_NUM - 2][(m_iCarPos - 1) * 3 + 2] == 1)
 	{
-		m_bGameOver = true;
+		m_enGameState = GAMESTATE_OVER;
 	}
 
 	--m_iCarPos;
@@ -202,7 +242,7 @@ void CRacingGame::OnLeftBtnPressed()
 //右
 void CRacingGame::OnRightBtnPressed()
 {
-	if (m_bGameOver || m_iCarPos == ROAD_COUNT - 1)
+	if (m_enGameState == GAMESTATE_OVER || m_iCarPos == ROAD_COUNT - 1)
 	{
 		return;
 	}
@@ -210,7 +250,7 @@ void CRacingGame::OnRightBtnPressed()
 	//检查目标车道是否被占用
 	if (m_arrCurBrick[ROW_NUM - 2][(m_iCarPos + 1) * 3 + 2] == 1)
 	{
-		m_bGameOver = true;
+		m_enGameState = GAMESTATE_OVER;
 	}
 
 	++m_iCarPos;
@@ -283,8 +323,15 @@ void CRacingGame::UpdateBricks()
 	m_arrRowIdx[1] += m_arrRowIdx[1] > 0 ? 1 : 0;
 	if (m_arrRowIdx[1] == ROW_DISTANCE * 2)
 	{
+		++m_iPassCarCount;
 		m_iScore += 100;
 		m_pGameScene->UpdateScore(m_iScore);
+
+		if (m_iPassCarCount >= GAMEPASS_CARCOUNT)
+		{
+			m_enGameState = GAMESTATE_PASS;
+			m_iAddScoreCount = 0;
+		}
 	}
 	
 	if (m_arrRowIdx[0] == 2 + ROW_DISTANCE)
@@ -302,10 +349,10 @@ void CRacingGame::RandCreateCars()
 	//　口		位置以该行为准
 	//口　口
 
-	int iCount = rand() % CAR_MAXNUM + 1;
+	int iCount = (int)(CCRANDOM_0_1() * 100) % CAR_MAXNUM + 1;
 	for (int i = 0; i < iCount; ++i)
 	{
-		int iRoadIdx = rand() % ROAD_COUNT;
+		int iRoadIdx = (int)(CCRANDOM_0_1() * 100) % ROAD_COUNT;
 		int iColIdx = iRoadIdx * 3 + 2;
 
 		//第四行
@@ -356,7 +403,7 @@ void CRacingGame::InitBrick()
 	}
 
 	//随机自己赛车的位置
-	m_iCarPos = rand() % 4;
+	m_iCarPos = (int)(CCRANDOM_0_1() * 100) % 4;
 }
 
 
@@ -370,10 +417,15 @@ void CRacingGame::RandSeed()
 //获取等待时长
 int CRacingGame::GetWaitInterval()
 {
-	//游戏结束时播放结束动画
-	if (m_bGameOver)
+	if (m_enGameState ==  GAMESTATE_PASS)
 	{
-		return DEFAULT_INTERVAL * 3;
+		return DEFAULT_INTERVAL;
+	}
+
+	//游戏结束时播放结束动画
+	if (m_enGameState == GAMESTATE_OVER)
+	{
+		return 40;
 	}
 
 	//加速

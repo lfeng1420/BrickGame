@@ -154,7 +154,7 @@ void CGameScene::InitUI()
 	this->addChild(pSpeed);
 
 	//速度Label
-	m_pSpeedLabel = Label::createWithTTF(ttfConfig, "10", TextHAlignment::CENTER);
+	m_pSpeedLabel = Label::createWithTTF(ttfConfig, "0", TextHAlignment::CENTER);
 	Size speedLabelSize = GET_CONTENTSIZE(m_pSpeedLabel);
 	fCurY -= speedLabelSize.height;
 	m_pSpeedLabel->setPosition(fCurX, fCurY + speedLabelSize.height / 2);
@@ -162,7 +162,7 @@ void CGameScene::InitUI()
 	this->addChild(m_pSpeedLabel);
 	
 	//等级Label
-	m_pLevelLabel = Label::createWithTTF(ttfConfig, "10", TextHAlignment::CENTER);
+	m_pLevelLabel = Label::createWithTTF(ttfConfig, "0", TextHAlignment::CENTER);
 	Size levelLabelSize = GET_CONTENTSIZE(m_pLevelLabel);
 	fCurY -= levelLabelSize.height;
 	m_pLevelLabel->setPosition(fCurX, fCurY + levelLabelSize.height / 2);
