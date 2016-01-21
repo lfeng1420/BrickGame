@@ -19,6 +19,9 @@
     <Filter Include="Classes\Manager">
       <UniqueIdentifier>{deb97da9-665c-4d62-b1e8-2b94952dc677}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Classes\Scene\Game">
+      <UniqueIdentifier>{cff7e61f-37f2-4e0a-8c24-d9600aa60f66}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -42,11 +45,11 @@
     <ClCompile Include="..\Classes\SceneBase.cpp">
       <Filter>Classes\Scene\Base</Filter>
     </ClCompile>
-    <ClCompile Include="..\Classes\RacingGame.cpp">
-      <Filter>Classes\Scene</Filter>
-    </ClCompile>
     <ClCompile Include="..\Classes\FroggerGame.cpp">
-      <Filter>Classes\Scene</Filter>
+      <Filter>Classes\Scene\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\RacingGame.cpp">
+      <Filter>Classes\Scene\Game</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -74,11 +77,11 @@
     <ClInclude Include="..\Classes\SceneBase.h">
       <Filter>Classes\Scene\Base</Filter>
     </ClInclude>
-    <ClInclude Include="..\Classes\RacingGame.h">
-      <Filter>Classes\Scene</Filter>
-    </ClInclude>
     <ClInclude Include="..\Classes\FroggerGame.h">
-      <Filter>Classes\Scene</Filter>
+      <Filter>Classes\Scene\Game</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\RacingGame.h">
+      <Filter>Classes\Scene\Game</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
