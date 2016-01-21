@@ -223,7 +223,7 @@ SCENE_INDEX CRacingGame::GetSceneType()
 //×ó
 void CRacingGame::OnLeftBtnPressed()
 {
-	if (m_enGameState == GAMESTATE_OVER || m_iCarPos == 0)
+	if (m_enGameState != GAMESTATE_RUNNING || m_iCarPos == 0)
 	{
 		return;
 	}
@@ -242,7 +242,7 @@ void CRacingGame::OnLeftBtnPressed()
 //ÓÒ
 void CRacingGame::OnRightBtnPressed()
 {
-	if (m_enGameState == GAMESTATE_OVER || m_iCarPos == ROAD_COUNT - 1)
+	if (m_enGameState != GAMESTATE_RUNNING || m_iCarPos == ROAD_COUNT - 1)
 	{
 		return;
 	}

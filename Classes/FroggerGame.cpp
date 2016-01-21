@@ -1,5 +1,13 @@
 #include "FroggerGame.h"
 
+const bool RIVER_DEFAULT_STATE[5][20] =
+{
+	{ false, true, true, true, false, false, true, true, true, false, false, true, true, true, false, false, true, true, true, false},
+	{ true, true, true, false, false, false, false, false, true, true, true, true, true, false, false, false, false, false, true, true },
+	{ false, false, true, true, true, false, false, true, true, false, false, false, true, true, true, false, false, true, true, false },
+	{ false, false, false, false, true, true, true, true, false, false, false, false, false, false, true, true, true, true, false, false },
+	{ false, false, true, true, true, false, false, false, false, false, false, false, true, true, true, false, false, false, false, false },
+};
 
 CFroggerGame::CFroggerGame(CGameScene* pGameScene) : CSceneBase(pGameScene)
 {
@@ -35,18 +43,35 @@ void CFroggerGame::Init()
 //更新
 void CFroggerGame::Play(float dt)
 {
+	//更新自己
+	UpdateSelf(dt);
+
+	//河道更新
+	UpdateRivers(dt);
+
+	//界面更新
 	m_pGameScene->UpdateBricks();
 }
 
 //获取当前Brick状态
 bool CFroggerGame::GetBrickState(int iRowIndex, int iColIndex)
 {
-	return false;
+	if (iRowIndex == m_iSelfRowIdx && iColIndex == m_iSelfColIdx)
+	{
+		return m_bSelfState;
+	}
+
+	return m_arrBrickState[iRowIndex][iColIndex];
 }
 
 //生命数
 bool CFroggerGame::GetSmallBrickState(int iRowIndex, int iColIndex)
 {
+	if (iRowIndex == 0 && iColIndex < m_iLife)
+	{
+		return true;
+	}
+
 	return false;
 }
 
@@ -90,7 +115,7 @@ void CFroggerGame::OnFireBtnPressed()
 //更新所有河道
 void CFroggerGame::UpdateRivers(float dt)
 {
-	for (int i = ROW_NUM - 2; i >= m_iEndRiverIdx; --i)
+	for (int i = ROW_NUM - 2; i >= RIVER_TOP_ROWINDEX; --i)
 	{
 		//偶数河道默认全部填充，无需更新
 		if (i % 2 == 0)
@@ -105,45 +130,45 @@ void CFroggerGame::UpdateRivers(float dt)
 //更新指定行的河道
 void CFroggerGame::UpdateRiver(int iRowIndex, float dt)
 {
-	RIVER& stRiver = m_mapRiver[iRowIndex];
-	
-	//更新时间
+	RIVER& stRiver = m_mapRiverData[iRowIndex];
 	stRiver.iCurTime += dt;
 
-	//判断是否到了更新时间
-	if (stRiver.iCurTime >= stRiver.arrRefreshTime[stRiver.iCurState])
+	//是否达到刷新时间
+	if (stRiver.iCurTime >= stRiver.iRefreshTime)
 	{
-		//重置时间
 		stRiver.iCurTime = 0;
 
-		//检查方向
-		if (stRiver.bLeft)
+		//随机决定是否需要刷新
+		srand((unsigned)time(nullptr));
+		int iRandom = ((int)(CCRANDOM_0_1() * 100)) % 2;
+		if (iRandom == 0)
 		{
-			//向左移动，往最右边插入新Brick
-			for (int i = 0; i < COLUMN_NUM - 1; ++i)
-			{
-				m_arrBrickState[iRowIndex][i] = m_arrBrickState[iRowIndex][i + 1];
-			}
-			m_arrBrickState[iRowIndex][COLUMN_NUM - 1] = stRiver.iCurState;
-		}
-		else
-		{
-			//向右移动，往最左边插入新Brick
-			for (int i = COLUMN_NUM - 1; i > 0; --i)
-			{
-				m_arrBrickState[iRowIndex][i] = m_arrBrickState[iRowIndex][i - 1];
-			}
-			m_arrBrickState[iRowIndex][0] = stRiver.iCurState;
+			return;
 		}
 
-		//计数增加，如果达到上限，则设置CurState
-		++stRiver.iCount;
-		if (stRiver.iCount == stRiver.arrMaxCount[stRiver.iCurState])
+		//更新
+		if (stRiver.bLeft)
 		{
-			stRiver.iCurState = !stRiver.iCurState;
-			//重置计数
-			stRiver.iCount = 0;
+			bool bTemp = m_arrBrickState[iRowIndex][0];
+			for (int i = 1; i < COLUMN_NUM; ++i)
+			{
+
+			}
+			stRiver.iOffset -= 1;
 		}
+		
+	}
+}
+
+
+//更新自己
+void CFroggerGame::UpdateSelf(float dt)
+{
+	m_iSelfCurTime += dt;
+	if (m_iSelfCurTime >= SELF_REFRESHTIME)
+	{
+		m_iSelfCurTime = 0;
+		m_bSelfState = !m_bSelfState;
 	}
 }
 
@@ -155,9 +180,37 @@ void CFroggerGame::InitData()
 	m_iSelfRowIdx = ROW_NUM - 1;
 	m_iSelfColIdx = COLUMN_NUM / 2 - 1;
 
-	//初始河道行上限
-	m_iEndRiverIdx = ROW_NUM / 2;
+	m_iSelfCurTime = 0;
+	m_bSelfState = false;
 
 	//初始化各个河道状态数据
+	int iRiverCount = 0;
+	bool bLeft = false;
+	for (int i = ROW_NUM - 2; i >= RIVER_TOP_ROWINDEX; --i)
+	{
+		if (i % 2 == 0)
+		{
+			for (int j = 0; j < COLUMN_NUM; ++j)
+			{
+				m_arrBrickState[i][j] = true;
+			}
+		}
+		else
+		{
+			bLeft = !bLeft;
+			RIVER& stRiver = m_mapRiverData[i];
+			stRiver.bLeft = bLeft;
+			stRiver.iCurTime = 0;
+			stRiver.iOffset = 0;
+			stRiver.iRefreshTime = DEFAULT_REFRESHTIME - 30 * m_iSpeed;
 
+			//设置初始状态
+			for (int j = 0, int iCount = 0; j < COLUMN_NUM; ++j)
+			{
+				m_arrBrickState[i][j] = RIVER_DEFAULT_STATE[iRiverCount][iCount];
+			}
+
+			++iRiverCount;
+		}
+	}
 }
