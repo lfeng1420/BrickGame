@@ -136,7 +136,7 @@ void CFroggerGame::UpdateRiver(int iRowIndex, float dt)
 			m_arrBrickState[iRowIndex][0] = stRiver.iCurState;
 		}
 
-		//计数增加，如果达到上限，则设置NextState
+		//计数增加，如果达到上限，则设置CurState
 		++stRiver.iCount;
 		if (stRiver.iCount == stRiver.arrMaxCount[stRiver.iCurState])
 		{
