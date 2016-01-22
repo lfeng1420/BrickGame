@@ -52,7 +52,10 @@
       <Filter>Classes\Scene\Game</Filter>
     </ClCompile>
     <ClCompile Include="..\Classes\GlobalDef.cpp">
-      <Filter>Classes\Scene</Filter>
+      <Filter>Classes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\TankGame.cpp">
+      <Filter>Classes\Scene\Game</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -84,6 +87,9 @@
       <Filter>Classes\Scene\Game</Filter>
     </ClInclude>
     <ClInclude Include="..\Classes\RacingGame.h">
+      <Filter>Classes\Scene\Game</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\TankGame.h">
       <Filter>Classes\Scene\Game</Filter>
     </ClInclude>
   </ItemGroup>

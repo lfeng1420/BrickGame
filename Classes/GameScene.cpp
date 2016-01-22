@@ -4,6 +4,7 @@
 #include "ChooseGame.h"
 #include "RacingGame.h"
 #include "FroggerGame.h"
+#include "TankGame.h"
 
 CGameScene::CGameScene() : m_iSceneIndex(SCENE_GAMEOVER)
 {
@@ -289,7 +290,7 @@ void CGameScene::InitCotroller()
 	startBtn->setPosition(m_visibleSize.width / 2 - 20 - soundBtnSize.width / 2 - startBtnSize.width / 2, soundBtnSize.height / 2);
 	resetBtn->setPosition(m_visibleSize.width / 2 + 20 + soundBtnSize.width / 2 + resetBtnSize.width / 2, soundBtnSize.height / 2);
 
-	auto menu = Menu::create(soundBtn, startBtn, resetBtn, NULL);
+	auto menu = Menu::create(soundBtn, startBtn, resetBtn, nullptr);
 	float fCurHeight = downBtnSize.height * 2.0f + 12 + upBtnSize.height;
 	menu->setPosition(Vec2(0, (fHeight - fCurHeight) / 3));
 	this->addChild(menu);
@@ -352,6 +353,10 @@ void CGameScene::CreateGameObj()
 	//青蛙过河
 	CFroggerGame* pFroggerGame = new CFroggerGame(this);
 	m_mapGameObj[SCENE_FROGGER] = pFroggerGame;
+
+	//坦克大战
+	CTankGame* pTankGame = new CTankGame(this);
+	m_mapGameObj[SCENE_TANK] = pTankGame;
 }
 
 

@@ -61,7 +61,7 @@ void CChooseGame::Play(float dt)
 bool CChooseGame::GetBrickState(int iRowIndex, int iColIndex)
 {
 	int iIndex = iRowIndex * COLUMN_NUM + iColIndex;
-	return m_pAnimData->at(iIndex);
+	return m_pAnimData->at(iIndex) == 1;
 }
 
 //获取游戏类型
@@ -133,6 +133,7 @@ const int GAMEIDX_TO_SCENEIDX[] =
 {
 	SCENE_RACING,	//对应GAME_RACING
 	SCENE_FROGGER,	//对应GAME_FROGGER
+	SCENE_TANK,		//对应GAME_TANK
 };
 
 //开始

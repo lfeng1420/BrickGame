@@ -121,6 +121,8 @@ enum SCENE_INDEX
 
 	SCENE_FROGGER,				//游戏界面 - 青蛙过河
 
+	SCENE_TANK,					//游戏界面 - 坦克大战
+
 	SCENE_MAX,					//最大值
 };
 
@@ -131,6 +133,8 @@ enum GAME_LIST
 	GAME_RACING,				//赛车
 
 	GAME_FROGGER,				//青蛙过河
+
+	GAME_TANK,					//坦克大战
 
 	GAME_MAX,					//最大值
 };
