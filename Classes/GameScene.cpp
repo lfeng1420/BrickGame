@@ -48,6 +48,9 @@ bool CGameScene::init()
 	//初始化控制器
 	InitCotroller();
 
+	//按键监听
+	CreateKeyListener();
+
 	//创建游戏对象
 	CreateGameObj();
 
@@ -290,6 +293,38 @@ void CGameScene::InitCotroller()
 	float fCurHeight = downBtnSize.height * 2.0f + 12 + upBtnSize.height;
 	menu->setPosition(Vec2(0, (fHeight - fCurHeight) / 3));
 	this->addChild(menu);
+}
+
+
+//创建按键监听器
+void CGameScene::CreateKeyListener()
+{
+	auto keyListener = EventListenerKeyboard::create();
+	keyListener->onKeyReleased = [&](EventKeyboard::KeyCode keyCode, Event* event)
+	{
+		if (EventKeyboard::KeyCode::KEY_A == keyCode)
+		{
+			OnButtonPressed(BTN_LEFT);
+		}
+		else if (EventKeyboard::KeyCode::KEY_D == keyCode)
+		{
+			OnButtonPressed(BTN_RIGHT);
+		}
+		else if (EventKeyboard::KeyCode::KEY_S == keyCode)
+		{
+			OnButtonPressed(BTN_DOWN);
+		}
+		else if (EventKeyboard::KeyCode::KEY_W == keyCode)
+		{
+			OnButtonPressed(BTN_UP);
+		}
+		else if (EventKeyboard::KeyCode::KEY_K == keyCode)
+		{
+			OnButtonPressed(BTN_FIRE);
+		}
+	};
+
+	Director::getInstance()->getEventDispatcher()->addEventListenerWithSceneGraphPriority(keyListener, this);
 }
 
 

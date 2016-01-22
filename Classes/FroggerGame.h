@@ -74,6 +74,8 @@ private:
 		BOOM_SHOWCOUNT = 10,		//闪烁显示爆炸效果次数
 
 		BOOM_REFRESHTIME = 60,		//爆炸闪烁间隔
+
+		GAMEPASS_WAITTIME = 1000,	//通过后等待的时间
 	};
 	
 	struct RIVER 
@@ -117,5 +119,7 @@ private:
 	int m_iShowBoomCount;						//闪烁显示爆炸效果次数
 
 	int m_iBoomCurTime;							//爆炸当前时间
+
+	int m_iPassCurTime;							//通过后当前时间
 };
 

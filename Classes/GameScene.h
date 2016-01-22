@@ -55,6 +55,9 @@ private:
 	//根据指定的高度上限创建控制按钮
 	void InitCotroller();
 
+	//创建按键监听器
+	void CreateKeyListener();
+
 	//创建各个游戏对象
 	void CreateGameObj();
 

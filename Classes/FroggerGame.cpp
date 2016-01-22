@@ -62,12 +62,48 @@ void CFroggerGame::Init()
 		++iRiverCount;
 	}
 
+	//初始化通过数量
+	m_iPassCount = 0;
+
 	InitData();
 }
 
 //更新
 void CFroggerGame::Play(float dt)
 {
+	if (m_enGameState == GAMESTATE_PASS)
+	{
+		m_iPassCurTime += dt * 1000;
+		if (m_iPassCurTime < GAMEPASS_WAITTIME)
+		{
+			return;
+		}
+
+		//重置通过数量
+		m_iPassCount = 0;
+
+		//更新速度和等级
+		if (++m_iSpeed >= 10)
+		{
+			m_iSpeed = 0;
+			if (++m_iLevel >= 10)
+			{
+				m_iLevel = 0;
+			}
+		}
+
+		//更新显示
+		m_pGameScene->UpdateLevel(m_iLevel);
+		m_pGameScene->UpdateSpeed(m_iSpeed);
+
+		//重置数据
+		InitData();
+
+		//界面更新
+		m_pGameScene->UpdateBricks();
+		return;
+	}
+
 	//进行中
 	if (m_enGameState == GAMESTATE_RUNNING)
 	{
@@ -259,8 +295,8 @@ void CFroggerGame::InitData()
 	//初始化河道当前时间
 	m_iRiverCurTime = 0;
 
-	//初始化通过数量
-	m_iPassCount = 0;
+	//初始化游戏通过当前时间
+	m_iPassCurTime = 0;
 
 	//初始化游戏状态
 	m_enGameState = GAMESTATE_RUNNING;
@@ -396,11 +432,17 @@ void CFroggerGame::OnUpBtnPressed()
 	m_iSelfRowIdx -= 2;
 	m_pGameScene->UpdateBrick(m_iSelfRowIdx, m_iSelfColIdx, false, true);
 
-	//更新游戏状态
-	UpdateGameState();
+	if (m_arrBrickState[m_iSelfRowIdx][m_iSelfColIdx])
+	{
+		m_enGameState = GAMESTATE_OVER;
+		return;
+	}
 
 	if (m_iSelfRowIdx == RIVER_ROWTOP_INDEX - 1)
 	{
+		//到达顶端的方块不再闪烁显示
+		m_arrBrickState[m_iSelfRowIdx][m_iSelfColIdx] = true;
+
 		//到达最顶端，分数增加
 		m_iScore += 300;
 		m_pGameScene->UpdateScore(m_iScore);
@@ -408,15 +450,19 @@ void CFroggerGame::OnUpBtnPressed()
 		//更新通过的青蛙数量
 		++m_iPassCount;
 
-		//到达顶端的方块不再闪烁显示
-		m_arrBrickState[m_iSelfRowIdx][m_iSelfColIdx] = true;
-
-		//重置位置和状态
-		m_iSelfRowIdx = ROW_NUM - 1;
-		m_iSelfColIdx = 6;
-		m_iSelfCurTime = 0;
-		m_bSelfState = true;
-
+		//检查是否通过关卡
+		if (m_iPassCount == GAMEPASS_COUNT)
+		{
+			m_enGameState = GAMESTATE_PASS;
+		}
+		else
+		{
+			//重置位置和状态
+			m_iSelfRowIdx = ROW_NUM - 1;
+			m_iSelfColIdx = 6;
+			m_iSelfCurTime = 0;
+			m_bSelfState = true;
+		}
 	}
 }
 
