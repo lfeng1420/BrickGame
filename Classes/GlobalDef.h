@@ -10,6 +10,7 @@
 #include <vector>
 #include <fstream>
 #include <iostream>
+#include <algorithm>
 
 using namespace std;
 
@@ -142,6 +143,10 @@ enum GAME_STATE
 
 	GAMESTATE_PASS,					//通过
 };
+
+
+// ---- 通用函数 ---- 
+int Random(int iStart, int iEnd);
 
 
 #endif //__GLOBAL_DEF_H_

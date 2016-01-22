@@ -51,6 +51,9 @@
     <ClCompile Include="..\Classes\RacingGame.cpp">
       <Filter>Classes\Scene\Game</Filter>
     </ClCompile>
+    <ClCompile Include="..\Classes\GlobalDef.cpp">
+      <Filter>Classes\Scene</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="main.h">

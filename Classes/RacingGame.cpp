@@ -69,8 +69,6 @@ void CRacingGame::InitData()
 //更新
 void CRacingGame::Play(float dt)
 {
-	RandSeed();
-
 	//检查是否游戏结束
 	if (m_arrCurBrick[ROW_NUM - 4][m_iCarPos * 3 + 2] == 1 && m_arrCurBrick[ROW_NUM - 5][m_iCarPos * 3 + 2] == 1)
 	{
@@ -110,6 +108,10 @@ void CRacingGame::Play(float dt)
 		}
 		else
 		{
+			//设置剩余生命
+			--m_iLife;
+			m_pGameScene->UpdateSmallBricks();
+
 			//检查是否有剩余生命，没有则返回游戏结束界面
 			if (m_iLife <= 0)
 			{
@@ -117,12 +119,10 @@ void CRacingGame::Play(float dt)
 				return;
 			}
 
-			//设置剩余生命
-			--m_iLife;
-			m_pGameScene->UpdateSmallBricks();
-
 			//重置数据
 			InitData();
+			//刷新界面
+			m_pGameScene->UpdateSmallBricks();
 		}
 	}
 	else if(m_enGameState == GAMESTATE_PASS)
@@ -349,10 +349,10 @@ void CRacingGame::RandCreateCars()
 	//　口		位置以该行为准
 	//口　口
 
-	int iCount = (int)(CCRANDOM_0_1() * 100) % CAR_MAXNUM + 1;
+	int iCount = Random(1, CAR_MAXNUM);
 	for (int i = 0; i < iCount; ++i)
 	{
-		int iRoadIdx = (int)(CCRANDOM_0_1() * 100) % ROAD_COUNT;
+		int iRoadIdx = Random(0, ROAD_COUNT);
 		int iColIdx = iRoadIdx * 3 + 2;
 
 		//第四行
@@ -403,7 +403,7 @@ void CRacingGame::InitBrick()
 	}
 
 	//随机自己赛车的位置
-	m_iCarPos = (int)(CCRANDOM_0_1() * 100) % 4;
+	m_iCarPos = Random(0, ROAD_COUNT);
 }
 
 

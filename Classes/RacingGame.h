@@ -73,8 +73,6 @@ private:
 
 		CAR_HEIGHT = 4,				//车高度
 
-		GAMEOVER_REMAINTIME = 3000,	//游戏结束画面持续3秒
-
 		ROW_DISTANCE = 11,			//超过11行生成新的赛车
 
 		DEFAULT_INTERVAL = 160,		//默认等待时间

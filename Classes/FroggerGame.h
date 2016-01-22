@@ -44,7 +44,7 @@ private:
 	void UpdateRivers(float dt);
 
 	//更新指定行的河道
-	void UpdateRiver(int iRowIndex, float dt);
+	void UpdateRiver(int iRowIndex);
 
 	//更新自己
 	void UpdateSelf(float dt);
@@ -52,26 +52,37 @@ private:
 	//初始化数据、变量等
 	void InitData();
 
+	//更新游戏状态
+	void UpdateGameState();
+
+	//设置爆炸
+	void SetBoom(float dt);
 
 private:
 	enum
 	{
-		RIVER_TOP_ROWINDEX = 8,		//河道最高所在行
+		RIVER_ROWTOP_INDEX = 8,		//河道最高所在行
 
 		DEFAULT_REFRESHTIME = 700,	//默认刷新时间，毫秒
 
 		SELF_REFRESHTIME = 60,		//自己刷新的时间，毫秒
+
+		RIVER_COUNT = 5,			//河道数量
+
+		GAMEPASS_COUNT = 5,			//达到该数量时游戏进入下一关
+
+		BOOM_SHOWCOUNT = 10,		//闪烁显示爆炸效果次数
+
+		BOOM_REFRESHTIME = 60,		//爆炸闪烁间隔
 	};
 	
 	struct RIVER 
 	{
-		bool bLeft;				//是否向左移动
+		bool bLeft;					//是否向左移动
 
-		int iOffset;			//偏移
+		int iOffset;				//偏移
 
-		int iCurTime;			//当前时间
-
-		int iRefreshTime;		//下一次刷新时间
+		bool arrDefaultState[20];	//默认状态
 	};
 
 	typedef map<int, RIVER> TMAP_RIVER;
@@ -95,8 +106,16 @@ private:
 
 	int m_iSelfCurTime;							//自己下一次更新前累计时间
 
+	int m_iRiverCurTime;						//河道当前时间
+
+	int m_iPassCount;							//通过的青蛙数量
+
 	bool m_bSelfState;							//当前状态
 
-	int m_iPassedBrickNum;						//通过的Brick数量
+	GAME_STATE m_enGameState;					//游戏状态
+
+	int m_iShowBoomCount;						//闪烁显示爆炸效果次数
+
+	int m_iBoomCurTime;							//爆炸当前时间
 };
 
