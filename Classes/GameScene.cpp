@@ -198,7 +198,7 @@ void CGameScene::InitUI()
 	this->addChild(m_pPauseSpr);
 
 	//默认非暂停状态
-	m_pPauseSpr->setVisible(true);
+	m_pPauseSpr->setVisible(m_bGamePause);
 }
 
 
@@ -207,7 +207,7 @@ void CGameScene::InitCotroller()
 	//剩余高度，用于调整控制按钮位置
 	float fHeight = m_visibleSize.height - BRICK_HEIGHT * ROW_NUM;
 
-	float fBtnScale = 1.15f;
+	float fBtnScale = 1.23f;
 	float fBtnPadding = 8 * fBtnScale;
 
 	//上
@@ -241,7 +241,7 @@ void CGameScene::InitCotroller()
 	Size fireBtnSize = pFireBtn->getContentSize() * fBtnScale;
 
 	//设置位置
-	float fTopPosY = fHeight - (fHeight - (leftBtnSize.width + fBtnPadding) * 2) / 2;
+	float fTopPosY = fHeight - (fHeight - (leftBtnSize.width + fBtnPadding) * 2) / 3;
 	pLeftBtn->setPosition(Vec2(leftBtnSize.width, fTopPosY - upBtnSize.height - fBtnPadding));
 	pRightBtn->setPosition(Vec2(leftBtnSize.width * 1.5f + rightBtnSize.width / 2 + fBtnPadding * 2, fTopPosY - upBtnSize.height - fBtnPadding));
 	pDownBtn->setPosition(Vec2(leftBtnSize.width * 1.5f + fBtnPadding, fTopPosY - upBtnSize.height * 1.5f - fBtnPadding * 2));
@@ -256,7 +256,7 @@ void CGameScene::InitCotroller()
 	fTopPosY -= (upBtnSize.height + fBtnPadding) * 2;
 
 	//开始
-	float fSpriteScale = 1.5f;
+	float fSpriteScale = 1.7f;
 	auto startBtn = MenuItemSprite::create(
 		Sprite::create("start_0.png"),
 		Sprite::create("start_1.png"),
