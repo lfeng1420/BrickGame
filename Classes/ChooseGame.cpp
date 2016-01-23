@@ -73,44 +73,48 @@ SCENE_INDEX CChooseGame::GetSceneType()
 //вС
 void CChooseGame::OnLeftBtnPressed()
 {
-	if (m_iLevel > 0)
+	if (--m_iLevel < 0)
 	{
-		--m_iLevel;
-		m_pGameScene->UpdateLevel(m_iLevel);
+		m_iLevel = LEVEL_MAX;
 	}
+
+	m_pGameScene->UpdateLevel(m_iLevel);
 }
 
 
 //ср
 void CChooseGame::OnRightBtnPressed()
 {
-	if (m_iLevel < LEVEL_MAX)
+	if (++m_iLevel > LEVEL_MAX)
 	{
-		++m_iLevel;
-		m_pGameScene->UpdateLevel(m_iLevel);
+		m_iLevel = 0;
 	}
+
+	m_pGameScene->UpdateLevel(m_iLevel);
 }
 
 
 //ио
 void CChooseGame::OnUpBtnPressed()
 {
-	if (m_iSpeed < SPEED_MAX)
+	if (++m_iSpeed > SPEED_MAX)
 	{
-		++m_iSpeed;
-		m_pGameScene->UpdateSpeed(m_iSpeed);
+		m_iSpeed = 0;
 	}
+
+	m_pGameScene->UpdateSpeed(m_iSpeed);
 }
 
 
 //об
 void CChooseGame::OnDownPressed()
 {
-	if (m_iSpeed > 0)
+	if (--m_iSpeed < 0)
 	{
-		--m_iSpeed;
-		m_pGameScene->UpdateSpeed(m_iSpeed);
+		m_iSpeed = SPEED_MAX;
 	}
+
+	m_pGameScene->UpdateSpeed(m_iSpeed);
 }
 
 

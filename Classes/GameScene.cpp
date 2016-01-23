@@ -199,6 +199,8 @@ void CGameScene::InitUI()
 
 	//默认非暂停状态
 	m_pPauseSpr->setVisible(m_bGamePause);
+
+	log("Leave CGameScene::InitUI");
 }
 
 
@@ -207,8 +209,8 @@ void CGameScene::InitCotroller()
 	//剩余高度，用于调整控制按钮位置
 	float fHeight = m_visibleSize.height - BRICK_HEIGHT * ROW_NUM;
 
-	float fBtnScale = 1.23f;
-	float fBtnPadding = 8 * fBtnScale;
+	float fBtnScale = 1.4f;
+	float fBtnPadding = 25 * fBtnScale;
 
 	//上
 	Button* pUpBtn = Button::create("up_0.png", "up_1.png");
@@ -235,10 +237,11 @@ void CGameScene::InitCotroller()
 	Size leftBtnSize = pLeftBtn->getContentSize() * fBtnScale;
 
 	//Fire
+	float fFireScale = fBtnScale - 0.1f;
 	Button* pFireBtn = Button::create("fire_0.png", "fire_1.png");
-	pFireBtn->setScale(fBtnScale);
+	pFireBtn->setScale(fFireScale);
 	pFireBtn->addTouchEventListener(CC_CALLBACK_2(CGameScene::OnButtonEvent, this, BTN_FIRE));
-	Size fireBtnSize = pFireBtn->getContentSize() * fBtnScale;
+	Size fireBtnSize = pFireBtn->getContentSize() * fFireScale;
 
 	//设置位置
 	float fTopPosY = fHeight - (fHeight - (leftBtnSize.width + fBtnPadding) * 2) / 3;
@@ -246,7 +249,7 @@ void CGameScene::InitCotroller()
 	pRightBtn->setPosition(Vec2(leftBtnSize.width * 1.5f + rightBtnSize.width / 2 + fBtnPadding * 2, fTopPosY - upBtnSize.height - fBtnPadding));
 	pDownBtn->setPosition(Vec2(leftBtnSize.width * 1.5f + fBtnPadding, fTopPosY - upBtnSize.height * 1.5f - fBtnPadding * 2));
 	pUpBtn->setPosition(Vec2(leftBtnSize.width * 1.5f + fBtnPadding, fTopPosY - upBtnSize.height / 2));
-	pFireBtn->setPosition(Vec2(m_visibleSize.width - (leftBtnSize.width * 1.5f + fBtnPadding), fTopPosY - upBtnSize.height - fBtnPadding));
+	pFireBtn->setPosition(Vec2(m_visibleSize.width - leftBtnSize.width / 2 - fireBtnSize.width / 2, fTopPosY - upBtnSize.height - fBtnPadding));
 	this->addChild(pLeftBtn);
 	this->addChild(pRightBtn);
 	this->addChild(pDownBtn);
@@ -334,6 +337,12 @@ void CGameScene::CreateKeyListener()
 		else if (EventKeyboard::KeyCode::KEY_K == keyCode)
 		{
 			OnButtonPressed(BTN_FIRE);
+		}
+		else if (EventKeyboard::KeyCode::KEY_RETURN == keyCode ||
+			EventKeyboard::KeyCode::KEY_ESCAPE == keyCode ||
+			EventKeyboard::KeyCode::KEY_BACKSPACE == keyCode)
+		{
+			DIRECTOR_INSTANCE()->end();
 		}
 	};
 
