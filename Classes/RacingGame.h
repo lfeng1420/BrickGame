@@ -65,27 +65,27 @@ private:
 private:
 	enum 
 	{
-		CAR_MAXNUM = 3,				//同时出现的车最大数量
+		CAR_MAXNUM = 3,							//同时出现的车最大数量
 
-		ROAD_COUNT = 4,				//车道数量
+		ROAD_COUNT = 4,							//车道数量
 
-		CAR_WIDTH = 3,				//车宽度
+		CAR_WIDTH = 3,							//车宽度
 
-		CAR_HEIGHT = 4,				//车高度
+		CAR_HEIGHT = 4,							//车高度
 
-		ROW_DISTANCE = 11,			//超过11行生成新的赛车
+		ROW_DISTANCE = ROW_NUM / 2 + 1,			//超过11行生成新的赛车
 
-		DEFAULT_INTERVAL = 160,		//默认等待时间
+		DEFAULT_INTERVAL = 160,					//默认等待时间
 
-		CAR_DEFAULTROW = 2,			//默认所在行
+		CAR_DEFAULTROW = 2,						//默认所在行
 
-		BOOM_SHOWCOUNT = 10,		//闪烁显示爆炸效果次数
+		BOOM_SHOWCOUNT = 10,					//闪烁显示爆炸效果次数
 
-		GAMEPASS_ADDSCORE = 100,	//通过时增加100
+		GAMEPASS_ADDSCORE = 100,				//通过时增加100
 
-		GAMEPASS_ADDCOUNT = 10,		//增加10次
+		GAMEPASS_ADDCOUNT = 10,					//增加10次
 
-		GAMEPASS_CARCOUNT = 16,		//经过的赛车数达到16时通过
+		GAMEPASS_CARCOUNT = 16,					//经过的赛车数达到16时通过
 	};
 
 

@@ -99,7 +99,7 @@ void CGameScene::InitBrick()
 //初始化UI:分数、等级等
 void CGameScene::InitUI()
 {
-	TTFConfig ttfConfig("Fonts/DSDigital.ttf", 46);
+	TTFConfig ttfConfig("Fonts/DSDigital.ttf", 46.0f);
 	Size visibleSize = GET_VISIBLESIZE();
 
 	//图片缩放
@@ -189,15 +189,16 @@ void CGameScene::InitUI()
 	this->addChild(pLevel);
 
 	//暂停图标
+	float fPauseScale = fSpriteScale - 0.04f;
 	m_pPauseSpr = Sprite::create("pause.png");
-	m_pPauseSpr->setScale(0.32f);
-	Size pauseSize = GET_CONTENTSIZE(m_pPauseSpr) * 0.32f;
+	m_pPauseSpr->setScale(fPauseScale);
+	Size pauseSize = GET_CONTENTSIZE(m_pPauseSpr) * fPauseScale;
 	fCurY -= pauseSize.height;
 	m_pPauseSpr->setPosition(fCurX, fCurY + pauseSize.height / 2);
 	this->addChild(m_pPauseSpr);
 
 	//默认非暂停状态
-	m_pPauseSpr->setVisible(m_bGamePause);
+	m_pPauseSpr->setVisible(true);
 }
 
 
@@ -205,54 +206,64 @@ void CGameScene::InitCotroller()
 {
 	//剩余高度，用于调整控制按钮位置
 	float fHeight = m_visibleSize.height - BRICK_HEIGHT * ROW_NUM;
-	
+
+	float fBtnScale = 1.1f;
+	float fBtnPadding = 8 * fBtnScale;
+
 	//上
 	Button* pUpBtn = Button::create("up_0.png", "up_1.png");
+	pUpBtn->setScale(fBtnScale);
 	pUpBtn->addTouchEventListener(CC_CALLBACK_2(CGameScene::OnButtonEvent, this, BTN_UP));
-	Size upBtnSize = pUpBtn->getContentSize();
+	Size upBtnSize = pUpBtn->getContentSize() * fBtnScale;
 
 	//右
 	Button* pRightBtn = Button::create("right_0.png", "right_1.png");
+	pRightBtn->setScale(fBtnScale);
 	pRightBtn->addTouchEventListener(CC_CALLBACK_2(CGameScene::OnButtonEvent, this, BTN_RIGHT));
-	Size rightBtnSize = pRightBtn->getContentSize();
+	Size rightBtnSize = pRightBtn->getContentSize() * fBtnScale;
 
 	//下
 	Button* pDownBtn = Button::create("down_0.png", "down_1.png");
+	pDownBtn->setScale(fBtnScale);
 	pDownBtn->addTouchEventListener(CC_CALLBACK_2(CGameScene::OnButtonEvent, this, BTN_DOWN));
-	Size downBtnSize = pDownBtn->getContentSize();
+	Size downBtnSize = pDownBtn->getContentSize() * fBtnScale;
 
 	//左
 	Button* pLeftBtn = Button::create("left_0.png", "left_1.png");
+	pLeftBtn->setScale(fBtnScale);
 	pLeftBtn->addTouchEventListener(CC_CALLBACK_2(CGameScene::OnButtonEvent, this, BTN_LEFT));
-	Size leftBtnSize = pLeftBtn->getContentSize();
+	Size leftBtnSize = pLeftBtn->getContentSize() * fBtnScale;
 
 	//Fire
 	Button* pFireBtn = Button::create("fire_0.png", "fire_1.png");
+	pFireBtn->setScale(fBtnScale);
 	pFireBtn->addTouchEventListener(CC_CALLBACK_2(CGameScene::OnButtonEvent, this, BTN_FIRE));
-	Size fireBtnSize = pFireBtn->getContentSize();
+	Size fireBtnSize = pFireBtn->getContentSize() * fBtnScale;
 
 	//设置位置
-	pLeftBtn->setPosition(Vec2(leftBtnSize.width, downBtnSize.height * 2.0f + 6));
-	pRightBtn->setPosition(Vec2(leftBtnSize.width * 1.5f + rightBtnSize.width / 2 + 12, downBtnSize.height * 2.0f + 6));
-	pDownBtn->setPosition(Vec2(leftBtnSize.width * 1.5f + 6, downBtnSize.height * 1.5f));
-	pUpBtn->setPosition(Vec2(leftBtnSize.width * 1.5f + 6, downBtnSize.height * 2.0f + 12 + upBtnSize.height / 2));
-	pFireBtn->setPosition(Vec2(m_visibleSize.width - (leftBtnSize.width * 1.5f + 6), downBtnSize.height * 2.0f + 6));
+	float fTopPosY = fHeight - (fHeight - (leftBtnSize.width + fBtnPadding) * 2) / 2;
+	pLeftBtn->setPosition(Vec2(leftBtnSize.width, fTopPosY - upBtnSize.height - fBtnPadding));
+	pRightBtn->setPosition(Vec2(leftBtnSize.width * 1.5f + rightBtnSize.width / 2 + 16, fTopPosY - upBtnSize.height - fBtnPadding));
+	pDownBtn->setPosition(Vec2(leftBtnSize.width * 1.5f + fBtnPadding, fTopPosY - upBtnSize.height * 1.5f - fBtnPadding * 2));
+	pUpBtn->setPosition(Vec2(leftBtnSize.width * 1.5f + fBtnPadding, fTopPosY - upBtnSize.height / 2));
+	pFireBtn->setPosition(Vec2(m_visibleSize.width - (leftBtnSize.width * 1.5f + fBtnPadding), fTopPosY - upBtnSize.height - fBtnPadding));
 	this->addChild(pLeftBtn);
 	this->addChild(pRightBtn);
 	this->addChild(pDownBtn);
 	this->addChild(pUpBtn);
 	this->addChild(pFireBtn);
 
+	fTopPosY -= (upBtnSize.height + fBtnPadding) * 2;
 
 	//开始
-	float fScale = 1.5f;
+	float fSpriteScale = 1.5f;
 	auto startBtn = MenuItemSprite::create(
 		Sprite::create("start_0.png"),
 		Sprite::create("start_1.png"),
 		CC_CALLBACK_1(CGameScene::OnButtonClick, this, BTN_START)
 		);
-	startBtn->setScale(fScale);
-	Size startBtnSize = startBtn->getContentSize() * fScale;
+	startBtn->setScale(fSpriteScale);
+	Size startBtnSize = startBtn->getContentSize() * fSpriteScale;
 
 	//获取声音状态
 	bool bSoundState = GET_SOUNDSTATE();
@@ -274,8 +285,8 @@ void CGameScene::InitCotroller()
 		bSoundState ? pSoundOnMenu : pSoundOffMenu,
 		nullptr
 		);
-	soundBtn->setScale(fScale);
-	Size soundBtnSize = soundBtn->getContentSize() * fScale;
+	soundBtn->setScale(fSpriteScale);
+	Size soundBtnSize = soundBtn->getContentSize() * fSpriteScale;
 
 	//重置
 	auto resetBtn = MenuItemSprite::create(
@@ -283,16 +294,17 @@ void CGameScene::InitCotroller()
 		Sprite::create("reset_1.png"),
 		CC_CALLBACK_1(CGameScene::OnButtonClick, this, BTN_RESET)
 		);
-	resetBtn->setScale(fScale);
-	Size resetBtnSize = resetBtn->getContentSize() * fScale;
+	resetBtn->setScale(fSpriteScale);
+	Size resetBtnSize = resetBtn->getContentSize() * fSpriteScale;
 
-	soundBtn->setPosition(m_visibleSize.width / 2, soundBtnSize.height / 2);
-	startBtn->setPosition(m_visibleSize.width / 2 - 20 - soundBtnSize.width / 2 - startBtnSize.width / 2, soundBtnSize.height / 2);
-	resetBtn->setPosition(m_visibleSize.width / 2 + 20 + soundBtnSize.width / 2 + resetBtnSize.width / 2, soundBtnSize.height / 2);
+	fHeight = (fTopPosY - soundBtnSize.height) / 2 + soundBtnSize.height / 2;
+	soundBtn->setPosition(m_visibleSize.width / 2, fHeight);
+	startBtn->setPosition(m_visibleSize.width / 2 - 20 - soundBtnSize.width / 2 - startBtnSize.width / 2, fHeight);
+	resetBtn->setPosition(m_visibleSize.width / 2 + 20 + soundBtnSize.width / 2 + resetBtnSize.width / 2, fHeight);
 
 	auto menu = Menu::create(soundBtn, startBtn, resetBtn, nullptr);
-	float fCurHeight = downBtnSize.height * 2.0f + 12 + upBtnSize.height;
-	menu->setPosition(Vec2(0, (fHeight - fCurHeight) / 3));
+	float fCurHeight = 0;
+	menu->setPosition(Vec2::ZERO);
 	this->addChild(menu);
 }
 
