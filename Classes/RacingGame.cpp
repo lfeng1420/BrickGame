@@ -21,7 +21,7 @@ void CRacingGame::Init()
 	//默认生命数为4
 	m_iLife = GET_INTVALUE("LIFE", 4);
 
-	//初始化当前分数，经过的赛车数量
+	//初始化当前分数
 	m_iScore = 0;
 
 	//更新界面，分数、等级和生命

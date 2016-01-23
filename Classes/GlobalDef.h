@@ -18,6 +18,7 @@ USING_NS_CC;
 USING_NS_CC_EXT;
 using namespace ui;
 
+#define FLOAT_EQ(a, b) (fabs(a - b) < 1e-6)
 
 #define CC_RETURN_FALSE_IF(exp) if (exp){return false;}
 
@@ -99,12 +100,14 @@ enum
 };
 
 //·½ÏòÃ¶¾Ù
-enum
+enum DIRECTION
 {
 	DIR_RIGHT,
+	DIR_MIN = DIR_RIGHT,
 	DIR_DOWN,
 	DIR_LEFT,
 	DIR_UP,
+	DIR_MAX,
 };
 
 
