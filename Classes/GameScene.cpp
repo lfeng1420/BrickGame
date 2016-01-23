@@ -207,7 +207,7 @@ void CGameScene::InitCotroller()
 	//剩余高度，用于调整控制按钮位置
 	float fHeight = m_visibleSize.height - BRICK_HEIGHT * ROW_NUM;
 
-	float fBtnScale = 1.1f;
+	float fBtnScale = 1.15f;
 	float fBtnPadding = 8 * fBtnScale;
 
 	//上
@@ -243,7 +243,7 @@ void CGameScene::InitCotroller()
 	//设置位置
 	float fTopPosY = fHeight - (fHeight - (leftBtnSize.width + fBtnPadding) * 2) / 2;
 	pLeftBtn->setPosition(Vec2(leftBtnSize.width, fTopPosY - upBtnSize.height - fBtnPadding));
-	pRightBtn->setPosition(Vec2(leftBtnSize.width * 1.5f + rightBtnSize.width / 2 + 16, fTopPosY - upBtnSize.height - fBtnPadding));
+	pRightBtn->setPosition(Vec2(leftBtnSize.width * 1.5f + rightBtnSize.width / 2 + fBtnPadding * 2, fTopPosY - upBtnSize.height - fBtnPadding));
 	pDownBtn->setPosition(Vec2(leftBtnSize.width * 1.5f + fBtnPadding, fTopPosY - upBtnSize.height * 1.5f - fBtnPadding * 2));
 	pUpBtn->setPosition(Vec2(leftBtnSize.width * 1.5f + fBtnPadding, fTopPosY - upBtnSize.height / 2));
 	pFireBtn->setPosition(Vec2(m_visibleSize.width - (leftBtnSize.width * 1.5f + fBtnPadding), fTopPosY - upBtnSize.height - fBtnPadding));
