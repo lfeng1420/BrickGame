@@ -1,29 +1,41 @@
 #pragma once
 #include "SceneBase.h"
+
+struct TANK_POS
+{
+	int m_iColIdx;				//当前所在列
+
+	int m_iRowIdx;				//当前所在行
+
+	bool operator== (const TANK_POS& stPos) const
+	{
+		return this->m_iRowIdx == stPos.m_iRowIdx && this->m_iRowIdx == stPos.m_iColIdx;
+	};
+
+	TANK_POS& operator+= (const TANK_POS& stPos)
+	{
+		this->m_iRowIdx += stPos.m_iRowIdx;
+		this->m_iColIdx += stPos.m_iColIdx;
+		return *this;
+	};
+};
+
 class CTankGame : public CSceneBase
 {
 private:
-	struct TANK_POS
-	{
-		int m_iColIdx;				//当前所在列
-
-		int m_iRowIdx;				//当前所在行
-
-		inline bool operator== (const TANK_POS& stPos) const
-		{
-			return this->m_iRowIdx == stPos.m_iRowIdx && this->m_iRowIdx == stPos.m_iColIdx;
-		};
-	};
-
 	struct TANK_DATA
 	{
 		bool m_bDead;					//是否死亡
 
 		TANK_POS m_stTankPos;			//所在位置
 
+		int m_iLastStep;				//上一次走的步数
+
 		int m_iCurStep;					//当前走的步数
 
 		int m_iMaxStep;					//最大步数
+
+		int m_iRetryNum;				//重试次数，超过3次重新随机一个方向
 
 		float m_iCurTime;				//射击已等待时间
 
@@ -34,13 +46,15 @@ private:
 
 	enum
 	{
-		TANK_MAXNUM = 4,			//坦克最大数量
+		TANK_MAXNUM = 4,					//坦克最大数量
 
-		TANK_REFRESHTIME = 1000,	//每秒刷新一次
+		TANK_REFRESH_TIME = 1000,			//每秒刷新一次
 
-		TANK_FIREMAXTIME = 5000,	//射击等待最长时间
+		TANK_FIRE_MAXTIME = 5000,			//射击等待最长时间
 
-		TANK_MAXSTEP = ROW_NUM,		//最大移动步数
+		TANK_RETRYMOVE_MAXCOUNT = 3,		//尝试移动的最大次数
+
+		TANK_MOVE_MAXSTEP = ROW_NUM / 2,	//最大移动步数
 	};
 
 public:
@@ -106,13 +120,13 @@ private:
 	void CreateTank();
 
 	//检查指定位置是否有效
-	bool CheckPosValid(const TANK_POS& stDestPos);
+	bool CheckPosValid(const TANK_POS& stDestPos, int iDirection);
 
-	//更新坦克位置
-	void UpdateTankPos(int iTankIdx);
+	//检查两个坦克位置是否有重叠
+	bool CheckTankOverlap(const TANK_POS& stSrcPos, int iSrcDir, const TANK_POS& stDestPos, int iDestDir);
 
 	//更新坦克序列
-	void TanksMove();
+	void UpdateTankPos();
 
 private:
 	TANK_DATA m_arrTankList[TANK_MAXNUM];		//坦克位置集合

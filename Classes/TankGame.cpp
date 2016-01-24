@@ -1,30 +1,23 @@
 #include "TankGame.h"
 
-const int CORNER_POS[] = { 0, 0, 0, COLUMN_NUM - 1, ROW_NUM - 1, 0, ROW_NUM - 1, COLUMN_NUM - 1 };
+const int CORNER_POS[] = { 1, 1, 1, COLUMN_NUM - 2, ROW_NUM - 2, 1, ROW_NUM - 2, COLUMN_NUM - 2 };
 
-//坦克四个方向状态
-const int TANK_POSLIST[DIR_MAX][3][3] = 
+/*
+const TANK_POS TANK_POSLIST[DIR_MAX][6] = 
 {
-	{	//DIR_RIGHT
-		{ true, true, false },
-		{ false, true, true },
-		{ true, true, false },
-	},
-	{	//DIR_DOWN
-		{ true, false, true },
-		{ true, true, true },
-		{ false, true, false },
-	},
-	{	//DIR_LEFT
-		{ false, true, true },
-		{ true, true, false },
-		{ false, true, true },
-	},
-	{	//DIR_UP
-		{ false, true, false },
-		{ true, true, true },
-		{ true, false, true },
-	},
+	{ TANK_POS(-1, -1), TANK_POS(-1, 0), TANK_POS(0, 0), TANK_POS(0, 1), TANK_POS(1, -1), TANK_POS(1, 0), },
+	{ TANK_POS(-1, -1), TANK_POS(-1, 1), TANK_POS(0, -1), TANK_POS(0, 0), TANK_POS(0, 1), TANK_POS(1, 0), },
+	{ TANK_POS(-1, 0), TANK_POS(-1, 1), TANK_POS(0, -1), TANK_POS(0, 0), TANK_POS(1, 0), TANK_POS(1, 1), },
+	{ TANK_POS(-1, 0), TANK_POS(0, -1), TANK_POS(0, 0), TANK_POS(0, 1), TANK_POS(1, -1), TANK_POS(1, 1), },
+};*/
+
+
+const int TANK_POS_LIST[DIR_MAX][12] =
+{
+	{ -1, -1,   -1, 0,     0, 0,    0, 1,    1, -1,    1, 0 },
+	{ -1, -1,   -1, 1,    0, -1,    0, 0,     0, 1,    1, 0 },
+	{ -1, 0,    -1, 1,    0, -1,    0, 0,     1, 0,    1, 1 },
+	{ -1, 0,    0, -1,     0, 0,    0, 1,    1, -1,    1, 1 },
 };
 
 CTankGame::CTankGame(CGameScene* pGameScene) : CSceneBase(pGameScene)
@@ -63,7 +56,7 @@ void CTankGame::Init()
 void CTankGame::Play(float dt)
 {
 	m_iCurTime += dt * 1000;
-	if (m_iCurTime < TANK_REFRESHTIME)
+	if (m_iCurTime < TANK_REFRESH_TIME)
 	{
 		return;
 	}
@@ -71,7 +64,7 @@ void CTankGame::Play(float dt)
 	//重置时间
 	m_iCurTime = 0;
 
-	CreateTank();
+	//CreateTank();
 
 }
 
@@ -147,18 +140,21 @@ void CTankGame::CreateTank()
 
 		TANK_DATA& pTankData = m_arrTankList[iIndex];
 
+		//找有效角落位置
 		bool bPosValid = false;
-		for (int i = 0; i < sizeof(CORNER_POS) / sizeof(int) - 1; i += 2)
+		for (int i = 0; i < 8; i += 2)
 		{
 			pTankData.m_stTankPos.m_iRowIdx = CORNER_POS[i];
 			pTankData.m_stTankPos.m_iColIdx = CORNER_POS[i + 1];
-			if (CheckPosValid(pTankData.m_stTankPos))
+			pTankData.m_iDirection = Random(DIR_MIN, DIR_MAX);		//随机方向
+			if (CheckPosValid(pTankData.m_stTankPos, pTankData.m_iDirection))
 			{
 				bPosValid = true;
 				break;
 			}
 		}
 		
+		//如果没有找到有效位置就不创建坦克
 		if (!bPosValid)
 		{
 			return;
@@ -167,10 +163,11 @@ void CTankGame::CreateTank()
 		//初始化坦克
 		pTankData.m_bDead = false;
 		pTankData.m_iCurStep = 0;
-		pTankData.m_iMaxStep = Random(1, TANK_MAXSTEP);
+		pTankData.m_iMaxStep = Random(1, TANK_MOVE_MAXSTEP);
 		pTankData.m_iCurTime = 0;
-		pTankData.m_iNextFireTime = Random(1, TANK_FIREMAXTIME);
-		pTankData.m_iDirection = Random(DIR_MIN, DIR_MAX);			//随机方向
+		pTankData.m_iNextFireTime = Random(0, TANK_FIRE_MAXTIME);
+		pTankData.m_iRetryNum = 0;
+		pTankData.m_iLastStep = -1;
 
 		//创建下一个
 		++i;
@@ -178,7 +175,52 @@ void CTankGame::CreateTank()
 }
 
 
-bool CTankGame::CheckPosValid(const TANK_POS& stDestPos)
+//检查两个坦克位置是否有重叠
+bool CTankGame::CheckTankOverlap(const TANK_POS& stSrcPos, int iSrcDir, const TANK_POS& stDestPos, int iDestDir)
+{
+	for (int i = 0; i < 12; i += 2)
+	{
+		int iSrcRowIdx = stSrcPos.m_iRowIdx + TANK_POS_LIST[iSrcDir][i];
+		int iSrcColIdx = stSrcPos.m_iColIdx + TANK_POS_LIST[iSrcDir][i + 1];
+
+		for (int j = 0; j < 12; j += 2)
+		{
+			int iDestRowIdx = stDestPos.m_iRowIdx + TANK_POS_LIST[iDestDir][j];
+			int iDestColIdx = stDestPos.m_iColIdx + TANK_POS_LIST[iDestDir][j + 1];
+			if (iSrcRowIdx == iDestRowIdx && iSrcColIdx == iDestColIdx)
+			{
+				return true;
+			}
+		}
+	}
+
+	return false;
+}
+
+
+//检查位置是否有效
+bool CTankGame::CheckPosValid(const TANK_POS& stDestPos, int iDirection)
+{
+	for (int i = 0; i < TANK_MAXNUM; ++i)
+	{
+		if (m_arrTankList[i].m_bDead)
+		{
+			continue;
+		}
+		
+		TANK_DATA& pData = m_arrTankList[i];
+		if (CheckTankOverlap(stDestPos, iDirection, pData.m_stTankPos, pData.m_iDirection))
+		{
+			return false;
+		}
+	}
+
+	return true;
+}
+
+
+//更新坦克序列
+void CTankGame::UpdateTankPos()
 {
 	for (int i = 0; i < TANK_MAXNUM; ++i)
 	{
@@ -189,36 +231,7 @@ bool CTankGame::CheckPosValid(const TANK_POS& stDestPos)
 
 		TANK_DATA& pData = m_arrTankList[i];
 		
-		
 
-	}
-
-	return true;
-}
-
-
-//更新坦克序列
-void CTankGame::TanksMove()
-{
-	for (int i = 0; i < TANK_MAXNUM; ++i)
-	{
-		if (m_arrTankList[i].m_bDead)
-		{
-			continue;
-		}
-
-		UpdateTankPos(i);
-	}
-}
-
-
-//更新坦克位置
-void CTankGame::UpdateTankPos(int iTankIdx)
-{
-	TANK_DATA& pData = m_arrTankList[iTankIdx];
-	if (pData.m_iMaxStep > 0 && pData.m_iCurStep < pData.m_iMaxStep)
-	{
-		
 	}
 }
 

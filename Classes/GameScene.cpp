@@ -245,11 +245,11 @@ void CGameScene::InitCotroller()
 
 	//ÉèÖÃÎ»ÖÃ
 	float fTopPosY = fHeight - (fHeight - (leftBtnSize.width + fBtnPadding) * 2) / 3;
-	pLeftBtn->setPosition(Vec2(leftBtnSize.width, fTopPosY - upBtnSize.height - fBtnPadding));
-	pRightBtn->setPosition(Vec2(leftBtnSize.width * 1.5f + rightBtnSize.width / 2 + fBtnPadding * 2, fTopPosY - upBtnSize.height - fBtnPadding));
-	pDownBtn->setPosition(Vec2(leftBtnSize.width * 1.5f + fBtnPadding, fTopPosY - upBtnSize.height * 1.5f - fBtnPadding * 2));
-	pUpBtn->setPosition(Vec2(leftBtnSize.width * 1.5f + fBtnPadding, fTopPosY - upBtnSize.height / 2));
-	pFireBtn->setPosition(Vec2(m_visibleSize.width - leftBtnSize.width / 2 - fireBtnSize.width / 2, fTopPosY - upBtnSize.height - fBtnPadding));
+	pLeftBtn->setPosition(Vec2(leftBtnSize.width * 0.7f, fTopPosY - upBtnSize.height - fBtnPadding));
+	pRightBtn->setPosition(Vec2(leftBtnSize.width * 1.2f + rightBtnSize.width / 2 + fBtnPadding * 2, fTopPosY - upBtnSize.height - fBtnPadding));
+	pDownBtn->setPosition(Vec2(leftBtnSize.width * 1.2f + fBtnPadding, fTopPosY - upBtnSize.height * 1.5f - fBtnPadding * 2));
+	pUpBtn->setPosition(Vec2(leftBtnSize.width * 1.2f + fBtnPadding, fTopPosY - upBtnSize.height / 2));
+	pFireBtn->setPosition(Vec2(m_visibleSize.width - leftBtnSize.width * 0.4f - fireBtnSize.width / 2, fTopPosY - upBtnSize.height - fBtnPadding));
 	this->addChild(pLeftBtn);
 	this->addChild(pRightBtn);
 	this->addChild(pDownBtn);
