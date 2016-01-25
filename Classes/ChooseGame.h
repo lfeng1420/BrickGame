@@ -63,6 +63,6 @@ private:
 
 	int m_iLevel;						//等级
 
-	float m_iCurTime;					//当前时间
+	float m_fCurTime;					//当前时间
 };
 

@@ -22,6 +22,15 @@
     <Filter Include="Classes\Scene\Game">
       <UniqueIdentifier>{cff7e61f-37f2-4e0a-8c24-d9600aa60f66}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Classes\Scene\Game\FroggerGame">
+      <UniqueIdentifier>{4459115e-86ab-4128-bd8e-8b6336522e9e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Classes\Scene\Game\RacingGame">
+      <UniqueIdentifier>{0af63241-50e1-4351-939a-a08268eb44f7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Classes\Scene\Game\TankGame">
+      <UniqueIdentifier>{f738ba46-0c95-4171-8a65-fb734a106ae9}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -45,17 +54,23 @@
     <ClCompile Include="..\Classes\SceneBase.cpp">
       <Filter>Classes\Scene\Base</Filter>
     </ClCompile>
-    <ClCompile Include="..\Classes\FroggerGame.cpp">
-      <Filter>Classes\Scene\Game</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Classes\RacingGame.cpp">
-      <Filter>Classes\Scene\Game</Filter>
-    </ClCompile>
     <ClCompile Include="..\Classes\GlobalDef.cpp">
       <Filter>Classes</Filter>
     </ClCompile>
+    <ClCompile Include="..\Classes\FroggerGame.cpp">
+      <Filter>Classes\Scene\Game\FroggerGame</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\RacingGame.cpp">
+      <Filter>Classes\Scene\Game\RacingGame</Filter>
+    </ClCompile>
     <ClCompile Include="..\Classes\TankGame.cpp">
-      <Filter>Classes\Scene\Game</Filter>
+      <Filter>Classes\Scene\Game\TankGame</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\Tank.cpp">
+      <Filter>Classes\Scene\Game\TankGame</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\Bullet.cpp">
+      <Filter>Classes\Scene\Game\TankGame</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -84,13 +99,22 @@
       <Filter>Classes\Scene\Base</Filter>
     </ClInclude>
     <ClInclude Include="..\Classes\FroggerGame.h">
-      <Filter>Classes\Scene\Game</Filter>
+      <Filter>Classes\Scene\Game\FroggerGame</Filter>
     </ClInclude>
     <ClInclude Include="..\Classes\RacingGame.h">
-      <Filter>Classes\Scene\Game</Filter>
+      <Filter>Classes\Scene\Game\RacingGame</Filter>
     </ClInclude>
     <ClInclude Include="..\Classes\TankGame.h">
-      <Filter>Classes\Scene\Game</Filter>
+      <Filter>Classes\Scene\Game\TankGame</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\TankCommon.h">
+      <Filter>Classes\Scene\Game\TankGame</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\Tank.h">
+      <Filter>Classes\Scene\Game\TankGame</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\Bullet.h">
+      <Filter>Classes\Scene\Game\TankGame</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

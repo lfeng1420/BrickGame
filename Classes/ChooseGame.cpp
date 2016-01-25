@@ -23,26 +23,26 @@ void CChooseGame::Init()
 	m_iAnimIndex = 0;
 	m_pAnimData = nullptr;
 	m_bFirstAnim = false;
-	m_iCurTime = 0;
+	m_fCurTime = 0;
 }
 
 
 //¸üÐÂ
 void CChooseGame::Play(float dt)
 {
-	m_iCurTime += dt;
+	m_fCurTime += dt;
 	if (!m_bFirstAnim)
 	{
 		m_bFirstAnim = true;
 	}
 	else
 	{
-		if (m_iCurTime < REFRESH_INTERVAL)
+		if (m_fCurTime < REFRESH_INTERVAL)
 		{
 			return;
 		}
 
-		m_iCurTime = 0;
+		m_fCurTime = 0;
 	}
 
 	m_pAnimData = CDataManager::getInstance()->GetAnimData(m_iGameIndex, m_iAnimIndex);

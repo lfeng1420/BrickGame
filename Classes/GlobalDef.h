@@ -153,7 +153,7 @@ enum GAME_STATE
 
 
 // ---- Í¨ÓÃº¯Êý ---- 
-int Random(int iStart, int iEnd);
+int Random(int iStart, int iEnd, int iStep = 1);
 
 
 #endif //__GLOBAL_DEF_H_

@@ -1,9 +1,9 @@
 #include "GlobalDef.h"
 
-int Random(int iStart, int iEnd)
+int Random(int iStart, int iEnd, int iStep)
 {
 	vector<int> vecNum;
-	for (int i = iStart < iEnd ? iStart : iEnd; i < (iEnd > iStart ? iEnd: iStart); ++i)
+	for (int i = iStart < iEnd ? iStart : iEnd; i < (iEnd > iStart ? iEnd : iStart); i += iStep)
 	{
 		vecNum.push_back(i);
 	}

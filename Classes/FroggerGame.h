@@ -106,9 +106,9 @@ private:
 
 	int m_iSelfColIdx;							//自己所在的列索引
 
-	int m_iSelfCurTime;							//自己下一次更新前累计时间
+	float m_fSelfCurTime;						//自己下一次更新前累计时间
 
-	int m_iRiverCurTime;						//河道当前时间
+	float m_fRiverCurTime;						//河道当前时间
 
 	int m_iPassCount;							//通过的青蛙数量
 
@@ -118,8 +118,8 @@ private:
 
 	int m_iShowBoomCount;						//闪烁显示爆炸效果次数
 
-	int m_iBoomCurTime;							//爆炸当前时间
+	float m_fBoomCurTime;						//爆炸当前时间
 
-	int m_iPassCurTime;							//通过后当前时间
+	float m_fPassCurTime;						//通过后当前时间
 };
 

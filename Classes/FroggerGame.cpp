@@ -73,8 +73,8 @@ void CFroggerGame::Play(float dt)
 {
 	if (m_enGameState == GAMESTATE_PASS)
 	{
-		m_iPassCurTime += dt;
-		if (m_iPassCurTime < GAMEPASS_WAITTIME)
+		m_fPassCurTime += dt;
+		if (m_fPassCurTime < GAMEPASS_WAITTIME)
 		{
 			return;
 		}
@@ -176,14 +176,14 @@ SCENE_INDEX CFroggerGame::GetSceneType()
 //更新所有河道
 void CFroggerGame::UpdateRivers(float dt)
 {
-	m_iRiverCurTime += dt;
-	if (m_iRiverCurTime < DEFAULT_REFRESHTIME - 30 * m_iSpeed)
+	m_fRiverCurTime += dt;
+	if (m_fRiverCurTime < DEFAULT_REFRESHTIME - 30 * m_iSpeed)
 	{
 		return;
 	}
 	
 	//重置
-	m_iRiverCurTime = 0;
+	m_fRiverCurTime = 0;
 
 	//随机更新几个河道
 	int iUpdateCount = 2 + rand() % (RIVER_COUNT - 2);
@@ -267,10 +267,10 @@ void CFroggerGame::UpdateRiver(int iRowIndex)
 //更新自己
 void CFroggerGame::UpdateSelf(float dt)
 {
-	m_iSelfCurTime += dt;
-	if (m_iSelfCurTime >= SELF_REFRESHTIME)
+	m_fSelfCurTime += dt;
+	if (m_fSelfCurTime >= SELF_REFRESHTIME)
 	{
-		m_iSelfCurTime = 0;
+		m_fSelfCurTime = 0;
 		m_bSelfState = !m_bSelfState;
 	}
 }
@@ -285,18 +285,18 @@ void CFroggerGame::InitData()
 	m_iSelfColIdx = COLUMN_NUM / 2 - 1;
 
 	//初始化青蛙的时间和状态
-	m_iSelfCurTime = 0;
+	m_fSelfCurTime = 0;
 	m_bSelfState = false;
 
 	//初始化爆炸状态
 	m_iShowBoomCount = 0;
-	m_iBoomCurTime = 0;
+	m_fBoomCurTime = 0;
 
 	//初始化河道当前时间
-	m_iRiverCurTime = 0;
+	m_fRiverCurTime = 0;
 
 	//初始化游戏通过当前时间
-	m_iPassCurTime = 0;
+	m_fPassCurTime = 0;
 
 	//初始化游戏状态
 	m_enGameState = GAMESTATE_RUNNING;
@@ -362,14 +362,14 @@ void CFroggerGame::UpdateGameState()
 //设置爆炸
 void CFroggerGame::SetBoom( float dt )
 {
-	m_iBoomCurTime += dt;
-	if (m_iBoomCurTime < BOOM_REFRESHTIME)
+	m_fBoomCurTime += dt;
+	if (m_fBoomCurTime < BOOM_REFRESHTIME)
 	{
 		return;
 	}
 
 	//重置
-	m_iBoomCurTime = 0;
+	m_fBoomCurTime = 0;
 
 	int iColStartIdx = m_iSelfColIdx;
 	if (iColStartIdx > COLUMN_NUM - 4)
@@ -460,7 +460,7 @@ void CFroggerGame::OnUpBtnPressed()
 			//重置位置和状态
 			m_iSelfRowIdx = ROW_NUM - 1;
 			m_iSelfColIdx = 6;
-			m_iSelfCurTime = 0;
+			m_fSelfCurTime = 0;
 			m_bSelfState = true;
 		}
 	}

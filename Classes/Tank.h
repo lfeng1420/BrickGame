@@ -1,51 +1,52 @@
+#pragma once
+#include "TankCommon.h"
+
 class CTank
 {
 private:
-	int m_iColIdx;			//列位置
+	bool m_bDead;					//是否死亡
 
-	int m_iRowIdx;			//行位置
+	TANK_POS m_stTankPos;			//坦克位置
 
-	float m_iWaitMoveTime;	//当前等待移动的时间
+	int m_iCurStep;					//当前走的步数
 
-	float m_iWaitFireTime;	//当前等待发射子弹时间
+	int m_iMaxStep;					//最大步数
 
-	int m_iFireTime;		//可发射子弹时间
+	float m_fWaitMoveTime;			//射击已等待时间
 
-	int m_iCurStep;			//当前走过的步数
+	float m_fWaitFireTime;			//下一次射击的时间
 
-	int m_iMaxStep;			//本次计划走的步数
+	float m_fFireTime;				//发射子弹时间
 
-	int m_iRetryNum;		//重试次数
+	int m_iDirection;				//当前方向
 
-	int m_iDirection;		//走的方向
-
-	int m_iCamp;			//阵营
-
-	bool m_bDead;			//是否死亡
+	int m_iCamp;					//阵营
 
 private:
-	enum TANK_CAMP
+	enum 
 	{
-		CAMP_NONE,	
-		CAMP_A,
-		CAMP_B,
-	}
+		TANK_MOVE_WAITTIME = 1000,				//每秒刷新一次
+
+		TANK_FIRE_MAXTIME = 5000,				//射击等待最长时间
+
+		TANK_MOVE_MAXSTEP = 11,					//最大移动步数
+	};
 
 public:
-	CTank(int iCamp);
+	CTank();
 	~CTank();
 
-	void Init(int iRowIdx, int iColIdx);
+	void Init(int iRowIdx, int iColIdx, int iCamp);			//初始化
 
-	void UpdateTime(float dt);
+	void UpdateTime(float dt);								//更新时间记录
 
-	bool CanMove();
+	bool CanMove();											//是否可以移动
 
-	void Move();
+	bool Move();											//移动
 
-	bool CanFire();
+	bool CanFire();											//是否可以攻击
 
-	void Fire();
+	void Fire();											//攻击
 
-	bool IsDead();
-}
+	const TANK_POS& GetPos();							//获取当前位置
+};
