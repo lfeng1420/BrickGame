@@ -73,7 +73,7 @@ void CFroggerGame::Play(float dt)
 {
 	if (m_enGameState == GAMESTATE_PASS)
 	{
-		m_iPassCurTime += dt * 1000;
+		m_iPassCurTime += dt;
 		if (m_iPassCurTime < GAMEPASS_WAITTIME)
 		{
 			return;
@@ -108,17 +108,17 @@ void CFroggerGame::Play(float dt)
 	if (m_enGameState == GAMESTATE_RUNNING)
 	{
 		//更新自己
-		UpdateSelf(dt * 1000);
+		UpdateSelf(dt);
 
 		//河道更新
-		UpdateRivers(dt * 1000);
+		UpdateRivers(dt);
 
 		UpdateGameState();
 	}
 
 	if (m_enGameState == GAMESTATE_OVER)
 	{
-		SetBoom(dt * 1000);
+		SetBoom(dt);
 		if (m_iShowBoomCount >= BOOM_SHOWCOUNT)
 		{
 			//设置剩余生命

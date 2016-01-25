@@ -30,7 +30,7 @@ void CChooseGame::Init()
 //更新
 void CChooseGame::Play(float dt)
 {
-	m_iCurTime += dt * 1000;
+	m_iCurTime += dt;
 	if (!m_bFirstAnim)
 	{
 		m_bFirstAnim = true;
@@ -73,48 +73,44 @@ SCENE_INDEX CChooseGame::GetSceneType()
 //左
 void CChooseGame::OnLeftBtnPressed()
 {
-	if (--m_iLevel < 0)
+	if (m_iLevel > 0)
 	{
-		m_iLevel = LEVEL_MAX;
+		--m_iLevel;
+		m_pGameScene->UpdateLevel(m_iLevel);
 	}
-
-	m_pGameScene->UpdateLevel(m_iLevel);
 }
 
 
 //右
 void CChooseGame::OnRightBtnPressed()
 {
-	if (++m_iLevel > LEVEL_MAX)
+	if (m_iLevel < LEVEL_MAX)
 	{
-		m_iLevel = 0;
+		++m_iLevel;
+		m_pGameScene->UpdateLevel(m_iLevel);
 	}
-
-	m_pGameScene->UpdateLevel(m_iLevel);
 }
 
 
 //上
 void CChooseGame::OnUpBtnPressed()
 {
-	if (++m_iSpeed > SPEED_MAX)
+	if (m_iSpeed < SPEED_MAX)
 	{
-		m_iSpeed = 0;
+		++m_iSpeed;
+		m_pGameScene->UpdateSpeed(m_iSpeed);
 	}
-
-	m_pGameScene->UpdateSpeed(m_iSpeed);
 }
 
 
 //下
 void CChooseGame::OnDownPressed()
 {
-	if (--m_iSpeed < 0)
+	if (m_iSpeed > 0)
 	{
-		m_iSpeed = SPEED_MAX;
+		--m_iSpeed;
+		m_pGameScene->UpdateSpeed(m_iSpeed);
 	}
-
-	m_pGameScene->UpdateSpeed(m_iSpeed);
 }
 
 

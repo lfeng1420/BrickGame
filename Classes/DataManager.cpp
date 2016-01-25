@@ -51,17 +51,23 @@ bool CDataManager::LoadGameAnim()
 
 	for (int i = 0; i < GAME_NUM * ANIM_NUM; ++i)
 	{
-		string strPath = FileUtils::getInstance()->fullPathForFilename(arrAnimFilePath[i]);
-		string strContent = FileUtils::getInstance()->getStringFromFile(strPath);
+		ifstream oFileStream(arrAnimFilePath[i].c_str());
+		if (!oFileStream.is_open())
+		{
+			log("Read Data From '%s' FAILED.", arrAnimFilePath[i].c_str());
+			return false;
+		}
 
 		TVECTOR_ANIMDATA& vecAnimData = m_mapGameAnim[i];
-		for (unsigned int i = 0; i < strContent.size(); ++i)
+		char ch = '\0';
+		while (!oFileStream.eof())
 		{
-			if (strContent[i] == '0')
+			oFileStream.get(ch);
+			if (ch == '0')
 			{
 				vecAnimData.push_back(1);
 			}
-			else if (strContent[i] == '-')
+			else if (ch == '-')
 			{
 				vecAnimData.push_back(0);
 			}
