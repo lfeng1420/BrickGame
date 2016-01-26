@@ -15,7 +15,7 @@ CGameScene::~CGameScene()
 {
 	for (int i = 0; i < m_mapGameObj.size(); ++i)
 	{
-		SAFE_DELETE(m_mapGameObj[i]);
+		CC_SAFE_DELETE(m_mapGameObj[i]);
 	}
 }
 

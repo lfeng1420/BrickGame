@@ -19,6 +19,12 @@ public:
 	//是否有效
 	bool IsValid();
 
+	//设置是否有效标记
+	void SetValid(bool bValid);
+
+	//是否击中了坦克
+	bool IsHitOnTank(const TANK_POS& stTankPos);
+
 private:
 	enum 
 	{

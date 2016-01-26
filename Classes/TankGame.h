@@ -1,7 +1,9 @@
 #pragma once
 #include "SceneBase.h"
-#include "TankCommon.h"
 
+class CTank;
+class CBullet;
+struct TANK_POS;
 
 class CTankGame : public CSceneBase
 {
@@ -64,6 +66,15 @@ private:
 	//初始化数据，与Init不同，Init在切换到该场景时调用，InitData在重置时调用
 	void InitData();
 
+	//检查两个坦克位置之间是否有重叠
+	bool CheckTankPos(const TANK_POS& stSrcPos, int iSrcDir, const TANK_POS& stDestPos, int iDestDir);
+
+	//更新坦克位置
+	void UpdateTankPos();
+
+	//创建坦克
+	void CreateTank();
+
 private:
 	enum
 	{
@@ -71,6 +82,10 @@ private:
 	};
 
 private:
+	CTank* m_pArrTank[5];						//坦克列表
+
+	CBullet* m_pArrBullet[5];					//子弹列表
+
 	int m_iSpeed;								//速度
 
 	int m_iLevel;								//关卡

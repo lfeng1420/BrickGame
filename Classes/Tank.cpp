@@ -40,6 +40,11 @@ void CTank::Init(int iRowIdx, int iColIdx, int iCamp)
 
 void CTank::UpdateTime(float dt)
 {
+	if (m_bDead)
+	{
+		return;
+	}
+
 	m_fWaitFireTime += dt;
 	m_fWaitMoveTime += dt;
 }
@@ -47,63 +52,77 @@ void CTank::UpdateTime(float dt)
 
 bool CTank::CanMove()
 {
-	return m_fWaitMoveTime >= TANK_MOVE_WAITTIME;
+	return !m_bDead && m_fWaitMoveTime >= TANK_MOVE_WAITTIME;
 }
 
 
-bool CTank::Move()
+void CTank::Move()
 {
-	//重置时间
-	m_fWaitMoveTime = 0;
-
-	TANK_POS stPos(m_stTankPos);
-
-	switch (m_iDirection)
+	do 
 	{
-	case DIR_RIGHT:
-		++stPos.m_iColIdx;
-		break;
-	case DIR_LEFT:
-		--stPos.m_iColIdx;
-		break;
-	case DIR_UP:
-		--stPos.m_iRowIdx;
-		break;
-	case DIR_DOWN:
-		++stPos.m_iRowIdx;
-		break;
-	}
+		//重置时间
+		m_fWaitMoveTime = 0;
 
-	bool bMoveFlag = true;
+		if (m_iCurStep >= m_iMaxStep)
+		{
+			//已达到目标步数，需要重置（步数为0的情况，此时无需移动）
+			break;
+		}
 
-	//检查位置是否有效
-	if (stPos.m_iRowIdx < 1 || stPos.m_iRowIdx > ROW_NUM - 2
-		|| stPos.m_iColIdx < 1 || stPos.m_iColIdx > COLUMN_NUM - 2)
-	{
-		bMoveFlag = false;
-	}
-	else
-	{
-		//当前移动步数增加
-		++m_iCurStep;
-	}
+		//更新位置
+		TANK_POS stPos(m_stTankPos);
+		switch (m_iDirection)
+		{
+		case DIR_RIGHT:
+			++stPos.m_iColIdx;
+			break;
+		case DIR_LEFT:
+			--stPos.m_iColIdx;
+			break;
+		case DIR_UP:
+			--stPos.m_iRowIdx;
+			break;
+		case DIR_DOWN:
+			++stPos.m_iRowIdx;
+			break;
+		}
 
-	//如果无法再移动或者本次计划移动步数已达到时重新选择方向
-	if (!bMoveFlag || m_iCurStep >= m_iMaxStep)
-	{
-		m_iDirection = Random(DIR_MIN, DIR_MAX);
+		//检查位置是否有效
+		if (stPos.m_iRowIdx < 1 || stPos.m_iRowIdx > ROW_NUM - 2
+			|| stPos.m_iColIdx < 1 || stPos.m_iColIdx > COLUMN_NUM - 2)
+		{
+			//位置无效，需要重置
+			break;
+		}
 
-		//重置步数
-		m_iCurStep = 0;
-	}
 
-	return bMoveFlag;
+		//位置有效，更新位置，当前移动步数增加
+		m_stTankPos = stPos;
+		if (++m_iCurStep >= m_iMaxStep)
+		{
+			//步数已达到目标步数，需要重置
+			break;
+		}
+		else
+		{
+			//还没有达到目标步数，无需重置
+			return;
+		}
+
+	} while (0);
+
+	//重新随机方向
+	m_iDirection = Random(DIR_MIN, DIR_MAX);
+
+	//重置步数
+	m_iCurStep = 0;
+	m_iMaxStep = Random(0, TANK_MOVE_MAXSTEP);
 }
 
 
 bool CTank::CanFire()
 {
-	return m_fWaitFireTime >= TANK_FIRE_MAXTIME;
+	return !m_bDead && m_fWaitFireTime >= TANK_FIRE_MAXTIME;
 }
 
 
@@ -122,3 +141,13 @@ const TANK_POS& CTank::GetPos()
 	return m_stTankPos;
 }
 
+
+bool CTank::IsDead()
+{
+	return m_bDead;
+}
+
+void CTank::SetDead(bool bDead)
+{
+	m_bDead = bDead;
+}

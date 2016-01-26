@@ -15,16 +15,24 @@ struct TANK_POS
 	{
 	};
 
-	TANK_POS(const TANK_POS& stPos)
+	bool operator== (const TANK_POS& rhs) const
 	{
-		this->m_iRowIdx = stPos.m_iRowIdx;
-		this->m_iColIdx = stPos.m_iColIdx;
+		return this->m_iRowIdx == rhs.m_iRowIdx && this->m_iRowIdx == rhs.m_iColIdx;
 	};
 
-	bool operator== (const TANK_POS& stPos) const
+	TANK_POS& operator+= (const TANK_POS& rhs)
 	{
-		return this->m_iRowIdx == stPos.m_iRowIdx && this->m_iRowIdx == stPos.m_iColIdx;
-	};
+		this->m_iRowIdx += rhs.m_iRowIdx;
+		this->m_iColIdx += rhs.m_iColIdx;
+		return *this;
+	}
+
+	const TANK_POS operator+ (const TANK_POS& rhs) const
+	{
+		TANK_POS temp(*this);
+		temp += rhs;
+		return temp;
+	}
 };
 
 

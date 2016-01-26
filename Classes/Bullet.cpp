@@ -45,6 +45,20 @@ void CBullet::Update(float dt)
 	}
 }
 
+
+//是否击中了坦克
+bool CBullet::IsHitOnTank(const TANK_POS& stTankPos)
+{
+	if (abs(stTankPos.m_iRowIdx - stTankPos.m_iRowIdx) <= 1
+		&& abs(m_stPos.m_iColIdx - stTankPos.m_iColIdx) <= 1)
+	{
+		return true;
+	}
+
+	return false;
+}
+
+
 //获取位置
 const TANK_POS& CBullet::GetPos()
 {
@@ -52,9 +66,17 @@ const TANK_POS& CBullet::GetPos()
 }
 
 
+//获取是否有效标记
 bool CBullet::IsValid()
 {
 	return m_bValid;
+}
+
+
+//设置是否有效标记
+void CBullet::SetValid(bool bValid)
+{
+	m_bValid = bValid;
 }
 
 
@@ -69,4 +91,7 @@ void CBullet::Init(int iRowIdx, int iColIdx, int iDirection)
 
 	//时间
 	m_fCurTime = 0;
+
+	//设置有效
+	m_bValid = true;
 }

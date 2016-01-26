@@ -42,11 +42,15 @@ public:
 
 	bool CanMove();											//是否可以移动
 
-	bool Move();											//移动
+	void Move();											//移动
 
 	bool CanFire();											//是否可以攻击
 
 	void Fire();											//攻击
 
-	const TANK_POS& GetPos();							//获取当前位置
+	bool IsDead();											//是否死亡
+
+	void SetDead(bool bDead);								//设置死亡标记
+
+	const TANK_POS& GetPos();								//获取当前位置
 };
