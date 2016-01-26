@@ -343,7 +343,7 @@ void CGameScene::CreateKeyListener()
 
 void CGameScene::update(float dt)
 {
-	m_mapGameObj[m_iSceneIndex]->Play(dt);
+	m_mapGameObj[m_iSceneIndex]->Play(dt * 1000);
 }
 
 

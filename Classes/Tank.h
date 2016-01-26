@@ -38,11 +38,15 @@ public:
 
 	void Init(int iRowIdx, int iColIdx, int iCamp);			//初始化
 
+	void SetDirection(int iDir);							//设置方向
+
 	void UpdateTime(float dt);								//更新时间记录
 
 	bool CanMove();											//是否可以移动
 
 	void Move();											//移动
+
+	void RandStepAndDirection();							//随机方向和步数
 
 	bool CanFire();											//是否可以攻击
 
@@ -53,4 +57,8 @@ public:
 	void SetDead(bool bDead);								//设置死亡标记
 
 	const TANK_POS& GetPos();								//获取当前位置
+
+	TANK_POS GetNextPos();									//获取下一个位置
+
+	int GetDirection();										//获取当前方向
 };

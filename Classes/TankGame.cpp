@@ -3,6 +3,14 @@
 #include "Bullet.h"
 #include "TankCommon.h"
 
+const int CORNER_POS[8] = 
+{
+	1, 1, 
+	1, COLUMN_NUM - 2,
+	ROW_NUM - 2, 1,
+	ROW_NUM - 2, COLUMN_NUM - 2,
+};
+
 const int TANK_POS_LIST[DIR_MAX][12] =
 {
 	{ -1, -1, -1,  0,  0,  0,  0,  1,  1, -1,  1,  0 },
@@ -58,19 +66,36 @@ void CTankGame::Init()
 //更新
 void CTankGame::Play(float dt)
 {
-	
+	//UpdateTankPos(dt);
 
+	//CreateTank();
+
+	m_pGameScene->UpdateBricks();
 }
 
-//提供给每次更新单个Brick游戏（当前只有游戏结束）使用，获取当前改变的Brick行列索引
-void CTankGame::GetCurPos(int& iRowIndex, int& iColIndex)
-{
-
-}
 
 //获取当前Brick状态
 bool CTankGame::GetBrickState(int iRowIndex, int iColIndex)
 {
+	for (int i = 0; i < 5; ++i)
+	{
+		if (m_pArrTank[i]->IsDead())
+		{
+			continue;
+		}
+
+		const TANK_POS& stPos = m_pArrTank[i]->GetPos();
+		int iDir = m_pArrTank[i]->GetDirection();
+		for (int j = 0; j < 12; j += 2)
+		{
+			if (stPos.m_iRowIdx + TANK_POS_LIST[iDir][j] == iRowIndex
+				&& stPos.m_iColIdx + TANK_POS_LIST[iDir][j + 1] == iColIndex)
+			{
+				return true;
+			}
+		}
+	}
+
 	return false;
 }
 
@@ -97,6 +122,7 @@ void CTankGame::InitData()
 		{
 			//自己，初始化
 			m_pArrTank[i]->Init(ROW_NUM / 2 - 1, COLUMN_NUM / 2 - 1, CAMP_A);
+			m_pArrTank[i]->SetDirection(DIR_UP);
 		}
 		else
 		{
@@ -130,23 +156,69 @@ bool CTankGame::CheckTankPos(const TANK_POS& stSrcPos, int iSrcDir, const TANK_P
 
 
 //更新坦克位置
-void CTankGame::UpdateTankPos()
+void CTankGame::UpdateTankPos(float dt)
 {
 	for (int i = 0; i < 5; ++i)
 	{
-		m_pArrTank[i]->UpdateTime();
-		if (m_pArrTank[i]->CanMove())
+		m_pArrTank[i]->UpdateTime(dt);
+		if (m_pArrTank[i]->CanMove() && CheckNewPos(i))
 		{
-			
+			m_pArrTank[i]->Move();
+		}
+		else
+		{
+			m_pArrTank[i]->RandStepAndDirection();
 		}
 	}
+}
+
+
+//检查
+bool CTankGame::CheckNewPos(int iTankIdx)
+{
+	TANK_POS stTankNextPos = m_pArrTank[iTankIdx]->GetNextPos();
+	int iTankDir = m_pArrTank[iTankIdx]->GetDirection();
+
+	for (int i = 0; i < 5; ++i)
+	{
+		if (i == iTankIdx)
+		{
+			continue;
+		}
+		
+		if (!CheckTankPos(stTankNextPos, iTankDir, m_pArrTank[i]->GetPos(), m_pArrTank[i]->GetDirection()))
+		{
+			return false;
+		}
+	}
+
+	return true;
 }
 
 
 //创建坦克
 void CTankGame::CreateTank()
 {
+	int iTankIdx = 1;
+	while (iTankIdx < 5)
+	{
+		CTank* pTank = m_pArrTank[iTankIdx];
+		if (pTank->IsDead())
+		{
+			//创建新的坦克
+			for (int i = 0; i < 8; i += 2)
+			{
+				pTank->Init(CORNER_POS[i], CORNER_POS[i + 1], CAMP_B);
+				if (CheckNewPos(iTankIdx))
+				{
+					return;
+				}
+			}
 
+			//创建失败，设置无效
+			pTank->SetDead(true);
+		}
+	}
 }
 
 

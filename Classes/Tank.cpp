@@ -38,6 +38,12 @@ void CTank::Init(int iRowIdx, int iColIdx, int iCamp)
 }
 
 
+void CTank::SetDirection(int iDir)
+{
+	m_iDirection = iDir;
+}
+
+
 void CTank::UpdateTime(float dt)
 {
 	if (m_bDead)
@@ -60,9 +66,6 @@ void CTank::Move()
 {
 	do 
 	{
-		//重置时间
-		m_fWaitMoveTime = 0;
-
 		if (m_iCurStep >= m_iMaxStep)
 		{
 			//已达到目标步数，需要重置（步数为0的情况，此时无需移动）
@@ -70,23 +73,8 @@ void CTank::Move()
 		}
 
 		//更新位置
-		TANK_POS stPos(m_stTankPos);
-		switch (m_iDirection)
-		{
-		case DIR_RIGHT:
-			++stPos.m_iColIdx;
-			break;
-		case DIR_LEFT:
-			--stPos.m_iColIdx;
-			break;
-		case DIR_UP:
-			--stPos.m_iRowIdx;
-			break;
-		case DIR_DOWN:
-			++stPos.m_iRowIdx;
-			break;
-		}
-
+		TANK_POS stPos = GetNextPos();
+		
 		//检查位置是否有效
 		if (stPos.m_iRowIdx < 1 || stPos.m_iRowIdx > ROW_NUM - 2
 			|| stPos.m_iColIdx < 1 || stPos.m_iColIdx > COLUMN_NUM - 2)
@@ -111,12 +99,45 @@ void CTank::Move()
 
 	} while (0);
 
+	RandStepAndDirection();
+}
+
+
+void CTank::RandStepAndDirection()
+{
+	//重置时间
+	m_fWaitMoveTime = 0;
+
 	//重新随机方向
 	m_iDirection = Random(DIR_MIN, DIR_MAX);
 
 	//重置步数
 	m_iCurStep = 0;
 	m_iMaxStep = Random(0, TANK_MOVE_MAXSTEP);
+}
+
+
+TANK_POS CTank::GetNextPos()
+{
+	//更新位置
+	TANK_POS stPos(m_stTankPos);
+	switch (m_iDirection)
+	{
+	case DIR_RIGHT:
+		++stPos.m_iColIdx;
+		break;
+	case DIR_LEFT:
+		--stPos.m_iColIdx;
+		break;
+	case DIR_UP:
+		--stPos.m_iRowIdx;
+		break;
+	case DIR_DOWN:
+		++stPos.m_iRowIdx;
+		break;
+	}
+
+	return stPos;
 }
 
 
@@ -150,4 +171,10 @@ bool CTank::IsDead()
 void CTank::SetDead(bool bDead)
 {
 	m_bDead = bDead;
+}
+
+
+int CTank::GetDirection()
+{
+	return m_iDirection;
 }

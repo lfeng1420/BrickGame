@@ -18,9 +18,6 @@ public:
 	//更新
 	void Play(float dt);
 
-	//提供给每次更新单个Brick游戏（当前只有游戏结束）使用，获取当前改变的Brick行列索引
-	void GetCurPos(int& iRowIndex, int& iColIndex);
-
 	//获取当前Brick状态
 	bool GetBrickState(int iRowIndex, int iColIndex);
 
@@ -68,9 +65,12 @@ private:
 
 	//检查两个坦克位置之间是否有重叠
 	bool CheckTankPos(const TANK_POS& stSrcPos, int iSrcDir, const TANK_POS& stDestPos, int iDestDir);
+	
+	//检查
+	bool CheckNewPos(int iTankIdx);
 
 	//更新坦克位置
-	void UpdateTankPos();
+	void UpdateTankPos(float dt);
 
 	//创建坦克
 	void CreateTank();
