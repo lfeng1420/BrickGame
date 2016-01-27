@@ -37,8 +37,12 @@ void CDataManager::Init()
 bool CDataManager::LoadGameAnim()
 {
 	//¶¯»­ÎÄ¼þ
-	const string arrAnimFilePath[ANIM_NUM * GAME_NUM] =
+	const string arrAnimFilePath[ANIM_NUM * GAME_MAX] =
 	{
+		"Anims/a1_1.txt",
+		"Anims/a1_2.txt",
+		"Anims/a1_3.txt",
+		"Anims/a1_4.txt",
 		"Anims/b1_1.txt",
 		"Anims/b1_2.txt",
 		"Anims/b1_3.txt",
@@ -49,25 +53,19 @@ bool CDataManager::LoadGameAnim()
 		"Anims/e1_4.txt",
 	};
 
-	for (int i = 0; i < GAME_NUM * ANIM_NUM; ++i)
+	for (int i = 0; i < GAME_MAX * ANIM_NUM; ++i)
 	{
-		ifstream oFileStream(arrAnimFilePath[i].c_str());
-		if (!oFileStream.is_open())
-		{
-			log("Read Data From '%s' FAILED.", arrAnimFilePath[i].c_str());
-			return false;
-		}
+		string strPath = FileUtils::getInstance()->fullPathForFilename(arrAnimFilePath[i]);
+		string strContent = FileUtils::getInstance()->getStringFromFile(strPath);
 
 		TVECTOR_ANIMDATA& vecAnimData = m_mapGameAnim[i];
-		char ch = '\0';
-		while (!oFileStream.eof())
+		for (unsigned int i = 0; i < strContent.size(); ++i)
 		{
-			oFileStream.get(ch);
-			if (ch == '0')
+			if (strContent[i] == '0')
 			{
 				vecAnimData.push_back(1);
 			}
-			else if (ch == '-')
+			else if (strContent[i] == '-')
 			{
 				vecAnimData.push_back(0);
 			}

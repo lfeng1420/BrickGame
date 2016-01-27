@@ -8,8 +8,6 @@
 
 #include <map>
 #include <vector>
-#include <fstream>
-#include <iostream>
 #include <algorithm>
 
 using namespace std;
@@ -131,11 +129,11 @@ enum GAME_LIST
 {
 	GAME_INVALID = -1,			//无效
 
+	GAME_TANK,					//坦克大战
+	
 	GAME_RACING,				//赛车
 
 	GAME_FROGGER,				//青蛙过河
-
-	GAME_TANK,					//坦克大战
 
 	GAME_MAX,					//最大值
 };

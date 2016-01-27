@@ -3,7 +3,7 @@
 
 CChooseGame::CChooseGame(CGameScene* pGameScene) : CSceneBase(pGameScene)
 {
-	
+
 }
 
 
@@ -24,6 +24,9 @@ void CChooseGame::Init()
 	m_pAnimData = nullptr;
 	m_bFirstAnim = false;
 	m_fCurTime = 0;
+
+	//重置分数
+	m_pGameScene->UpdateScore(0);
 }
 
 
@@ -46,7 +49,7 @@ void CChooseGame::Play(float dt)
 	}
 
 	m_pAnimData = CDataManager::getInstance()->GetAnimData(m_iGameIndex, m_iAnimIndex);
-	
+
 	//下一个动画
 	if (++m_iAnimIndex >= ANIM_NUM)
 	{
@@ -73,44 +76,48 @@ SCENE_INDEX CChooseGame::GetSceneType()
 //左
 void CChooseGame::OnLeftBtnPressed()
 {
-	if (m_iLevel > 0)
+	if (--m_iLevel < 0)
 	{
-		--m_iLevel;
-		m_pGameScene->UpdateLevel(m_iLevel);
+		m_iLevel = LEVEL_MAX;
 	}
+
+	m_pGameScene->UpdateLevel(m_iLevel);
 }
 
 
 //右
 void CChooseGame::OnRightBtnPressed()
 {
-	if (m_iLevel < LEVEL_MAX)
+	if (++m_iLevel > LEVEL_MAX)
 	{
-		++m_iLevel;
-		m_pGameScene->UpdateLevel(m_iLevel);
+		m_iLevel = 0;
 	}
+
+	m_pGameScene->UpdateLevel(m_iLevel);
 }
 
 
 //上
 void CChooseGame::OnUpBtnPressed()
 {
-	if (m_iSpeed < SPEED_MAX)
+	if (++m_iSpeed > SPEED_MAX)
 	{
-		++m_iSpeed;
-		m_pGameScene->UpdateSpeed(m_iSpeed);
+		m_iSpeed = 0;
 	}
+
+	m_pGameScene->UpdateSpeed(m_iSpeed);
 }
 
 
 //下
 void CChooseGame::OnDownPressed()
 {
-	if (m_iSpeed > 0)
+	if (--m_iSpeed < 0)
 	{
-		--m_iSpeed;
-		m_pGameScene->UpdateSpeed(m_iSpeed);
+		m_iSpeed = SPEED_MAX;
 	}
+
+	m_pGameScene->UpdateSpeed(m_iSpeed);
 }
 
 
@@ -129,7 +136,7 @@ void CChooseGame::OnFireBtnPressed()
 
 
 //游戏索引转换场景索引
-const int GAMEIDX_TO_SCENEIDX[] = 
+const int GAMEIDX_TO_SCENEIDX[] =
 {
 	SCENE_RACING,	//对应GAME_RACING
 	SCENE_FROGGER,	//对应GAME_FROGGER

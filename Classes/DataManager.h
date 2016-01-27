@@ -42,7 +42,6 @@ private:
 	enum
 	{
 		ANIM_NUM = 4,		//每个游戏动画个数
-		GAME_NUM = 2,		//游戏数量
 	};
 
 

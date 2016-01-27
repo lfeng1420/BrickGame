@@ -68,7 +68,7 @@ bool CGameScene::init()
 void CGameScene::InitData()
 {
 	m_visibleSize = Director::getInstance()->getVisibleSize();
-	
+
 	//初始化暂停标记
 	m_bGamePause = false;
 }
@@ -129,7 +129,7 @@ void CGameScene::InitUI()
 	fCurY -= highScoreSize.height * 3 / 2;
 	pHighScore->setPosition(fCurX, fCurY + highScoreSize.height / 2);
 	this->addChild(pHighScore);
-	
+
 	//分数Label
 	m_pHighScoreLabel = Label::createWithTTF(ttfConfig, "000000", TextHAlignment::CENTER);
 	Size highScoreLabelSize = GET_CONTENTSIZE(m_pHighScoreLabel);
@@ -137,7 +137,7 @@ void CGameScene::InitUI()
 	m_pHighScoreLabel->setPosition(fCurX, fCurY + highScoreLabelSize.height / 2);
 	m_pHighScoreLabel->setTextColor(Color4B::BLACK);
 	this->addChild(m_pHighScoreLabel);
-	
+
 	//小方块序列
 	float fBrickScale = 0.7f;
 	float fPadding = 4;
@@ -171,7 +171,7 @@ void CGameScene::InitUI()
 	m_pSpeedLabel->setPosition(fCurX, fCurY + speedLabelSize.height / 2);
 	m_pSpeedLabel->setTextColor(Color4B::BLACK);
 	this->addChild(m_pSpeedLabel);
-	
+
 	//等级Label
 	m_pLevelLabel = Label::createWithTTF(ttfConfig, "0", TextHAlignment::CENTER);
 	Size levelLabelSize = GET_CONTENTSIZE(m_pLevelLabel);
@@ -199,6 +199,8 @@ void CGameScene::InitUI()
 
 	//默认非暂停状态
 	m_pPauseSpr->setVisible(m_bGamePause);
+
+	log("Leave CGameScene::InitUI");
 }
 
 
@@ -207,8 +209,8 @@ void CGameScene::InitCotroller()
 	//剩余高度，用于调整控制按钮位置
 	float fHeight = m_visibleSize.height - BRICK_HEIGHT * ROW_NUM;
 
-	float fBtnScale = 1.23f;
-	float fBtnPadding = 8 * fBtnScale;
+	float fBtnScale = 1.4f;
+	float fBtnPadding = 25 * fBtnScale;
 
 	//上
 	Button* pUpBtn = Button::create("up_0.png", "up_1.png");
@@ -235,18 +237,19 @@ void CGameScene::InitCotroller()
 	Size leftBtnSize = pLeftBtn->getContentSize() * fBtnScale;
 
 	//Fire
+	float fFireScale = fBtnScale - 0.1f;
 	Button* pFireBtn = Button::create("fire_0.png", "fire_1.png");
-	pFireBtn->setScale(fBtnScale);
+	pFireBtn->setScale(fFireScale);
 	pFireBtn->addTouchEventListener(CC_CALLBACK_2(CGameScene::OnButtonEvent, this, BTN_FIRE));
-	Size fireBtnSize = pFireBtn->getContentSize() * fBtnScale;
+	Size fireBtnSize = pFireBtn->getContentSize() * fFireScale;
 
 	//设置位置
 	float fTopPosY = fHeight - (fHeight - (leftBtnSize.width + fBtnPadding) * 2) / 3;
-	pLeftBtn->setPosition(Vec2(leftBtnSize.width, fTopPosY - upBtnSize.height - fBtnPadding));
-	pRightBtn->setPosition(Vec2(leftBtnSize.width * 1.5f + rightBtnSize.width / 2 + fBtnPadding * 2, fTopPosY - upBtnSize.height - fBtnPadding));
-	pDownBtn->setPosition(Vec2(leftBtnSize.width * 1.5f + fBtnPadding, fTopPosY - upBtnSize.height * 1.5f - fBtnPadding * 2));
-	pUpBtn->setPosition(Vec2(leftBtnSize.width * 1.5f + fBtnPadding, fTopPosY - upBtnSize.height / 2));
-	pFireBtn->setPosition(Vec2(m_visibleSize.width - (leftBtnSize.width * 1.5f + fBtnPadding), fTopPosY - upBtnSize.height - fBtnPadding));
+	pLeftBtn->setPosition(Vec2(leftBtnSize.width * 0.7f, fTopPosY - upBtnSize.height - fBtnPadding));
+	pRightBtn->setPosition(Vec2(leftBtnSize.width * 1.2f + rightBtnSize.width / 2 + fBtnPadding * 2, fTopPosY - upBtnSize.height - fBtnPadding));
+	pDownBtn->setPosition(Vec2(leftBtnSize.width * 1.2f + fBtnPadding, fTopPosY - upBtnSize.height * 1.5f - fBtnPadding * 2));
+	pUpBtn->setPosition(Vec2(leftBtnSize.width * 1.2f + fBtnPadding, fTopPosY - upBtnSize.height / 2));
+	pFireBtn->setPosition(Vec2(m_visibleSize.width - leftBtnSize.width * 0.4f - fireBtnSize.width / 2, fTopPosY - upBtnSize.height - fBtnPadding));
 	this->addChild(pLeftBtn);
 	this->addChild(pRightBtn);
 	this->addChild(pDownBtn);
@@ -334,6 +337,12 @@ void CGameScene::CreateKeyListener()
 		else if (EventKeyboard::KeyCode::KEY_K == keyCode)
 		{
 			OnButtonPressed(BTN_FIRE);
+		}
+		else if (EventKeyboard::KeyCode::KEY_RETURN == keyCode ||
+			EventKeyboard::KeyCode::KEY_ESCAPE == keyCode ||
+			EventKeyboard::KeyCode::KEY_BACKSPACE == keyCode)
+		{
+			DIRECTOR_INSTANCE()->end();
 		}
 	};
 
