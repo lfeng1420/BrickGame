@@ -64,10 +64,10 @@ private:
 	void InitData();
 
 	//检查两个坦克位置之间是否有重叠
-	bool CheckTankPos(const TANK_POS& stSrcPos, int iSrcDir, const TANK_POS& stDestPos, int iDestDir);
+	bool CheckPos(const TANK_POS& stSrcPos, int iSrcDir, const TANK_POS& stDestPos, int iDestDir);
 	
 	//检查
-	bool CheckNewPos(int iTankIdx);
+	bool CheckTankPos(int iTankIdx, bool bNextPosFlag);
 
 	//更新坦克位置
 	void UpdateTankPos();
@@ -77,6 +77,9 @@ private:
 
 	//更新时间
 	void UpdateTime(float dt);
+
+	//获取一个方向
+	void SetADirection(int iTankIdx);
 
 private:
 	enum

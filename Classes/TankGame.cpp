@@ -148,7 +148,7 @@ void CTankGame::InitData()
 }
 
 
-bool CTankGame::CheckTankPos(const TANK_POS& stSrcPos, int iSrcDir, const TANK_POS& stDestPos, int iDestDir)
+bool CTankGame::CheckPos(const TANK_POS& stSrcPos, int iSrcDir, const TANK_POS& stDestPos, int iDestDir)
 {
 	for (int i = 0; i < 12; i += 2)
 	{
@@ -156,8 +156,8 @@ bool CTankGame::CheckTankPos(const TANK_POS& stSrcPos, int iSrcDir, const TANK_P
 		int iSrcColIdx = stSrcPos.m_iColIdx + TANK_POS_LIST[iSrcDir][i + 1];
 		for (int j = 0; j < 12; j += 2)
 		{
-			int iDestRowIdx = stDestPos.m_iRowIdx + TANK_POS_LIST[iDestDir][i];
-			int iDestColIdx = stDestPos.m_iColIdx + TANK_POS_LIST[iDestDir][i + 1];
+			int iDestRowIdx = stDestPos.m_iRowIdx + TANK_POS_LIST[iDestDir][j];
+			int iDestColIdx = stDestPos.m_iColIdx + TANK_POS_LIST[iDestDir][j + 1];
 			if (iDestRowIdx == iSrcRowIdx && iDestColIdx == iSrcColIdx)
 			{
 				return false;
@@ -172,40 +172,78 @@ bool CTankGame::CheckTankPos(const TANK_POS& stSrcPos, int iSrcDir, const TANK_P
 //更新坦克位置
 void CTankGame::UpdateTankPos()
 {
-	for (int i = 0; i < 5; ++i)
+	for (int i = 1; i < 5; ++i)
 	{
-		if (m_pArrTank[i]->CanMove() && CheckNewPos(i))
+		if (!m_pArrTank[i]->CanMove())
 		{
-			m_pArrTank[i]->Move();
+			continue;
+		}
+
+		if (CheckTankPos(i, true))
+		{
+			if (m_pArrTank[i]->Move())
+			{
+				SetADirection(i);
+			}
 		}
 		else
 		{
-			m_pArrTank[i]->RandStepAndDirection();
+			SetADirection(i);
+			m_pArrTank[i]->RandStep();
+		}
+	}
+}
+
+
+void CTankGame::SetADirection(int iTankIdx)
+{
+	//找一个不会有冲突的方向
+	int iDir = m_pArrTank[iTankIdx]->GetDirection();
+	while (true)
+	{
+		int j = Random(DIR_MIN, DIR_MAX);
+		if (j == iDir)
+		{
+			continue;
+		}
+
+		//检查是否会有冲突
+		m_pArrTank[iTankIdx]->SetDirection(j);
+		if (CheckTankPos(iTankIdx, false))
+		{
+			break;
 		}
 	}
 }
 
 
 //检查
-bool CTankGame::CheckNewPos(int iTankIdx)
+bool CTankGame::CheckTankPos(int iTankIdx, bool bNextPosFlag)
 {
 	//获取下一个位置
 	TANK_POS stTankNextPos;
-	if (!m_pArrTank[iTankIdx]->GetNextPos(stTankNextPos))
+	if (bNextPosFlag)
 	{
-		return false;
+		if (!m_pArrTank[iTankIdx]->GetNextPos(stTankNextPos))
+		{
+			return false;
+		}
+	}
+	else
+	{
+		stTankNextPos = m_pArrTank[iTankIdx]->GetPos();
 	}
 
 	int iTankDir = m_pArrTank[iTankIdx]->GetDirection();
 
 	for (int i = 0; i < 5; ++i)
 	{
-		if (i == iTankIdx)
+		if (m_pArrTank[i]->IsDead() || i == iTankIdx)
 		{
 			continue;
 		}
 		
-		if (!CheckTankPos(stTankNextPos, iTankDir, m_pArrTank[i]->GetPos(), m_pArrTank[i]->GetDirection()))
+		if (!CheckPos(stTankNextPos, iTankDir, m_pArrTank[i]->GetPos(), m_pArrTank[i]->GetDirection()))
 		{
 			return false;
 		}
@@ -228,15 +266,21 @@ void CTankGame::CreateTank()
 			for (int i = 0; i < 8; i += 2)
 			{
 				pTank->Init(CORNER_POS[i], CORNER_POS[i + 1], CAMP_B);
-				if (CheckNewPos(iTankIdx))
+				for (int j = DIR_MIN; j < DIR_MAX; ++j)
 				{
-					return;
+					pTank->SetDirection(j);
+					if (CheckTankPos(iTankIdx, false))
+					{
+						return;
+					}
 				}
 			}
 
 			//创建失败，设置无效
 			pTank->SetDead(true);
 		}
+
+		++iTankIdx;
 	}
 }
 

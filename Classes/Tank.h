@@ -44,9 +44,9 @@ public:
 
 	bool CanMove();											//是否可以移动
 
-	void Move();											//移动
+	bool Move();											//移动，返回值表示是否需要更改方向
 
-	void RandStepAndDirection();							//随机方向和步数
+	void RandStep();										//随机方向
 
 	bool CanFire();											//是否可以攻击
 

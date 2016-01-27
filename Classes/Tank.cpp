@@ -62,8 +62,11 @@ bool CTank::CanMove()
 }
 
 
-void CTank::Move()
+bool CTank::Move()
 {
+	//重置时间
+	m_fWaitMoveTime = 0;
+
 	do 
 	{
 		if (m_iCurStep >= m_iMaxStep)
@@ -89,22 +92,20 @@ void CTank::Move()
 		else
 		{
 			//还没有达到目标步数，无需重置
-			return;
+			return false;
 		}
 
 	} while (0);
 
-	RandStepAndDirection();
+	RandStep();
+	return true;
 }
 
 
-void CTank::RandStepAndDirection()
+void CTank::RandStep()
 {
 	//重置时间
 	m_fWaitMoveTime = 0;
-
-	//重新随机方向
-	m_iDirection = Random(DIR_MIN, DIR_MAX);
 
 	//重置步数
 	m_iCurStep = 0;
