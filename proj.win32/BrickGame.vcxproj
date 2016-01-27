@@ -142,7 +142,7 @@ xcopy /Y /Q "$(EngineRoot)external\websockets\prebuilt\win32\*.*" "$(OutDir)"</C
     <ClCompile Include="..\Classes\FroggerGame.cpp" />
     <ClCompile Include="..\Classes\GameOver.cpp" />
     <ClCompile Include="..\Classes\GameScene.cpp" />
-    <ClCompile Include="..\Classes\GlobalDef.cpp" />
+    <ClCompile Include="..\Classes\BGGlobal.cpp" />
     <ClCompile Include="..\Classes\RacingGame.cpp" />
     <ClCompile Include="..\Classes\SceneBase.cpp" />
     <ClCompile Include="..\Classes\Tank.cpp" />
@@ -157,7 +157,7 @@ xcopy /Y /Q "$(EngineRoot)external\websockets\prebuilt\win32\*.*" "$(OutDir)"</C
     <ClInclude Include="..\Classes\FroggerGame.h" />
     <ClInclude Include="..\Classes\GameOver.h" />
     <ClInclude Include="..\Classes\GameScene.h" />
-    <ClInclude Include="..\Classes\GlobalDef.h" />
+    <ClInclude Include="..\Classes\BGGlobal.h" />
     <ClInclude Include="..\Classes\RacingGame.h" />
     <ClInclude Include="..\Classes\SceneBase.h" />
     <ClInclude Include="..\Classes\Tank.h" />

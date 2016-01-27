@@ -66,11 +66,25 @@ void CTankGame::Init()
 //更新
 void CTankGame::Play(float dt)
 {
-	//UpdateTankPos(dt);
+	UpdateTime(dt);
 
-	//CreateTank();
+	UpdateTankPos();
+
+	CreateTank();
 
 	m_pGameScene->UpdateBricks();
+}
+
+
+void CTankGame::UpdateTime(float dt)
+{
+	for (int i = 0; i < 5; ++i)
+	{
+		if (!m_pArrTank[i]->IsDead())
+		{
+			m_pArrTank[i]->UpdateTime(dt);
+		}
+	}
 }
 
 
@@ -156,11 +170,10 @@ bool CTankGame::CheckTankPos(const TANK_POS& stSrcPos, int iSrcDir, const TANK_P
 
 
 //更新坦克位置
-void CTankGame::UpdateTankPos(float dt)
+void CTankGame::UpdateTankPos()
 {
 	for (int i = 0; i < 5; ++i)
 	{
-		m_pArrTank[i]->UpdateTime(dt);
 		if (m_pArrTank[i]->CanMove() && CheckNewPos(i))
 		{
 			m_pArrTank[i]->Move();
@@ -176,7 +189,13 @@ void CTankGame::UpdateTankPos(float dt)
 //检查
 bool CTankGame::CheckNewPos(int iTankIdx)
 {
-	TANK_POS stTankNextPos = m_pArrTank[iTankIdx]->GetNextPos();
+	//获取下一个位置
+	TANK_POS stTankNextPos;
+	if (!m_pArrTank[iTankIdx]->GetNextPos(stTankNextPos))
+	{
+		return false;
+	}
+
 	int iTankDir = m_pArrTank[iTankIdx]->GetDirection();
 
 	for (int i = 0; i < 5; ++i)

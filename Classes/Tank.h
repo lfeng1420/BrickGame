@@ -58,7 +58,7 @@ public:
 
 	const TANK_POS& GetPos();								//获取当前位置
 
-	TANK_POS GetNextPos();									//获取下一个位置
+	bool GetNextPos(TANK_POS& stPos);						//获取下一个位置
 
 	int GetDirection();										//获取当前方向
 };

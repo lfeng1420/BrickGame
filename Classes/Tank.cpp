@@ -73,16 +73,11 @@ void CTank::Move()
 		}
 
 		//更新位置
-		TANK_POS stPos = GetNextPos();
-		
-		//检查位置是否有效
-		if (stPos.m_iRowIdx < 1 || stPos.m_iRowIdx > ROW_NUM - 2
-			|| stPos.m_iColIdx < 1 || stPos.m_iColIdx > COLUMN_NUM - 2)
+		TANK_POS stPos;
+		if (!GetNextPos(stPos))
 		{
-			//位置无效，需要重置
 			break;
 		}
-
 
 		//位置有效，更新位置，当前移动步数增加
 		m_stTankPos = stPos;
@@ -117,10 +112,12 @@ void CTank::RandStepAndDirection()
 }
 
 
-TANK_POS CTank::GetNextPos()
+bool CTank::GetNextPos(TANK_POS& stPos)
 {
 	//更新位置
-	TANK_POS stPos(m_stTankPos);
+	stPos.m_iRowIdx = m_stTankPos.m_iRowIdx;
+	stPos.m_iColIdx = m_stTankPos.m_iColIdx;
+
 	switch (m_iDirection)
 	{
 	case DIR_RIGHT:
@@ -137,7 +134,15 @@ TANK_POS CTank::GetNextPos()
 		break;
 	}
 
-	return stPos;
+
+	//检查位置是否有效
+	if (stPos.m_iRowIdx < 1 || stPos.m_iRowIdx > ROW_NUM - 2
+		|| stPos.m_iColIdx < 1 || stPos.m_iColIdx > COLUMN_NUM - 2)
+	{
+		return false;
+	}
+
+	return true;
 }
 
 

@@ -70,10 +70,13 @@ private:
 	bool CheckNewPos(int iTankIdx);
 
 	//更新坦克位置
-	void UpdateTankPos(float dt);
+	void UpdateTankPos();
 
 	//创建坦克
 	void CreateTank();
+
+	//更新时间
+	void UpdateTime(float dt);
 
 private:
 	enum
