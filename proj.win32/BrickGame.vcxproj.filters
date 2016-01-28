@@ -63,12 +63,6 @@
     <ClCompile Include="..\Classes\TankGame.cpp">
       <Filter>Classes\Scene\Game\TankGame</Filter>
     </ClCompile>
-    <ClCompile Include="..\Classes\Tank.cpp">
-      <Filter>Classes\Scene\Game\TankGame</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Classes\Bullet.cpp">
-      <Filter>Classes\Scene\Game\TankGame</Filter>
-    </ClCompile>
     <ClCompile Include="..\Classes\BGGlobal.cpp">
       <Filter>Classes</Filter>
     </ClCompile>
@@ -102,15 +96,6 @@
       <Filter>Classes\Scene\Game\RacingGame</Filter>
     </ClInclude>
     <ClInclude Include="..\Classes\TankGame.h">
-      <Filter>Classes\Scene\Game\TankGame</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Classes\TankCommon.h">
-      <Filter>Classes\Scene\Game\TankGame</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Classes\Tank.h">
-      <Filter>Classes\Scene\Game\TankGame</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Classes\Bullet.h">
       <Filter>Classes\Scene\Game\TankGame</Filter>
     </ClInclude>
     <ClInclude Include="..\Classes\BGGlobal.h">
