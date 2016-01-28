@@ -1,6 +1,6 @@
 #pragma once
 
-#include "GlobalDef.h"
+#include "BGGlobal.h"
 
 class CDataManager
 {

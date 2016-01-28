@@ -1,5 +1,5 @@
 #include "Bullet.h"
-#include "GlobalDef.h"
+#include "BGGlobal.h"
 
 CBullet::CBullet()
 {

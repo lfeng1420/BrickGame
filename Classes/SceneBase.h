@@ -1,5 +1,5 @@
 #pragma once
-#include "GlobalDef.h"
+#include "BGGlobal.h"
 #include "GameScene.h"
 
 class CSceneBase

@@ -1,5 +1,5 @@
 #pragma once
-#include "GlobalDef.h"
+#include "BGGlobal.h"
 
 class CSceneBase;
 
@@ -17,7 +17,7 @@ public:
 	void UpdateBrick(int iRowIndex, int iColIndex, bool bSmallBrickFlag, bool bShowFlag);
 
 	//更新所有Brick状态
-	void UpdateBricks();
+	void UpdateBricks(int iStartRowIdx = -1, int iStartColIdx = -1, int iEndRowIdx = -1, int iEndColIdx = -1);
 
 	//重置所有Brick
 	void ResetBricks();

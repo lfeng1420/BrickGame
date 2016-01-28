@@ -410,11 +410,12 @@ void CGameScene::UpdateBrick(int iRowIndex, int iColIndex, bool bSmallBrickFlag,
 
 
 //更新所有Brick状态
-void CGameScene::UpdateBricks()
+void CGameScene::UpdateBricks( int iStartRowIdx, int iStartColIdx, int iEndRowIdx, int iEndColIdx )
 {
-	for (int i = 0; i < ROW_NUM; ++i)
+
+	for (int i = (iStartRowIdx == -1 ? 0 : iStartRowIdx); i < (iEndRowIdx == -1 ? ROW_NUM : iEndRowIdx); ++i)
 	{
-		for (int j = 0; j < COLUMN_NUM; ++j)
+		for (int j = (iStartColIdx == -1 ? 0 : iStartColIdx); j < (iEndColIdx == -1 ? COLUMN_NUM : iEndColIdx); ++j)
 		{
 			bool bState = m_mapGameObj[m_iSceneIndex]->GetBrickState(i, j);
 			if (m_arrBrickState[i][j] != bState)

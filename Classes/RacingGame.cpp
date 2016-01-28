@@ -236,7 +236,7 @@ void CRacingGame::OnLeftBtnPressed()
 		m_enGameState = GAMESTATE_OVER;
 	}
 
-	m_pGameScene->UpdateBricks();
+	m_pGameScene->UpdateBricks(ROW_NUM - 4, m_iCarPos * 3 + 1, ROW_NUM, (m_iCarPos + 1) * 3 + 4);
 }
 
 
@@ -248,14 +248,15 @@ void CRacingGame::OnRightBtnPressed()
 		return;
 	}
 
+	++m_iCarPos;
+
 	//检查目标车道是否被占用
-	if (m_arrCurBrick[ROW_NUM - 2][(m_iCarPos + 1) * 3 + 2] == 1)
+	if (m_arrCurBrick[ROW_NUM - 2][m_iCarPos * 3 + 2] == 1)
 	{
 		m_enGameState = GAMESTATE_OVER;
 	}
 
-	++m_iCarPos;
-	m_pGameScene->UpdateBricks();
+	m_pGameScene->UpdateBricks(ROW_NUM - 4, (m_iCarPos - 1) * 3 + 1, ROW_NUM, m_iCarPos * 3 + 4);
 }
 
 

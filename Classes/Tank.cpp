@@ -1,5 +1,5 @@
 #include "Tank.h"
-#include "GlobalDef.h"
+#include "BGGlobal.h"
 
 CTank::CTank() : m_iCamp(CAMP_NONE)
 {

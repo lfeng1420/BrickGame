@@ -399,6 +399,9 @@ void CFroggerGame::OnLeftBtnPressed()
 		return;
 	}
 
+	//清除旧的位置
+	m_pGameScene->UpdateBrick(m_iSelfRowIdx, m_iSelfColIdx, false, false);
+
 	--m_iSelfColIdx;
 	m_pGameScene->UpdateBrick(m_iSelfRowIdx, m_iSelfColIdx, false, true);
 
@@ -414,6 +417,9 @@ void CFroggerGame::OnRightBtnPressed()
 		return;
 	}
 
+	//清除旧的位置
+	m_pGameScene->UpdateBrick(m_iSelfRowIdx, m_iSelfColIdx, false, false);
+
 	++m_iSelfColIdx;
 	m_pGameScene->UpdateBrick(m_iSelfRowIdx, m_iSelfColIdx, false, true);
 
@@ -428,6 +434,9 @@ void CFroggerGame::OnUpBtnPressed()
 	{
 		return;
 	}
+
+	//清除旧的位置
+	m_pGameScene->UpdateBrick(m_iSelfRowIdx, m_iSelfColIdx, false, false);
 
 	m_iSelfRowIdx -= 2;
 	m_pGameScene->UpdateBrick(m_iSelfRowIdx, m_iSelfColIdx, false, true);
@@ -473,6 +482,9 @@ void CFroggerGame::OnDownPressed()
 	{
 		return;
 	}
+
+	//清除旧的位置
+	m_pGameScene->UpdateBrick(m_iSelfRowIdx, m_iSelfColIdx, false, false);
 
 	m_iSelfRowIdx += 2;
 	m_pGameScene->UpdateBrick(m_iSelfRowIdx, m_iSelfColIdx, false, true);
