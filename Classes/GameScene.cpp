@@ -316,27 +316,61 @@ void CGameScene::InitCotroller()
 void CGameScene::CreateKeyListener()
 {
 	auto keyListener = EventListenerKeyboard::create();
-	keyListener->onKeyReleased = [&](EventKeyboard::KeyCode keyCode, Event* event)
+	keyListener->onKeyPressed = [&](EventKeyboard::KeyCode keyCode, Event* event)
 	{
 		if (EventKeyboard::KeyCode::KEY_A == keyCode)
 		{
+			log("A Pressed");
 			OnButtonPressed(BTN_LEFT);
 		}
 		else if (EventKeyboard::KeyCode::KEY_D == keyCode)
 		{
+			log("D Pressed");
 			OnButtonPressed(BTN_RIGHT);
 		}
 		else if (EventKeyboard::KeyCode::KEY_S == keyCode)
 		{
+			log("S Pressed");
 			OnButtonPressed(BTN_DOWN);
 		}
 		else if (EventKeyboard::KeyCode::KEY_W == keyCode)
 		{
+			log("W Pressed");
 			OnButtonPressed(BTN_UP);
 		}
 		else if (EventKeyboard::KeyCode::KEY_K == keyCode)
 		{
+			log("K Pressed");
 			OnButtonPressed(BTN_FIRE);
+		}
+	};
+
+	keyListener->onKeyReleased = [&](EventKeyboard::KeyCode keyCode, Event* event)
+	{
+		if (EventKeyboard::KeyCode::KEY_A == keyCode)
+		{
+			log("A Released");
+			OnButtonReleased(BTN_LEFT);
+		}
+		else if (EventKeyboard::KeyCode::KEY_D == keyCode)
+		{
+			log("D Released");
+			OnButtonReleased(BTN_RIGHT);
+		}
+		else if (EventKeyboard::KeyCode::KEY_S == keyCode)
+		{
+			log("S Released");
+			OnButtonReleased(BTN_DOWN);
+		}
+		else if (EventKeyboard::KeyCode::KEY_W == keyCode)
+		{
+			log("W Released");
+			OnButtonReleased(BTN_UP);
+		}
+		else if (EventKeyboard::KeyCode::KEY_K == keyCode)
+		{
+			log("K Released");
+			OnButtonReleased(BTN_FIRE);
 		}
 		else if (EventKeyboard::KeyCode::KEY_RETURN == keyCode ||
 			EventKeyboard::KeyCode::KEY_ESCAPE == keyCode ||

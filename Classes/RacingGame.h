@@ -56,9 +56,6 @@ private:
 	//初始化Brick
 	void InitBrick();
 
-	//随机种子
-	void RandSeed();
-
 	//获取等待时长
 	int GetWaitInterval();
 

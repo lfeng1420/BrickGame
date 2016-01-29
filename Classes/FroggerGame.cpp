@@ -119,6 +119,7 @@ void CFroggerGame::Play(float dt)
 	if (m_enGameState == GAMESTATE_OVER)
 	{
 		SetBoom(dt);
+
 		if (m_iShowBoomCount >= BOOM_SHOWCOUNT)
 		{
 			//ÉèÖÃÊ£ÓàÉúÃü

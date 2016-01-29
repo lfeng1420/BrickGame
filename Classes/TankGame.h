@@ -147,16 +147,19 @@ private:
 	//子弹打中的坦克索引，未打中时返回-1
 	int GetBulletFireTankIndex(const POSITION& stBulletPos, int iCamp);
 
+	//显示爆炸效果，返回结果表示是否需要使用传出的值
+	bool ShowBoom(int iRowIndex, int iColIndex, bool& bState);
+
 private:
 	enum
 	{
 		TANK_MAXNUM = 4,							//坦克最大数量
 
-		BULLET_MAXNUM = 20,						//子弹出现最大数量
+		BULLET_MAXNUM = 20,							//子弹出现最大数量
 
 		TANK_MOVE_INTERVAL = 800,					//坦克移动时间间隔
 
-		BULLET_MOVE_INTERVAL = 50,					//子弹移动时间间隔
+		BULLET_MOVE_INTERVAL = 40,					//子弹移动时间间隔
 
 		BULLET_CREATE_MAXTIME = 10000,				//最大发射子弹时间
 
@@ -164,7 +167,19 @@ private:
 
 		TANK_MOVE_MAXSTEP = 10,						//坦克移动最大步数
 
-		TANK_SELF_MOVE_INTERVAL = 63,				//我方坦克每次移动等待时间
+		TANK_SELF_MOVE_INTERVAL = 56,				//我方坦克每次移动等待时间
+
+		TANK_SELF_FIRE_TIME = 100,					//每次发射子弹后间隔
+
+		BOOM_SHOWCOUNT = 16,						//闪烁显示爆炸效果次数
+
+		GAMEPASS_ADDSCORE = 100,					//通过时增加100
+
+		GAMEPASS_ADDCOUNT = 10,						//增加10次
+
+		BOOM_REFRESH_INTERVAL = 50,					//爆炸显示刷新时间
+
+		TANK_KILL_ADD_SCORE = 50,					//杀掉一个坦克增加的分数
 	};
 
 	//阵营
@@ -185,7 +200,7 @@ private:
 
 	TANK_DATA m_stSelfTank;						//坦克自己
 
-	bool m_arrBtnState[DIR_MAX];				//按钮状态
+	bool m_arrBtnState[DIR_MAX];				//四个方向按钮状态
 
 	int m_iSpeed;								//速度
 
@@ -201,6 +216,20 @@ private:
 
 	float m_fSelfMoveTime;						//我方坦克移动时间
 
-	int m_iFirstCreateNum;						//第一次创建坦克索引
+	float m_fBoomShowTime;						//爆炸效果显示等待时间
+
+	int m_iFirstCreateNum;						//第一次创建坦克的数量
+
+	bool m_arrCornerState[4];					//第一次创建四个角落坦克的情况
+
+	GAME_STATE m_enGameState;					//游戏状态
+
+	bool m_bShowBoom;							//爆炸显示/隐藏标记（闪烁）
+
+	int m_iShowBoomCount;						//闪烁显示爆炸效果次数
+
+	int m_iAddScoreCount;						//当前添加次数
+
+	bool m_bFireState;							//发射状态
 };
 

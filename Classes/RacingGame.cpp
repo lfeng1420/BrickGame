@@ -101,10 +101,7 @@ void CRacingGame::Play(float dt)
 		if (m_iShowBoomCount < BOOM_SHOWCOUNT)
 		{
 			m_bShowBoom = !m_bShowBoom;
-			if (m_bShowBoom)
-			{
-				++m_iShowBoomCount;
-			}
+			++m_iShowBoomCount;
 		}
 		else
 		{
@@ -121,8 +118,6 @@ void CRacingGame::Play(float dt)
 
 			//重置数据
 			InitData();
-			//刷新界面
-			m_pGameScene->UpdateSmallBricks();
 		}
 	}
 	else if (m_enGameState == GAMESTATE_PASS)
@@ -406,13 +401,6 @@ void CRacingGame::InitBrick()
 
 	//随机自己赛车的位置
 	m_iCarPos = Random(0, ROAD_COUNT);
-}
-
-
-//获取随机值
-void CRacingGame::RandSeed()
-{
-	srand((unsigned)time(nullptr));
 }
 
 
