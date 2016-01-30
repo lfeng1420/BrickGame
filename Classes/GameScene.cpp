@@ -5,6 +5,7 @@
 #include "RacingGame.h"
 #include "FroggerGame.h"
 #include "TankGame.h"
+#include "SnakeGame.h"
 
 CGameScene::CGameScene() : m_iSceneIndex(SCENE_GAMEOVER)
 {
@@ -401,17 +402,21 @@ void CGameScene::CreateGameObj()
 	CChooseGame* pChooseGame = new CChooseGame(this);
 	m_mapGameObj[SCENE_CHOOSEGAME] = pChooseGame;
 
+	//坦克大战
+	CTankGame* pTankGame = new CTankGame(this);
+	m_mapGameObj[SCENE_TANK] = pTankGame;
+
 	//赛车
 	CRacingGame* pRacingGame = new CRacingGame(this);
 	m_mapGameObj[SCENE_RACING] = pRacingGame;
 
+	//贪吃蛇
+	CSnakeGame* pSnakeGame = new CSnakeGame(this);
+	m_mapGameObj[SCENE_SNAKE] = pSnakeGame;
+
 	//青蛙过河
 	CFroggerGame* pFroggerGame = new CFroggerGame(this);
 	m_mapGameObj[SCENE_FROGGER] = pFroggerGame;
-
-	//坦克大战
-	CTankGame* pTankGame = new CTankGame(this);
-	m_mapGameObj[SCENE_TANK] = pTankGame;
 }
 
 

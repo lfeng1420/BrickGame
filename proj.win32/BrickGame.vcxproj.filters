@@ -31,6 +31,9 @@
     <Filter Include="Classes\Scene\Game\TankGame">
       <UniqueIdentifier>{f738ba46-0c95-4171-8a65-fb734a106ae9}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Classes\Scene\Game\SnakeGame">
+      <UniqueIdentifier>{2f47c368-4b32-455e-af62-e90745a894b9}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -66,6 +69,9 @@
     <ClCompile Include="..\Classes\BGGlobal.cpp">
       <Filter>Classes</Filter>
     </ClCompile>
+    <ClCompile Include="..\Classes\SnakeGame.cpp">
+      <Filter>Classes\Scene\Game\SnakeGame</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="main.h">
@@ -100,6 +106,9 @@
     </ClInclude>
     <ClInclude Include="..\Classes\BGGlobal.h">
       <Filter>Classes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\SnakeGame.h">
+      <Filter>Classes\Scene\Game\SnakeGame</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

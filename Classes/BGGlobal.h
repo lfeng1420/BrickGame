@@ -8,6 +8,7 @@
 #include <map>
 #include <vector>
 #include <algorithm>
+#include <time.h>
 
 using namespace std;
 
@@ -78,6 +79,20 @@ using namespace ui;
 #define SET_BOOLVALUE(key, value) UserDefault::getInstance()->setBoolForKey(key, value)
 
 
+//通用结构体
+struct POSITION
+{
+	int m_iRowIdx;			//行位置
+
+	int m_iColIdx;			//列位置
+
+	bool operator== (const POSITION& rhs) const
+	{
+		return this->m_iColIdx == rhs.m_iColIdx && this->m_iRowIdx == rhs.m_iRowIdx;
+	}
+};
+
+
 //常量枚举
 enum
 {
@@ -115,11 +130,13 @@ enum SCENE_INDEX
 
 	SCENE_CHOOSEGAME,			//选择界面
 
+	SCENE_TANK,					//游戏界面 - 坦克大战
+
 	SCENE_RACING,				//游戏界面 - 赛车
 
-	SCENE_FROGGER,				//游戏界面 - 青蛙过河
+	SCENE_SNAKE,				//游戏界面 - 贪吃蛇
 
-	SCENE_TANK,					//游戏界面 - 坦克大战
+	SCENE_FROGGER,				//游戏界面 - 青蛙过河
 
 	SCENE_MAX,					//最大值
 };
@@ -131,6 +148,8 @@ enum GAME_LIST
 	GAME_TANK,					//坦克大战
 	
 	GAME_RACING,				//赛车
+
+	GAME_SNAKE,					//贪吃蛇
 
 	GAME_FROGGER,				//青蛙过河
 

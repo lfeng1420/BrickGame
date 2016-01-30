@@ -4,18 +4,6 @@
 class CTankGame : public CSceneBase
 {
 private:
-	struct POSITION
-	{
-		int m_iRowIdx;			//行位置
-
-		int m_iColIdx;			//列位置
-
-		bool operator== (const POSITION& rhs) const
-		{
-			return this->m_iColIdx == rhs.m_iColIdx && this->m_iRowIdx == rhs.m_iRowIdx;
-		}
-	};
-
 	//坦克数据
 	struct TANK_DATA
 	{
