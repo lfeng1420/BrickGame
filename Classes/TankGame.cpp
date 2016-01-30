@@ -59,15 +59,21 @@ void CTankGame::Init()
 //更新
 void CTankGame::Play(float dt)
 {
+	//状态切换
+	if (CheckGamePass())
+	{
+		m_enGameState = GAMESTATE_PASS;
+	}
+
 	if (GAMESTATE_OVER == m_enGameState)
 	{
 		//时间更新
-		m_fBoomShowTime += dt;
-		if (m_fBoomShowTime < BOOM_REFRESH_INTERVAL)
+		m_fWaitRefreshTime += dt;
+		if (m_fWaitRefreshTime < GAMEOVERORPASS_REFRESH_INTERVAL)
 		{
 			return;
 		}
-		m_fBoomShowTime = 0;
+		m_fWaitRefreshTime = 0;
 
 		if (m_iShowBoomCount < BOOM_SHOWCOUNT)
 		{
@@ -93,6 +99,14 @@ void CTankGame::Play(float dt)
 	}
 	else if (GAMESTATE_PASS == m_enGameState)
 	{
+		//时间更新
+		m_fWaitRefreshTime += dt;
+		if (m_fWaitRefreshTime < GAMEOVERORPASS_REFRESH_INTERVAL)
+		{
+			return;
+		}
+		m_fWaitRefreshTime = 0;
+		
 		if (m_iAddScoreCount < GAMEPASS_ADDCOUNT)
 		{
 			++m_iAddScoreCount;
@@ -215,14 +229,15 @@ void CTankGame::InitData()
 	m_fTankMoveTime = 0;
 	m_fTankCreateTime = 0;
 	m_fSelfMoveTime = 0;
-	m_fBoomShowTime = 0;
-
-	m_iFirstCreateNum = 0;
+	m_fWaitRefreshTime = 0;
 
 	//爆炸显示计数
 	m_iShowBoomCount = 0;
 	//分数增加次数计数
 	m_iAddScoreCount = 0;
+
+	//坦克创建数量初始化
+	m_iTankCreateCount = 0;
 
 	//游戏状态
 	m_enGameState = GAMESTATE_RUNNING;
@@ -234,7 +249,7 @@ void CTankGame::InitData()
 	m_stSelfTank.m_bDead = false;
 	m_stSelfTank.m_iCamp = CAMP_A;
 	m_stSelfTank.m_fFireWaitTime = 0;
-	m_stSelfTank.m_fFireMaxTime = TANK_SELF_FIRE_TIME;
+	m_stSelfTank.m_fFireMaxTime = TANK_SELF_FIRE_TIME - 5 * m_iLevel;
 	m_stSelfTank.m_stPos = { ROW_NUM / 2 - 1 , COLUMN_NUM / 2 - 1};
 	m_stSelfTank.m_iDirection = DIR_UP;
 
@@ -270,6 +285,12 @@ void CTankGame::InitData()
 //创建坦克
 void CTankGame::CreateTank(float dt)
 {
+	//仅创建指定数量坦克
+	if (m_iTankCreateCount >= TANK_CREATE_MAXCOUNT)
+	{
+		return;
+	}
+
 	m_fTankCreateTime += dt;
 	if (m_fTankCreateTime < TANK_CREATE_TIME)
 	{
@@ -292,7 +313,7 @@ void CTankGame::CreateTank(float dt)
 		bool bPosValidFlag = false;
 
 		TANK_DATA& stData = m_arrTank[iTankIdx];
-		if (m_iFirstCreateNum < TANK_MAXNUM)
+		if (m_iTankCreateCount < TANK_MAXNUM)
 		{
 			for (int i = 0; i < 4; ++i)
 			{
@@ -308,22 +329,15 @@ void CTankGame::CreateTank(float dt)
 					//设置状态
 					bPosValidFlag = true;
 					m_arrCornerState[i] = true;
-					++m_iFirstCreateNum;
 					break;
 				}
 			}
 		}
-		else
+		
+		//随机找一个角落创建
+		if (!bPosValidFlag)
 		{
-			for (int j = 0; j < 8; j += 2)
-			{
-				stData.m_stPos = { CORNER_POS[j], CORNER_POS[j + 1] };
-				if (CheckPos(iTankIdx, stData.m_stPos))
-				{
-					bPosValidFlag = true;
-					break;
-				}
-			}
+			bPosValidFlag = GetCornerPos(iTankIdx);
 		}
 
 		if (bPosValidFlag)
@@ -347,7 +361,10 @@ void CTankGame::CreateTank(float dt)
 	stData.m_iCurStep = 0;
 	stData.m_iMaxStep = Random(0, TANK_MOVE_MAXSTEP);
 	stData.m_fFireWaitTime = 0;
-	stData.m_fFireMaxTime = Random(0, BULLET_CREATE_MAXTIME);
+	stData.m_fFireMaxTime = Random(0, BULLET_CREATE_MAXTIME - 450 * m_iLevel);
+
+	//坦克创建数量更新
+	++m_iTankCreateCount;
 }
 
 
@@ -401,7 +418,7 @@ void CTankGame::TankMove(float dt)
 {
 	//时间更新
 	m_fTankMoveTime += dt;
-	if (m_fTankMoveTime < TANK_MOVE_INTERVAL)
+	if (m_fTankMoveTime < TANK_MOVE_INTERVAL - 70 * m_iLevel)
 	{
 		return;
 	}
@@ -568,7 +585,7 @@ const int POS_CHANGE_LIST[16] =
 void CTankGame::SelfTankMove( float dt )
 {
 	m_fSelfMoveTime += dt;
-	if (m_fSelfMoveTime < TANK_SELF_MOVE_INTERVAL)
+	if (m_fSelfMoveTime < TANK_SELF_MOVE_INTERVAL - 3 * m_iLevel)
 	{
 		return;
 	}
@@ -646,7 +663,7 @@ void CTankGame::TankFire(float dt)
 		}
 
 		//随机时间
-		refData.m_fFireMaxTime = Random(0, BULLET_CREATE_MAXTIME);
+		refData.m_fFireMaxTime = Random(0, BULLET_CREATE_MAXTIME - 450 * m_iLevel);
 		refData.m_fFireWaitTime = 0;
 
 		//创建子弹
@@ -690,7 +707,7 @@ void CTankGame::BulletMove(float dt)
 
 		//时间更新
 		refData.m_fMoveTime += dt;
-		if ( refData.m_fMoveTime < BULLET_MOVE_INTERVAL )
+		if ( refData.m_fMoveTime < BULLET_MOVE_INTERVAL - 2 * m_iLevel )
 		{
 			continue;
 		}
@@ -832,4 +849,41 @@ void CTankGame::BulletShoot()
 			m_pGameScene->UpdateBrick(refData.m_stPos.m_iRowIdx, refData.m_stPos.m_iColIdx, false, false);
 		}
 	}
+}
+
+//是否通过当前等级
+bool CTankGame::CheckGamePass()
+{
+	if (m_enGameState == GAMESTATE_OVER || m_iTankCreateCount < TANK_CREATE_MAXCOUNT)
+	{
+		return false;
+	}
+
+	for (int i = 0; i < TANK_MAXNUM; ++i)
+	{
+		if (!m_arrTank[i].m_bDead)
+		{
+			return false;
+		}
+	}
+
+	return true;
+}
+
+
+//获取一个有效的角落位置
+bool CTankGame::GetCornerPos( int iTankIdx )
+{
+	TANK_DATA& refData = m_arrTank[iTankIdx];
+
+	for (int j = 0; j < 8; j += 2)
+	{
+		refData.m_stPos = { CORNER_POS[j], CORNER_POS[j + 1] };
+		if (CheckPos(iTankIdx, refData.m_stPos))
+		{
+			return true;
+		}
+	}
+
+	return false;
 }

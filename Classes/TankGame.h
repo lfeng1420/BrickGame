@@ -150,6 +150,12 @@ private:
 	//显示爆炸效果，返回结果表示是否需要使用传出的值
 	bool ShowBoom(int iRowIndex, int iColIndex, bool& bState);
 
+	//是否通过当前等级
+	bool CheckGamePass();
+
+	//获取一个有效的角落位置
+	bool GetCornerPos(int iTankIdx);
+
 private:
 	enum
 	{
@@ -161,13 +167,13 @@ private:
 
 		BULLET_MOVE_INTERVAL = 40,					//子弹移动时间间隔
 
-		BULLET_CREATE_MAXTIME = 10000,				//最大发射子弹时间
+		BULLET_CREATE_MAXTIME = 5500,				//最大发射子弹时间
 
-		TANK_CREATE_TIME = 2 * TANK_MOVE_INTERVAL,	//坦克创建时间间隔
+		TANK_CREATE_TIME = TANK_MOVE_INTERVAL,		//坦克创建时间间隔
 
 		TANK_MOVE_MAXSTEP = 10,						//坦克移动最大步数
 
-		TANK_SELF_MOVE_INTERVAL = 56,				//我方坦克每次移动等待时间
+		TANK_SELF_MOVE_INTERVAL = 55,				//我方坦克每次移动等待时间
 
 		TANK_SELF_FIRE_TIME = 100,					//每次发射子弹后间隔
 
@@ -177,9 +183,11 @@ private:
 
 		GAMEPASS_ADDCOUNT = 10,						//增加10次
 
-		BOOM_REFRESH_INTERVAL = 50,					//爆炸显示刷新时间
+		GAMEOVERORPASS_REFRESH_INTERVAL = 50,		//游戏结束或通过显示刷新时间
 
 		TANK_KILL_ADD_SCORE = 50,					//杀掉一个坦克增加的分数
+
+		TANK_CREATE_MAXCOUNT = 30,					//每一个等级坦克创建最大数量
 	};
 
 	//阵营
@@ -216,9 +224,7 @@ private:
 
 	float m_fSelfMoveTime;						//我方坦克移动时间
 
-	float m_fBoomShowTime;						//爆炸效果显示等待时间
-
-	int m_iFirstCreateNum;						//第一次创建坦克的数量
+	float m_fWaitRefreshTime;						//爆炸效果显示等待时间
 
 	bool m_arrCornerState[4];					//第一次创建四个角落坦克的情况
 
@@ -231,5 +237,7 @@ private:
 	int m_iAddScoreCount;						//当前添加次数
 
 	bool m_bFireState;							//发射状态
+
+	int m_iTankCreateCount;						//坦克创建数量
 };
 
