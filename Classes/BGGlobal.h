@@ -166,6 +166,10 @@ enum GAME_STATE
 };
 
 
+//全局常量
+extern const bool BOOM_STATE[4][4];
+
+
 // ---- 通用函数 ---- 
 int Random(int iStart, int iEnd, int iStep = 1);
 

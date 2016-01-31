@@ -171,7 +171,9 @@ private:
 
 		GAMEPASS_ADDCOUNT = 10,						//增加10次
 
-		GAMEOVERORPASS_REFRESH_INTERVAL = 50,		//游戏结束或通过显示刷新时间
+		GAMEPASS_REFRESH_INTERVAL = 200,			//通过显示刷新时间
+
+		BOOM_REFRESH_INTERVAL = 50,					//爆炸效果刷新时间
 
 		TANK_KILL_ADD_SCORE = 50,					//杀掉一个坦克增加的分数
 
@@ -212,7 +214,7 @@ private:
 
 	float m_fSelfMoveTime;						//我方坦克移动时间
 
-	float m_fWaitRefreshTime;						//爆炸效果显示等待时间
+	float m_fWaitRefreshTime;					//等待刷新时间
 
 	bool m_arrCornerState[4];					//第一次创建四个角落坦克的情况
 
@@ -222,7 +224,7 @@ private:
 
 	int m_iShowBoomCount;						//闪烁显示爆炸效果次数
 
-	int m_iAddScoreCount;						//当前添加次数
+	int m_iAddScoreCount;						//当前分数增加次数
 
 	bool m_bFireState;							//发射状态
 

@@ -1,12 +1,5 @@
 #include "TankGame.h"
 
-const bool BOOM_STATE[4][4] =
-{
-	{ true, false, false, true },
-	{ false, true, true, false },
-	{ false, true, true, false },
-	{ true, false, false, true },
-};
 
 const int CORNER_POS[8] = 
 {
@@ -69,7 +62,7 @@ void CTankGame::Play(float dt)
 	{
 		//时间更新
 		m_fWaitRefreshTime += dt;
-		if (m_fWaitRefreshTime < GAMEOVERORPASS_REFRESH_INTERVAL)
+		if (m_fWaitRefreshTime < BOOM_REFRESH_INTERVAL)
 		{
 			return;
 		}
@@ -101,7 +94,7 @@ void CTankGame::Play(float dt)
 	{
 		//时间更新
 		m_fWaitRefreshTime += dt;
-		if (m_fWaitRefreshTime < GAMEOVERORPASS_REFRESH_INTERVAL)
+		if (m_fWaitRefreshTime < GAMEPASS_REFRESH_INTERVAL)
 		{
 			return;
 		}

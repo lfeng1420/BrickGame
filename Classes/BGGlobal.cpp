@@ -1,5 +1,13 @@
 #include "BGGlobal.h"
 
+const bool BOOM_STATE[4][4] =
+{
+	{ true, false, false, true },
+	{ false, true, true, false },
+	{ false, true, true, false },
+	{ true, false, false, true },
+};
+
 int Random(int iStart, int iEnd, int iStep)
 {
 	//如果上一次获取随机数的时间和本次相同，则不再随机种子

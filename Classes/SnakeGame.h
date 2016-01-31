@@ -26,26 +26,14 @@ public:
 	//左按下
 	void OnLeftBtnPressed();
 
-	//左释放
-	void OnLeftBtnReleased();
-
 	//右按下
 	void OnRightBtnPressed();
-
-	//右释放
-	void OnRightBtnReleased();
 
 	//上按下
 	void OnUpBtnPressed();
 
-	//上释放
-	void OnUpBtnReleased();
-
 	//下按下
 	void OnDownPressed();
-
-	//下释放
-	void OnDownReleased();
 
 	//Fire按下
 	void OnFireBtnPressed();
@@ -66,36 +54,43 @@ private:
 	//蛇更新位置
 	void SnakeMove();
 
-	//更新蛇节点位置
-	bool UpdateSnakeNode(int iIndex);
+	//检查是否游戏结束
+	bool CheckGameOver(const POSITION& stHeaderPos);
+
+	//改变方向
+	void ChangeDirection(int iDirection);
 
 private:
 	enum
 	{
-		SNAKE_MOVE_INTERVAL = 1000,			//蛇移动时间间隔
+		SNAKE_MOVE_INTERVAL = 500,					//蛇移动时间间隔
 		
-		APPLE_REFRESH_INTERVAL = 300,		//苹果闪烁间隔
+		APPLE_REFRESH_INTERVAL = 200,				//苹果闪烁间隔
 
-		SNAKE_DEFAULT_LEN = 3,				//默认蛇身长度
+		SNAKE_DEFAULT_LEN = 3,						//默认蛇身长度
 
-		SNAKE_MAX_LEN = 6,					//蛇身最大长度，会随着等级变化而变化
+		SNAKE_MAX_LEN = 18,							//蛇身最大长度，会随着等级变化而变化
+
+		SNAKE_EAT_ADD_SCORE = 100,					//每次吃掉一个苹果加的分数
+
+		BOOM_SHOWCOUNT = 16,						//闪烁显示爆炸效果次数
+
+		GAMEPASS_ADDSCORE = 100,					//通过时增加100
+
+		GAMEPASS_ADDCOUNT = 10,						//增加10次
+
+		GAMEPASS_REFRESH_INTERVAL = 200,			//通过显示刷新时间
+
+		BOOM_REFRESH_INTERVAL = 50,					//爆炸效果刷新时间
 	};
 
-	struct SNAKE_NODE
-	{
-		POSITION m_stPos;
-		int m_iDirection;
-	};
-
-	typedef map<int, SNAKE_NODE> TMAP_SNAKE_NODE;
+	typedef map<int, POSITION> TMAP_SNAKE_NODE;
 	typedef TMAP_SNAKE_NODE::iterator TMAP_SNAKE_NODE_ITER;
 
 private:
-	TMAP_SNAKE_NODE m_mapSnake;			//蛇节点数据
+	TMAP_SNAKE_NODE m_mapSnakeNodes;	//蛇节点数据
 
-	TMAP_SNAKE_NODE m_mapCycleNode;		//节点回收序列
-
-	TMAP_SNAKE_NODE m_mapChangeNode;	//方向发生变化的节点记录
+	int m_iSnakeDirection;				//蛇方向
 
 	POSITION m_stApplePos;				//苹果所在位置
 
@@ -107,12 +102,18 @@ private:
 
 	int m_iScore;						//分数
 
-	float m_fSnakeMoveTime;				//蛇移动等待时间
+	float m_fWaitRefreshTime;			//等待刷新时间
 
 	bool m_bAppleState;					//苹果显示状态
 
 	float m_fAppleShowTime;				//苹果显示等待时间
 
 	GAME_STATE m_enGameState;			//游戏状态
+
+	bool m_bShowBoom;					//爆炸显示/隐藏标记（闪烁）
+
+	int m_iShowBoomCount;				//闪烁显示爆炸效果次数
+
+	int m_iAddScoreCount;				//当前分数增加次数
 };
 

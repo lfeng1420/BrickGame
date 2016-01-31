@@ -1,12 +1,5 @@
 #include "FroggerGame.h"
 
-const bool BOOM_STATE[4][4] = 
-{
-	{ true, false, false, true },
-	{ false, true, true, false },
-	{ false, true, true, false },
-	{ true, false, false, true },
-};
 
 CFroggerGame::CFroggerGame(CGameScene* pGameScene) : CSceneBase(pGameScene)
 {
