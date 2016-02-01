@@ -115,5 +115,7 @@ private:
 	int m_iShowBoomCount;				//闪烁显示爆炸效果次数
 
 	int m_iAddScoreCount;				//当前分数增加次数
+
+	bool m_bImproveSpeed;				//是否加速
 };
 

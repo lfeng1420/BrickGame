@@ -34,6 +34,9 @@
     <Filter Include="Classes\Scene\Game\SnakeGame">
       <UniqueIdentifier>{2f47c368-4b32-455e-af62-e90745a894b9}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Classes\Scene\Game\MatchGame">
+      <UniqueIdentifier>{57f91eef-aece-4d2b-8fff-ab505dd97dd2}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -72,6 +75,9 @@
     <ClCompile Include="..\Classes\SnakeGame.cpp">
       <Filter>Classes\Scene\Game\SnakeGame</Filter>
     </ClCompile>
+    <ClCompile Include="..\Classes\MatchGame.cpp">
+      <Filter>Classes\Scene\Game\MatchGame</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="main.h">
@@ -109,6 +115,9 @@
     </ClInclude>
     <ClInclude Include="..\Classes\SnakeGame.h">
       <Filter>Classes\Scene\Game\SnakeGame</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\MatchGame.h">
+      <Filter>Classes\Scene\Game\MatchGame</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

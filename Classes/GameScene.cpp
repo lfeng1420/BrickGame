@@ -6,6 +6,7 @@
 #include "FroggerGame.h"
 #include "TankGame.h"
 #include "SnakeGame.h"
+#include "MatchGame.h"
 
 CGameScene::CGameScene() : m_iSceneIndex(SCENE_GAMEOVER)
 {
@@ -413,6 +414,10 @@ void CGameScene::CreateGameObj()
 	//Ã∞≥‘…ﬂ
 	CSnakeGame* pSnakeGame = new CSnakeGame(this);
 	m_mapGameObj[SCENE_SNAKE] = pSnakeGame;
+
+	//∆•≈‰
+	CMatchGame* pMatchGame = new CMatchGame(this);
+	m_mapGameObj[SCENE_MATCH] = pMatchGame;
 
 	//«‡Õ‹π˝∫”
 	CFroggerGame* pFroggerGame = new CFroggerGame(this);

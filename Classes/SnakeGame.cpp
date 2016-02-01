@@ -48,7 +48,8 @@ void CSnakeGame::Play(float dt)
 	if (m_enGameState == GAMESTATE_RUNNING)
 	{
 		m_fWaitRefreshTime += dt;
-		if (m_fWaitRefreshTime >= SNAKE_MOVE_INTERVAL - 30 * m_iSpeed)
+		float fMaxTime = m_bImproveSpeed ? 50 : (SNAKE_MOVE_INTERVAL - 30 * m_iSpeed);
+		if (m_fWaitRefreshTime >= fMaxTime)
 		{
 			m_fWaitRefreshTime = 0;
 			SnakeMove();
@@ -221,8 +222,14 @@ void CSnakeGame::InitData()
 
 	//爆炸显示计数
 	m_iShowBoomCount = 0;
+	//爆炸显示状态
+	m_bShowBoom = false;
+
 	//分数增加次数计数
 	m_iAddScoreCount = 0;
+
+	//初始化加速标记
+	m_bImproveSpeed = false;
 
 	//随机苹果位置
 	RandApplePos();
@@ -359,9 +366,10 @@ bool CSnakeGame::CheckGameOver(const POSITION& stHeaderPos)
 //改变方向
 void CSnakeGame::ChangeDirection(int iDirection)
 {
-	//如果是相反方向或相同方向
+	//如果是相反方向或相同方向，或者游戏不是运行中状态，则返回
 	if (m_iSnakeDirection == OPPSITE_DIRECTION[iDirection]
-		|| m_iSnakeDirection == iDirection)
+		|| m_iSnakeDirection == iDirection 
+		|| m_enGameState != GAMESTATE_RUNNING)
 	{
 		return;
 	}
@@ -408,13 +416,23 @@ void CSnakeGame::OnDownPressed()
 //Fire按下
 void CSnakeGame::OnFireBtnPressed()
 {
+	if (m_enGameState != GAMESTATE_RUNNING)
+	{
+		return;
+	}
 
+	m_bImproveSpeed = true;
 }
 
 
 //Fire释放
 void CSnakeGame::OnFireBtnReleased()
 {
+	if (m_enGameState != GAMESTATE_RUNNING)
+	{
+		return;
+	}
 
+	m_bImproveSpeed = false;
 }
 

@@ -11,12 +11,15 @@ const bool BOOM_STATE[4][4] =
 int Random(int iStart, int iEnd, int iStep)
 {
 	//如果上一次获取随机数的时间和本次相同，则不再随机种子
+	bool bSameTime = true;
 	static time_t stLastTime = 0;
 	time_t tCurTime = time(NULL);
 	if (difftime(tCurTime, stLastTime) > 0)
 	{
 		srand((unsigned)time(NULL));
 		stLastTime = tCurTime;
+		
+		bSameTime = false;
 	}
 
 	vector<int> vecNum;
@@ -27,7 +30,11 @@ int Random(int iStart, int iEnd, int iStep)
 
 	random_shuffle(vecNum.begin(), vecNum.end());
 	
-	//返回第一个
-	vector<int>::iterator pIter = vecNum.begin();
-	return *pIter;
+	//返回结果，如果是相同时间，则返回不同位置的值
+	int iIndex = 0;
+	if (bSameTime)
+	{
+		iIndex = rand() % vecNum.size();
+	}
+	return vecNum[iIndex];
 }

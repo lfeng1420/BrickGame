@@ -112,8 +112,8 @@ enum
 //方向枚举
 enum DIRECTION
 {
-	DIR_RIGHT,
-	DIR_MIN = DIR_RIGHT,
+	DIR_MIN = 0,
+	DIR_RIGHT = DIR_MIN,
 	DIR_DOWN,
 	DIR_LEFT,
 	DIR_UP,
@@ -136,6 +136,8 @@ enum SCENE_INDEX
 
 	SCENE_SNAKE,				//游戏界面 - 贪吃蛇
 
+	SCENE_MATCH,				//游戏界面 - 匹配
+
 	SCENE_FROGGER,				//游戏界面 - 青蛙过河
 
 	SCENE_MAX,					//最大值
@@ -150,6 +152,8 @@ enum GAME_LIST
 	GAME_RACING,				//赛车
 
 	GAME_SNAKE,					//贪吃蛇
+
+	GAME_MATCH,					//匹配
 
 	GAME_FROGGER,				//青蛙过河
 

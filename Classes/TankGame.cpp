@@ -229,6 +229,9 @@ void CTankGame::InitData()
 	//分数增加次数计数
 	m_iAddScoreCount = 0;
 
+	//爆炸显示状态
+	m_bShowBoom = false;
+
 	//坦克创建数量初始化
 	m_iTankCreateCount = 0;
 
