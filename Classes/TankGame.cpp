@@ -41,7 +41,7 @@ void CTankGame::Init()
 	m_iScore = 0;
 
 	//更新界面，分数、等级和生命
-	m_pGameScene->UpdateScore(m_iScore);
+	m_pGameScene->UpdateScore(m_iScore, false);
 	m_pGameScene->UpdateLevel(m_iLevel);
 	m_pGameScene->UpdateSmallBricks();
 
@@ -836,6 +836,7 @@ void CTankGame::BulletShoot()
 			{
 				//我方坦克死亡
 				m_enGameState = GAMESTATE_OVER;
+				PLAY_EFFECT(EFFECT_BOOM);
 			}
 
 			//子弹状态

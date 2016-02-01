@@ -34,7 +34,7 @@ void CSnakeGame::Init()
 	m_iScore = 0;
 
 	//更新界面，分数、等级和生命
-	m_pGameScene->UpdateScore(m_iScore);
+	m_pGameScene->UpdateScore(m_iScore, false);
 	m_pGameScene->UpdateLevel(m_iLevel);
 	m_pGameScene->UpdateSmallBricks();
 
@@ -274,6 +274,8 @@ void CSnakeGame::RandApplePos()
 //蛇更新位置
 void CSnakeGame::SnakeMove()
 {
+	PLAY_EFFECT(EFFECT_WALL);
+
 	//记录最后一个节点位置，因为可能需要增加节点
 	int iNodeCount = m_mapSnakeNodes.size();
 	POSITION stLastPos = m_mapSnakeNodes[iNodeCount - 1];
@@ -298,6 +300,7 @@ void CSnakeGame::SnakeMove()
 
 	if (CheckGameOver(stHeaderPos))
 	{
+		PLAY_EFFECT(EFFECT_BOOM);
 		return;
 	}
 

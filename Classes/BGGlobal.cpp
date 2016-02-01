@@ -8,6 +8,20 @@ const bool BOOM_STATE[4][4] =
 	{ true, false, false, true },
 };
 
+const char* BGM_START = "Sounds/bgm.mp3";
+
+const char* EFFECT_ADD = "Sounds/add.mp3";
+const char* EFFECT_BOOM = "Sounds/boom.mp3";
+const char* EFFECT_CHANGE = "Sounds/change.mp3";
+const char* EFFECT_CHANGE2 = "Sounds/change2.mp3";
+const char* EFFECT_DELETE = "Sounds/delete.mp3";
+const char* EFFECT_NEXT = "Sounds/next.mp3";
+const char* EFFECT_PAUSE = "Sounds/pause.mp3";
+const char* EFFECT_SOUNDOFF = "Sounds/sndoff.mp3";
+const char* EFFECT_SOUNDON = "Sounds/sndon.mp3";
+const char* EFFECT_WALL = "Sounds/wall.mp3";
+
+
 int Random(int iStart, int iEnd, int iStep)
 {
 	//如果上一次获取随机数的时间和本次相同，则不再随机种子

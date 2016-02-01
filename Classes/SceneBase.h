@@ -1,6 +1,7 @@
 #pragma once
 #include "BGGlobal.h"
 #include "GameScene.h"
+#include "GeneralManager.h"
 
 class CSceneBase
 {

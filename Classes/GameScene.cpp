@@ -1,6 +1,6 @@
 #include "GameScene.h"
 #include "GameOver.h"
-#include "DataManager.h"
+#include "GeneralManager.h"
 #include "ChooseGame.h"
 #include "RacingGame.h"
 #include "FroggerGame.h"
@@ -33,11 +33,7 @@ Scene* CGameScene::CreateScene()
 
 bool CGameScene::init()
 {
-	SpriteFrameCache::getInstance()->addSpriteFramesWithFile("Plists/Brick.plist");
-
 	CC_RETURN_FALSE_IF(!LayerColor::initWithColor(Color4B::WHITE));
-
-	CDataManager::getInstance();
 
 	//初始化变量，获取数据等
 	InitData();
@@ -59,6 +55,9 @@ bool CGameScene::init()
 
 	//开始场景
 	RunScene(SCENE_GAMEOVER);
+
+	//播放音效
+	PLAY_BGMUSIC(BGM_START);
 
 	//帧更新
 	this->scheduleUpdate();
@@ -286,8 +285,8 @@ void CGameScene::InitCotroller()
 	//声音开关
 	auto soundBtn = MenuItemToggle::createWithCallback(
 		CC_CALLBACK_1(CGameScene::OnButtonClick, this, BTN_SOUND),
-		bSoundState ? pSoundOffMenu : pSoundOnMenu,
 		bSoundState ? pSoundOnMenu : pSoundOffMenu,
+		bSoundState ? pSoundOffMenu : pSoundOnMenu,
 		nullptr
 		);
 	soundBtn->setScale(fSpriteScale);
@@ -516,6 +515,9 @@ void CGameScene::OnButtonEvent(Ref* pSender, Widget::TouchEventType enType, int 
 //按钮按下
 void CGameScene::OnButtonPressed(int iBtnIndex)
 {
+	//按钮音效
+	PLAY_EFFECT(EFFECT_CHANGE2);
+
 	switch (iBtnIndex)
 	{
 	case BTN_DOWN:
@@ -574,29 +576,48 @@ void CGameScene::OnButtonClick(Ref* pSender, int iBtnIndex)
 {
 	switch (iBtnIndex)
 	{
-	case BTN_START:
-		if (m_iSceneIndex < SCENE_RACING)
+		case BTN_START:
 		{
-			m_mapGameObj[m_iSceneIndex]->OnStart();
-		}
-		else
-		{
-			m_bGamePause = !m_bGamePause;
-			m_pPauseSpr->setVisible(m_bGamePause);
-			//如果暂停，则停止更新
-			if (m_bGamePause)
+			if (m_iSceneIndex < SCENE_RACING)
 			{
-				this->unscheduleUpdate();
+				m_mapGameObj[m_iSceneIndex]->OnStart();
 			}
 			else
 			{
-				this->scheduleUpdate();
+				m_bGamePause = !m_bGamePause;
+				m_pPauseSpr->setVisible(m_bGamePause);
+				//如果暂停，则停止更新
+				if (m_bGamePause)
+				{
+					this->unscheduleUpdate();
+				}
+				else
+				{
+					this->scheduleUpdate();
+				}
 			}
 		}
 		break;
 
-	case BTN_SOUND:
-		SET_SOUNDSTATE(!GET_SOUNDSTATE());
+		case BTN_SOUND:
+		{
+			bool bState = !GET_SOUNDSTATE();
+			SET_SOUNDSTATE(bState);
+
+			if (bState)
+			{
+				PLAY_EFFECT(EFFECT_SOUNDON);
+				if (m_iSceneIndex <= SCENE_CHOOSEGAME)
+				{
+					PLAY_BGMUSIC(BGM_START);
+				}
+			}
+			else
+			{
+				//PLAY_EFFECT(EFFECT_SOUNDOFF);
+				PAUSE_BGMUSIC();
+			}
+		}
 		break;
 
 	case BTN_RESET:
@@ -614,10 +635,38 @@ void CGameScene::RunScene(int iSceneIndex)
 
 
 //更新分数显示
-void CGameScene::UpdateScore(int iScore)
+void CGameScene::UpdateScore(int iScore, bool bPlayEffect)
 {
+	if (bPlayEffect)
+	{
+		PLAY_EFFECT(EFFECT_ADD);
+	}
+
 	log("Current Score: %d", iScore);
 	m_pScoreLabel->setString(StringUtils::format("%06d", iScore));
+
+	UpdateHighScore(m_iSceneIndex - 2, iScore);
+}
+
+
+//更新最高分显示
+void CGameScene::UpdateHighScore(int iGameIdx, int iHighScore)
+{
+	if (iGameIdx < 0)
+	{
+		return;
+	}
+
+	int iRecordHighScore = CGeneralManager::getInstance()->GetHighScore(iGameIdx);
+	if (iRecordHighScore > iHighScore)
+	{
+		iHighScore = iRecordHighScore;
+	}
+	else if (iRecordHighScore < iHighScore)
+	{
+		CGeneralManager::getInstance()->SetHighScore(iGameIdx, iHighScore);
+	}
+	m_pHighScoreLabel->setString(StringUtils::format("%06d", iHighScore));
 }
 
 

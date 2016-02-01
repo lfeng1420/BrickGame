@@ -26,7 +26,10 @@ public:
 	void RunScene(int iSceneIndex);
 
 	//更新分数显示
-	void UpdateScore(int iScore);
+	void UpdateScore(int iScore, bool bPlayEffect = true);
+
+	//更新最高分显示
+	void UpdateHighScore(int iGameIdx, int iHighScore = 0);
 
 	//更新等级显示
 	void UpdateLevel(int iLevel);

@@ -1,4 +1,5 @@
 #include "GameOver.h"
+#include "GeneralManager.h"
 
 CGameOver::CGameOver(CGameScene* pGameScene) : CSceneBase(pGameScene)
 {
@@ -21,6 +22,9 @@ void CGameOver::Init()
 	m_iEndColIdx = COLUMN_NUM - 1;
 	m_iBeginColIdx = -1;
 	m_iBeginRowIdx = 0;
+
+	//保存最高分数据
+	CGeneralManager::getInstance()->SaveHighScoreToFile();
 }
 
 

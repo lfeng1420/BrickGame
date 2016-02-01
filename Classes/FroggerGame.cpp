@@ -25,7 +25,7 @@ void CFroggerGame::Init()
 	m_iScore = 0;
 
 	//更新界面，分数、等级和生命
-	m_pGameScene->UpdateScore(m_iScore);
+	m_pGameScene->UpdateScore(m_iScore, false);
 	m_pGameScene->UpdateLevel(m_iLevel);
 	m_pGameScene->UpdateSmallBricks();
 
@@ -344,11 +344,7 @@ void CFroggerGame::UpdateGameState()
 	if (m_arrBrickState[m_iSelfRowIdx][m_iSelfColIdx])
 	{
 		m_enGameState = GAMESTATE_OVER;
-	}
-	
-	if (m_iPassCount == GAMEPASS_COUNT)
-	{
-		m_enGameState = GAMESTATE_PASS;
+		PLAY_EFFECT(EFFECT_BOOM);
 	}
 }
 
@@ -435,11 +431,7 @@ void CFroggerGame::OnUpBtnPressed()
 	m_iSelfRowIdx -= 2;
 	m_pGameScene->UpdateBrick(m_iSelfRowIdx, m_iSelfColIdx, false, true);
 
-	if (m_arrBrickState[m_iSelfRowIdx][m_iSelfColIdx])
-	{
-		m_enGameState = GAMESTATE_OVER;
-		return;
-	}
+	UpdateGameState();
 
 	if (m_iSelfRowIdx == RIVER_ROWTOP_INDEX - 1)
 	{

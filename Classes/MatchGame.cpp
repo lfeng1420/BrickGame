@@ -130,7 +130,7 @@ void CMatchGame::Init()
 	m_iScore = 0;
 
 	//更新界面，分数、等级和生命
-	m_pGameScene->UpdateScore(m_iScore);
+	m_pGameScene->UpdateScore(m_iScore, false);
 	m_pGameScene->UpdateLevel(m_iLevel);
 	m_pGameScene->UpdateSmallBricks();
 
@@ -240,7 +240,7 @@ bool CMatchGame::GetBrickState(int iRowIndex, int iColIndex)
 	if (m_enGameState == GAMESTATE_OVER)
 	{
 		int iBoomStartRowIdx = (m_iMyRowIdx > ROW_NUM - 4 ? ROW_NUM - 4 : m_iMyRowIdx);
-		if (iRowIndex >= iBoomStartRowIdx)
+		if (iRowIndex >= iBoomStartRowIdx && iRowIndex < iBoomStartRowIdx + 4)
 		{
 			int iIndex = iColIndex / 5;
 			for (int i = 0; i < BRICK_MATCH_NUM; ++i)
@@ -527,6 +527,7 @@ void CMatchGame::UpdateGameState()
 		if (m_arrMyBrick[i] != m_arrDestBrick[i])
 		{
 			m_enGameState = GAMESTATE_OVER;
+			PLAY_EFFECT(EFFECT_BOOM);
 			m_arrBoomIndex[iBoomIndex++] = i;
 		}
 	}

@@ -1,5 +1,5 @@
 #include "ChooseGame.h"
-#include "DataManager.h"
+#include "GeneralManager.h"
 
 CChooseGame::CChooseGame(CGameScene* pGameScene) : CSceneBase(pGameScene)
 {
@@ -26,7 +26,8 @@ void CChooseGame::Init()
 	m_fCurTime = 0;
 
 	//重置分数
-	m_pGameScene->UpdateScore(0);
+	m_pGameScene->UpdateScore(0, false);
+	m_pGameScene->UpdateHighScore(m_iGameIndex);
 }
 
 
@@ -48,7 +49,7 @@ void CChooseGame::Play(float dt)
 		m_fCurTime = 0;
 	}
 
-	m_pAnimData = CDataManager::getInstance()->GetAnimData(m_iGameIndex, m_iAnimIndex);
+	m_pAnimData = CGeneralManager::getInstance()->GetAnimData(m_iGameIndex, m_iAnimIndex);
 
 	//下一个动画
 	if (++m_iAnimIndex >= ANIM_NUM)
@@ -131,6 +132,9 @@ void CChooseGame::OnFireBtnPressed()
 
 	m_iAnimIndex = 0;
 
+	//更新最高分显示
+	m_pGameScene->UpdateHighScore(m_iGameIndex);
+
 	Play(REFRESH_INTERVAL);
 }
 
@@ -148,6 +152,12 @@ const int GAMEIDX_TO_SCENEIDX[] =
 //开始
 void CChooseGame::OnStart()
 {
+	//停止背景音乐
+	STOP_BGMUSIC();
+
+	//播放开始音效
+	PLAY_EFFECT(EFFECT_PAUSE);
+
 	//设置游戏索引，生命，等级和速度
 	SET_INTVALUE("GAME", m_iGameIndex);
 	SET_INTVALUE("SPEED", m_iSpeed);

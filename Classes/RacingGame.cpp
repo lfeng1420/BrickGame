@@ -25,7 +25,7 @@ void CRacingGame::Init()
 	m_iScore = 0;
 
 	//更新界面，分数、等级和生命
-	m_pGameScene->UpdateScore(m_iScore);
+	m_pGameScene->UpdateScore(m_iScore, false);
 	m_pGameScene->UpdateLevel(m_iLevel);
 	m_pGameScene->UpdateSmallBricks();
 
@@ -73,6 +73,7 @@ void CRacingGame::Play(float dt)
 	if (m_arrCurBrick[ROW_NUM - 4][m_iCarPos * 3 + 2] == 1 && m_arrCurBrick[ROW_NUM - 5][m_iCarPos * 3 + 2] == 1)
 	{
 		m_enGameState = GAMESTATE_OVER;
+		PLAY_EFFECT(EFFECT_BOOM);
 	}
 
 	if (!m_bFirstShow)
@@ -229,6 +230,7 @@ void CRacingGame::OnLeftBtnPressed()
 	if (m_arrCurBrick[ROW_NUM - 2][m_iCarPos * 3 + 2] == 1)
 	{
 		m_enGameState = GAMESTATE_OVER;
+		PLAY_EFFECT(EFFECT_BOOM);
 	}
 
 	m_pGameScene->UpdateBricks(ROW_NUM - 4, m_iCarPos * 3 + 1, ROW_NUM, (m_iCarPos + 1) * 3 + 4);
@@ -249,6 +251,7 @@ void CRacingGame::OnRightBtnPressed()
 	if (m_arrCurBrick[ROW_NUM - 2][m_iCarPos * 3 + 2] == 1)
 	{
 		m_enGameState = GAMESTATE_OVER;
+		PLAY_EFFECT(EFFECT_BOOM);
 	}
 
 	m_pGameScene->UpdateBricks(ROW_NUM - 4, (m_iCarPos - 1) * 3 + 1, ROW_NUM, m_iCarPos * 3 + 4);

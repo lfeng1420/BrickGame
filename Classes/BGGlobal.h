@@ -4,6 +4,11 @@
 #include "cocos2d.h"
 #include "cocos-ext.h"
 #include "../cocos/ui/CocosGUI.h"
+#include "json/rapidjson.h"
+#include "json/writer.h"
+#include "json/document.h"
+#include "json/prettywriter.h"
+#include "json/stringbuffer.h"
 
 #include <map>
 #include <vector>
@@ -50,21 +55,21 @@ using namespace ui;
 
 #define PRELOAD_BGMUSIC(name) CocosDenshion::SimpleAudioEngine::getInstance()->preloadBackgroundMusic(name)
 
-#define PLAY_BGMUSIC(name) CDataManager::getInstance()->PlayMusic(name)
+#define PLAY_BGMUSIC(name) CGeneralManager::getInstance()->PlayMusic(name)
 
-#define LOOP_PLAY_BGMUSIC(name) CDataManager::getInstance()->PlayMusic(name, true)
+#define LOOP_PLAY_BGMUSIC(name) CGeneralManager::getInstance()->PlayMusic(name, true)
 
 #define STOP_BGMUSIC CocosDenshion::SimpleAudioEngine::getInstance()->stopBackgroundMusic
 
-#define PAUSE_MUSIC CocosDenshion::SimpleAudioEngine::getInstance()->pauseBackgroundMusic
+#define PAUSE_BGMUSIC CocosDenshion::SimpleAudioEngine::getInstance()->pauseBackgroundMusic
 
 #define PRELOAD_EFFECT(name) CocosDenshion::SimpleAudioEngine::getInstance()->preloadEffect(name)
 
-#define PLAY_EFFECT(name) CDataManager::getInstance()->PlayEffect(name)
+#define PLAY_EFFECT(name) CGeneralManager::getInstance()->PlayEffect(name)
 
-#define SET_SOUNDSTATE(state) CDataManager::getInstance()->SetSoundState(state)
+#define SET_SOUNDSTATE(state) CGeneralManager::getInstance()->SetSoundState(state)
 
-#define GET_SOUNDSTATE CDataManager::getInstance()->GetSoundState
+#define GET_SOUNDSTATE CGeneralManager::getInstance()->GetSoundState
 
 #define GET_CONTENTSIZE(sprite) sprite->getContentSize()
 
@@ -173,6 +178,19 @@ enum GAME_STATE
 //全局常量
 extern const bool BOOM_STATE[4][4];
 
+//字符串常量
+extern const char* BGM_START;
+
+extern const char* EFFECT_ADD;
+extern const char* EFFECT_BOOM;
+extern const char* EFFECT_CHANGE;
+extern const char* EFFECT_CHANGE2;
+extern const char* EFFECT_DELETE;
+extern const char* EFFECT_NEXT;
+extern const char* EFFECT_PAUSE;
+extern const char* EFFECT_SOUNDOFF;
+extern const char* EFFECT_SOUNDON;
+extern const char* EFFECT_WALL;
 
 // ---- 通用函数 ---- 
 int Random(int iStart, int iEnd, int iStep = 1);
