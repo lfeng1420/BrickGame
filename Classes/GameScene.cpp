@@ -7,6 +7,7 @@
 #include "TankGame.h"
 #include "SnakeGame.h"
 #include "MatchGame.h"
+#include "PinballGame.h"
 
 CGameScene::CGameScene() : m_iSceneIndex(SCENE_GAMEOVER)
 {
@@ -421,6 +422,10 @@ void CGameScene::CreateGameObj()
 	//青蛙过河
 	CFroggerGame* pFroggerGame = new CFroggerGame(this);
 	m_mapGameObj[SCENE_FROGGER] = pFroggerGame;
+
+	//弹球
+	CPinballGame* pPinballGame = new CPinballGame(this);
+	m_mapGameObj[SCENE_PINBALL] = pPinballGame;
 }
 
 
@@ -515,8 +520,11 @@ void CGameScene::OnButtonEvent(Ref* pSender, Widget::TouchEventType enType, int 
 //按钮按下
 void CGameScene::OnButtonPressed(int iBtnIndex)
 {
-	//按钮音效
-	PLAY_EFFECT(EFFECT_CHANGE2);
+	if (m_iSceneIndex <= SCENE_CHOOSEGAME)
+	{
+		//按钮音效
+		PLAY_EFFECT(EFFECT_CHANGE2);
+	}
 
 	switch (iBtnIndex)
 	{

@@ -513,6 +513,14 @@ bool CTankGame::GetNextPos(const POSITION& stCurPos, int iDirection, POSITION& s
 //左按下
 void CTankGame::OnLeftBtnPressed()
 {
+	if (m_enGameState != GAMESTATE_RUNNING)
+	{
+		return;
+	}
+
+	//按钮音效
+	PLAY_EFFECT(EFFECT_CHANGE2);
+
 	m_arrBtnState[DIR_LEFT] = true;
 }
 
@@ -525,6 +533,14 @@ void CTankGame::OnLeftBtnReleased()
 //右按下
 void CTankGame::OnRightBtnPressed()
 {
+	if (m_enGameState != GAMESTATE_RUNNING)
+	{
+		return;
+	}
+
+	//按钮音效
+	PLAY_EFFECT(EFFECT_CHANGE2);
+
 	m_arrBtnState[DIR_RIGHT] = true;
 }
 
@@ -536,6 +552,14 @@ void CTankGame::OnRightBtnReleased()
 //上按下
 void CTankGame::OnUpBtnPressed()
 {
+	if (m_enGameState != GAMESTATE_RUNNING)
+	{
+		return;
+	}
+
+	//按钮音效
+	PLAY_EFFECT(EFFECT_CHANGE2);
+
 	m_arrBtnState[DIR_UP] = true;
 }
 
@@ -548,6 +572,14 @@ void CTankGame::OnUpBtnReleased()
 //下按下
 void CTankGame::OnDownPressed()
 {
+	if (m_enGameState != GAMESTATE_RUNNING)
+	{
+		return;
+	}
+
+	//按钮音效
+	PLAY_EFFECT(EFFECT_CHANGE2);
+
 	m_arrBtnState[DIR_DOWN] = true;
 }
 
@@ -560,6 +592,14 @@ void CTankGame::OnDownReleased()
 //Fire按下
 void CTankGame::OnFireBtnPressed()
 {
+	if (m_enGameState != GAMESTATE_RUNNING)
+	{
+		return;
+	}
+
+	//按钮音效
+	PLAY_EFFECT(EFFECT_CHANGE2);
+
 	m_bFireState = true;
 }
 

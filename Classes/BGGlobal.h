@@ -91,9 +91,34 @@ struct POSITION
 
 	int m_iColIdx;			//列位置
 
+	POSITION() : m_iRowIdx(0), m_iColIdx(0)
+	{
+
+	};
+
+	POSITION(int iRowIdx, int iColIdx) : m_iRowIdx(iRowIdx), m_iColIdx(iColIdx)
+	{
+
+	};
+
 	bool operator== (const POSITION& rhs) const
 	{
 		return this->m_iColIdx == rhs.m_iColIdx && this->m_iRowIdx == rhs.m_iRowIdx;
+	}
+
+	POSITION& operator+= (const POSITION& rhs)
+	{
+		this->m_iColIdx += rhs.m_iColIdx;
+		this->m_iRowIdx += rhs.m_iRowIdx;
+
+		return *this;
+	}
+
+	const POSITION operator+ (const POSITION& rhs) const
+	{
+		POSITION temp(*this);
+		temp += rhs;
+		return temp;
 	}
 };
 
@@ -145,6 +170,8 @@ enum SCENE_INDEX
 
 	SCENE_FROGGER,				//游戏界面 - 青蛙过河
 
+	SCENE_PINBALL,				//游戏界面 - 弹球
+
 	SCENE_MAX,					//最大值
 };
 
@@ -162,12 +189,16 @@ enum GAME_LIST
 
 	GAME_FROGGER,				//青蛙过河
 
+	GAME_PINBALL,				//弹球
+
 	GAME_MAX,					//最大值
 };
 
 enum GAME_STATE
 {
 	GAMESTATE_RUNNING,				//进行中
+
+	GAMESTATE_PAUSE,				//暂停
 
 	GAMESTATE_OVER,					//结束
 

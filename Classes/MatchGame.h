@@ -89,7 +89,7 @@ private:
 
 		BOOM_REFRESH_INTERVAL = 50,				//爆炸效果刷新时间
 
-		BRICK_CHANGE_INTERVAL = 85,				//每85毫秒切换一次
+		BRICK_CHANGE_INTERVAL = 60,				//每60毫秒切换一次
 	};
 
 private:

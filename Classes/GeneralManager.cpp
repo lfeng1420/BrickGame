@@ -70,6 +70,10 @@ bool CGeneralManager::LoadGameAnim()
 		"Anims/e1_2.txt",
 		"Anims/e1_3.txt",
 		"Anims/e1_4.txt",
+		"Anims/f1_1.txt",
+		"Anims/f1_2.txt",
+		"Anims/f1_3.txt",
+		"Anims/f1_4.txt",
 	};
 
 	for (int i = 0; i < GAME_MAX * ANIM_NUM; ++i)

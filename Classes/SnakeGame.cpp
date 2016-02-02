@@ -377,6 +377,9 @@ void CSnakeGame::ChangeDirection(int iDirection)
 		return;
 	}
 
+	//按钮音效
+	PLAY_EFFECT(EFFECT_CHANGE2);
+
 	//设置方向
 	m_iSnakeDirection = iDirection;
 	
@@ -423,6 +426,9 @@ void CSnakeGame::OnFireBtnPressed()
 	{
 		return;
 	}
+
+	//按钮音效
+	PLAY_EFFECT(EFFECT_CHANGE2);
 
 	m_bImproveSpeed = true;
 }

@@ -451,6 +451,9 @@ void CMatchGame::ChangeType(DIRECTION enDirection, bool bPressed)
 		return;
 	}
 
+	//∞¥≈•“Ù–ß
+	PLAY_EFFECT(EFFECT_CHANGE2);
+
 	m_arrBtnState[enDirection] = bPressed;
 }
 

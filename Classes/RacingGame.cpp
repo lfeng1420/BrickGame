@@ -224,6 +224,9 @@ void CRacingGame::OnLeftBtnPressed()
 		return;
 	}
 
+	//按钮音效
+	PLAY_EFFECT(EFFECT_CHANGE2);
+
 	--m_iCarPos;
 
 	//检查目标车道是否被占用
@@ -244,6 +247,9 @@ void CRacingGame::OnRightBtnPressed()
 	{
 		return;
 	}
+
+	//按钮音效
+	PLAY_EFFECT(EFFECT_CHANGE2);
 
 	++m_iCarPos;
 
@@ -275,6 +281,14 @@ void CRacingGame::OnDownPressed()
 //Fire
 void CRacingGame::OnFireBtnPressed()
 {
+	if (m_enGameState != GAMESTATE_RUNNING)
+	{
+		return;
+	}
+
+	//按钮音效
+	PLAY_EFFECT(EFFECT_CHANGE2);
+
 	//加速
 	m_bImproveSpeed = true;
 }

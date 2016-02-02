@@ -389,6 +389,9 @@ void CFroggerGame::OnLeftBtnPressed()
 		return;
 	}
 
+	//按钮音效
+	PLAY_EFFECT(EFFECT_CHANGE2);
+
 	//清除旧的位置
 	m_pGameScene->UpdateBrick(m_iSelfRowIdx, m_iSelfColIdx, false, false);
 
@@ -407,6 +410,9 @@ void CFroggerGame::OnRightBtnPressed()
 		return;
 	}
 
+	//按钮音效
+	PLAY_EFFECT(EFFECT_CHANGE2);
+
 	//清除旧的位置
 	m_pGameScene->UpdateBrick(m_iSelfRowIdx, m_iSelfColIdx, false, false);
 
@@ -424,6 +430,9 @@ void CFroggerGame::OnUpBtnPressed()
 	{
 		return;
 	}
+
+	//按钮音效
+	PLAY_EFFECT(EFFECT_CHANGE2);
 
 	//清除旧的位置
 	m_pGameScene->UpdateBrick(m_iSelfRowIdx, m_iSelfColIdx, false, false);
@@ -468,6 +477,9 @@ void CFroggerGame::OnDownPressed()
 	{
 		return;
 	}
+
+	//按钮音效
+	PLAY_EFFECT(EFFECT_CHANGE2);
 
 	//清除旧的位置
 	m_pGameScene->UpdateBrick(m_iSelfRowIdx, m_iSelfColIdx, false, false);

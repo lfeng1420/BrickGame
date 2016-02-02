@@ -22,20 +22,23 @@
     <Filter Include="Classes\Scene\Game">
       <UniqueIdentifier>{cff7e61f-37f2-4e0a-8c24-d9600aa60f66}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Classes\Scene\Game\FroggerGame">
+    <Filter Include="Classes\Scene\Game\Frogger">
       <UniqueIdentifier>{4459115e-86ab-4128-bd8e-8b6336522e9e}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Classes\Scene\Game\RacingGame">
+    <Filter Include="Classes\Scene\Game\Match">
+      <UniqueIdentifier>{57f91eef-aece-4d2b-8fff-ab505dd97dd2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Classes\Scene\Game\Racing">
       <UniqueIdentifier>{0af63241-50e1-4351-939a-a08268eb44f7}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Classes\Scene\Game\TankGame">
-      <UniqueIdentifier>{f738ba46-0c95-4171-8a65-fb734a106ae9}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Classes\Scene\Game\SnakeGame">
+    <Filter Include="Classes\Scene\Game\Snake">
       <UniqueIdentifier>{2f47c368-4b32-455e-af62-e90745a894b9}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Classes\Scene\Game\MatchGame">
-      <UniqueIdentifier>{57f91eef-aece-4d2b-8fff-ab505dd97dd2}</UniqueIdentifier>
+    <Filter Include="Classes\Scene\Game\Tank">
+      <UniqueIdentifier>{f738ba46-0c95-4171-8a65-fb734a106ae9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Classes\Scene\Game\Pinball">
+      <UniqueIdentifier>{d6670c13-de94-40b1-90ab-4523a2ffcd1a}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -55,22 +58,22 @@
       <Filter>Classes\Scene\Base</Filter>
     </ClCompile>
     <ClCompile Include="..\Classes\FroggerGame.cpp">
-      <Filter>Classes\Scene\Game\FroggerGame</Filter>
+      <Filter>Classes\Scene\Game\Frogger</Filter>
     </ClCompile>
     <ClCompile Include="..\Classes\RacingGame.cpp">
-      <Filter>Classes\Scene\Game\RacingGame</Filter>
+      <Filter>Classes\Scene\Game\Racing</Filter>
     </ClCompile>
     <ClCompile Include="..\Classes\TankGame.cpp">
-      <Filter>Classes\Scene\Game\TankGame</Filter>
+      <Filter>Classes\Scene\Game\Tank</Filter>
     </ClCompile>
     <ClCompile Include="..\Classes\BGGlobal.cpp">
       <Filter>Classes</Filter>
     </ClCompile>
     <ClCompile Include="..\Classes\SnakeGame.cpp">
-      <Filter>Classes\Scene\Game\SnakeGame</Filter>
+      <Filter>Classes\Scene\Game\Snake</Filter>
     </ClCompile>
     <ClCompile Include="..\Classes\MatchGame.cpp">
-      <Filter>Classes\Scene\Game\MatchGame</Filter>
+      <Filter>Classes\Scene\Game\Match</Filter>
     </ClCompile>
     <ClCompile Include="..\Classes\GameScene.cpp">
       <Filter>Classes</Filter>
@@ -80,6 +83,9 @@
     </ClCompile>
     <ClCompile Include="..\Classes\GeneralManager.cpp">
       <Filter>Classes\Manager</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\PinballGame.cpp">
+      <Filter>Classes\Scene\Game\Pinball</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -99,22 +105,22 @@
       <Filter>Classes\Scene\Base</Filter>
     </ClInclude>
     <ClInclude Include="..\Classes\FroggerGame.h">
-      <Filter>Classes\Scene\Game\FroggerGame</Filter>
+      <Filter>Classes\Scene\Game\Frogger</Filter>
     </ClInclude>
     <ClInclude Include="..\Classes\RacingGame.h">
-      <Filter>Classes\Scene\Game\RacingGame</Filter>
+      <Filter>Classes\Scene\Game\Racing</Filter>
     </ClInclude>
     <ClInclude Include="..\Classes\TankGame.h">
-      <Filter>Classes\Scene\Game\TankGame</Filter>
+      <Filter>Classes\Scene\Game\Tank</Filter>
     </ClInclude>
     <ClInclude Include="..\Classes\BGGlobal.h">
       <Filter>Classes</Filter>
     </ClInclude>
     <ClInclude Include="..\Classes\SnakeGame.h">
-      <Filter>Classes\Scene\Game\SnakeGame</Filter>
+      <Filter>Classes\Scene\Game\Snake</Filter>
     </ClInclude>
     <ClInclude Include="..\Classes\MatchGame.h">
-      <Filter>Classes\Scene\Game\MatchGame</Filter>
+      <Filter>Classes\Scene\Game\Match</Filter>
     </ClInclude>
     <ClInclude Include="..\Classes\LoadScene.h">
       <Filter>Classes</Filter>
@@ -124,6 +130,9 @@
     </ClInclude>
     <ClInclude Include="..\Classes\GeneralManager.h">
       <Filter>Classes\Manager</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\PinballGame.h">
+      <Filter>Classes\Scene\Game\Pinball</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
