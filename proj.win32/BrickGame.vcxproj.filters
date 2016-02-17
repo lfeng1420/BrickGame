@@ -40,6 +40,9 @@
     <Filter Include="Classes\Scene\Game\Pinball">
       <UniqueIdentifier>{d6670c13-de94-40b1-90ab-4523a2ffcd1a}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Classes\Scene\Game\Tetris">
+      <UniqueIdentifier>{e00d805c-3523-4378-b03d-77607c1db747}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -87,6 +90,9 @@
     <ClCompile Include="..\Classes\PinballGame.cpp">
       <Filter>Classes\Scene\Game\Pinball</Filter>
     </ClCompile>
+    <ClCompile Include="..\Classes\TetrisGame.cpp">
+      <Filter>Classes\Scene\Game\Tetris</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="main.h">
@@ -133,6 +139,9 @@
     </ClInclude>
     <ClInclude Include="..\Classes\PinballGame.h">
       <Filter>Classes\Scene\Game\Pinball</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\TetrisGame.h">
+      <Filter>Classes\Scene\Game\Tetris</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

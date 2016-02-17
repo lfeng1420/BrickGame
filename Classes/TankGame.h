@@ -97,7 +97,7 @@ private:
 	void InitData();
 
 	//创建坦克
-	void CreateTank(float dt);
+	bool CreateTank(float dt);
 
 	//画坦克
 	bool DrawTank(const POSITION& stPos, int iDirection, const POSITION& stTargetPos);
@@ -106,7 +106,7 @@ private:
 	bool CheckPos(int iTankIdx, const POSITION& stPos);
 
 	//坦克移动
-	void TankMove(float dt);
+	bool TankMove(float dt);
 
 	//更新某个坦克位置
 	void UpdateTankPos(int iTankIdx);
@@ -118,16 +118,16 @@ private:
 	bool GetNextPos(const POSITION& stCurPos, int iDirection, POSITION& stOutPos, bool bTankFlag = true);
 
 	//我方坦克移动
-	void SelfTankMove(float dt);
+	bool SelfTankMove(float dt);
 
 	//坦克发射子弹
-	void TankFire(float dt);
+	bool TankFire(float dt);
 
 	//子弹创建
 	void CreateBullet(int iTankIdx);
 
 	//子弹移动
-	void BulletMove(float dt);
+	bool BulletMove(float dt);
 
 	//子弹
 	void BulletShoot();
@@ -167,15 +167,13 @@ private:
 
 		BOOM_SHOWCOUNT = 16,						//闪烁显示爆炸效果次数
 
-		GAMEPASS_ADDSCORE = 100,					//通过时增加100
-
 		GAMEPASS_ADDCOUNT = 10,						//增加10次
 
 		GAMEPASS_REFRESH_INTERVAL = 200,			//通过显示刷新时间
 
 		BOOM_REFRESH_INTERVAL = 50,					//爆炸效果刷新时间
 
-		TANK_KILL_ADD_SCORE = 50,					//杀掉一个坦克增加的分数
+		TANK_KILL_ADD_SCORE = 10,					//杀掉一个坦克增加的分数
 
 		TANK_CREATE_MAXCOUNT = 30,					//每一个等级坦克创建最大数量
 	};

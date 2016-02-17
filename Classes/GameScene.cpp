@@ -8,6 +8,7 @@
 #include "SnakeGame.h"
 #include "MatchGame.h"
 #include "PinballGame.h"
+#include "TetrisGame.h"
 
 CGameScene::CGameScene() : m_iSceneIndex(SCENE_GAMEOVER)
 {
@@ -58,7 +59,7 @@ bool CGameScene::init()
 	RunScene(SCENE_GAMEOVER);
 
 	//播放音效
-	PLAY_BGMUSIC(BGM_START);
+	PLAY_BGMUSIC(BGM_START, true);
 
 	//帧更新
 	this->scheduleUpdate();
@@ -79,14 +80,38 @@ void CGameScene::InitData()
 //初始化Brick
 void CGameScene::InitBrick()
 {
+	bool arrBrick[ROW_NUM][COLUMN_NUM] =
+	{
+		false, false, false, false, false, false, false, false, false, false, false, false, false, false,
+		false, false, true, true, true, true, true, false, false, false, false, false, false, false,
+		false, false, false, true, false, false, false, true, false, false, false, false, false, false,
+		false, false, false, true, true, true, true, false, false, false, false, false, false, false,
+		false, false, false, true, false, false, false, true, false, false, false, false, false, false,
+		false, false, true, true, true, true, true, false, false, false, false, false, false, false,
+		false, false, false, false, false, false, false, false, false, false, false, false, false, false,
+		false, false, false, false, false, true, true, true, true, false, false, false, false, false,
+		false, false, false, false, false, false, false, false, false, true, false, false, false, false,
+		false, false, false, false, false, false, false, false, true, false, false, false, false, false,
+		false, false, false, false, false, false, false, true, false, false, false, false, false,
+		false, false, false, false, false, false, false, true, false, false, false, false, false, false,
+		false, false, false, false, false, false, false, true, false, false, false, false, false, false,
+		false, false, false, false, false, false, false, false, false, false, false, false, false, false,
+		false, false, false, false, false, false, false, true, true, true, true, false, false, false,
+		false, false, false, false, false, false, true, false, false, false, false, false, false, false,
+		false, false, false, false, false, false, true, false, false, false, true, true, false, false,
+		false, false, false, false, false, false, true, false, false, false, false, true, false, false,
+		false, false, false, false, false, false, false, true, true, true, true, false, false, false,
+		false, false, false, false, false, false, false, false, false, false, false, false, false, false, 
+	};
+
 	float fCurY = m_visibleSize.height;
 	for (int i = 0; i < ROW_NUM; ++i)
 	{
 		float fCurX = 0;
 		for (int j = 0; j < COLUMN_NUM; ++j)
 		{
-			m_arrBrickState[i][j] = false;
-			m_pArrBrick[i][j] = Sprite::createWithSpriteFrameName("empty.png");
+			m_arrBrickState[i][j] = arrBrick[i][j];
+			m_pArrBrick[i][j] = Sprite::createWithSpriteFrameName(arrBrick[i][j] ? "black.png" : "empty.png");
 			m_pArrBrick[i][j]->setPosition(fCurX + BRICK_WIDTH * 1.0f / 2, fCurY - BRICK_HEIGHT * 1.0f / 2);
 			this->addChild(m_pArrBrick[i][j]);
 
@@ -101,11 +126,17 @@ void CGameScene::InitBrick()
 //初始化UI:分数、等级等
 void CGameScene::InitUI()
 {
-	TTFConfig ttfConfig("Fonts/DSDigital.ttf", 46.0f);
+	//TTFConfig ttfConfig("Fonts/DSDigital.ttf", 46.0f);
 	Size visibleSize = GET_VISIBLESIZE();
 
 	//图片缩放
 	float fSpriteScale = 0.38f;
+
+	//背景
+	m_pBgSpr = Sprite::create("bg.png");
+	m_pBgSpr->setPosition(visibleSize.width / 2, visibleSize.height / 2);
+	m_pBgSpr->setScale(GET_CONTENTSIZE(m_pBgSpr).width / visibleSize.width);
+	this->addChild(m_pBgSpr);
 
 	//分数
 	auto pScore = Sprite::create("score.png");
@@ -117,12 +148,25 @@ void CGameScene::InitUI()
 	this->addChild(pScore);
 
 	//分数Label
-	m_pScoreLabel = Label::createWithTTF(ttfConfig, "123456", TextHAlignment::CENTER);
+	/*m_pScoreLabel = Label::createWithTTF(ttfConfig, "123456", TextHAlignment::CENTER);
+	m_pScoreLabel = Label::createWithBMFont("Fonts/font.fnt", "123456", TextHAlignment::CENTER);
 	Size scoreLabelSize = GET_CONTENTSIZE(m_pScoreLabel);
 	fCurY -= scoreLabelSize.height * 2.5f / 2;
 	m_pScoreLabel->setPosition(fCurX, fCurY + scoreLabelSize.height / 2);
 	m_pScoreLabel->setTextColor(Color4B::BLACK);
-	this->addChild(m_pScoreLabel);
+	this->addChild(m_pScoreLabel);*/
+
+	//分数Sprite序列
+	float fTempX = fCurX - NUM_PADDING * 5 / 2 - NUM_WIDTH * 3;
+	fCurY -= NUM_HEIGHT * 2.5f / 2;
+	for (int i = 0; i < 6; ++i)
+	{
+		m_pArrScore[i] = CREATE_SPRITEWITHNAME("0.png");
+		m_pArrScore[i]->setPosition(fTempX + NUM_WIDTH / 2, fCurY + NUM_HEIGHT / 2);
+		this->addChild(m_pArrScore[i]);
+
+		fTempX += NUM_WIDTH + NUM_PADDING;
+	}
 
 	//最高分
 	auto pHighScore = Sprite::create("hiscore.png");
@@ -132,18 +176,30 @@ void CGameScene::InitUI()
 	pHighScore->setPosition(fCurX, fCurY + highScoreSize.height / 2);
 	this->addChild(pHighScore);
 
-	//分数Label
-	m_pHighScoreLabel = Label::createWithTTF(ttfConfig, "000000", TextHAlignment::CENTER);
+	//最高分Label
+	/*m_pHighScoreLabel = Label::createWithBMFont("Fonts/font.fnt", "000000", TextHAlignment::CENTER);
 	Size highScoreLabelSize = GET_CONTENTSIZE(m_pHighScoreLabel);
 	fCurY -= highScoreLabelSize.height * 2.5f / 2;
 	m_pHighScoreLabel->setPosition(fCurX, fCurY + highScoreLabelSize.height / 2);
 	m_pHighScoreLabel->setTextColor(Color4B::BLACK);
-	this->addChild(m_pHighScoreLabel);
+	this->addChild(m_pHighScoreLabel);*/
+
+	//最高分Sprite序列
+	fCurY -= NUM_HEIGHT * 2.5f / 2;
+	fTempX = fCurX - NUM_PADDING * 5 / 2 - NUM_WIDTH * 3;
+	for (int i = 0; i < 6; ++i)
+	{
+		m_pArrHighScore[i] = CREATE_SPRITEWITHNAME("0.png");
+		m_pArrHighScore[i]->setPosition(fTempX + NUM_WIDTH / 2, fCurY + NUM_HEIGHT / 2);
+		this->addChild(m_pArrHighScore[i]);
+
+		fTempX += NUM_WIDTH + NUM_PADDING;
+	}
 
 	//小方块序列
 	float fBrickScale = 0.7f;
 	float fPadding = 4;
-	fCurY -= highScoreLabelSize.height / 2;
+	fCurY -= NUM_HEIGHT / 2;
 	for (int i = 0; i < 4; ++i)
 	{
 		for (int j = 0; j < 4; ++j)
@@ -167,20 +223,38 @@ void CGameScene::InitUI()
 	this->addChild(pSpeed);
 
 	//速度Label
-	m_pSpeedLabel = Label::createWithTTF(ttfConfig, "0", TextHAlignment::CENTER);
+	/*m_pSpeedLabel = Label::createWithBMFont("Fonts/font.fnt", "0", TextHAlignment::CENTER);
 	Size speedLabelSize = GET_CONTENTSIZE(m_pSpeedLabel);
 	fCurY -= speedLabelSize.height;
 	m_pSpeedLabel->setPosition(fCurX, fCurY + speedLabelSize.height / 2);
 	m_pSpeedLabel->setTextColor(Color4B::BLACK);
-	this->addChild(m_pSpeedLabel);
+	this->addChild(m_pSpeedLabel);*/
+	fCurY -= NUM_HEIGHT;
+	m_pArrSpeed[0] = CREATE_SPRITEWITHNAME("0.png");
+	m_pArrSpeed[0]->setPosition(fCurX, fCurY + NUM_HEIGHT / 2);
+	this->addChild(m_pArrSpeed[0]);
+
+	m_pArrSpeed[1] = CREATE_SPRITEWITHNAME("0.png");
+	m_pArrSpeed[1]->setPosition(fCurX, fCurY + NUM_HEIGHT / 2);
+	this->addChild(m_pArrSpeed[1]);
+	m_pArrSpeed[1]->setVisible(false);
 
 	//等级Label
-	m_pLevelLabel = Label::createWithTTF(ttfConfig, "0", TextHAlignment::CENTER);
+	/*m_pLevelLabel = Label::createWithBMFont("Fonts/font.fnt", "0", TextHAlignment::CENTER);
 	Size levelLabelSize = GET_CONTENTSIZE(m_pLevelLabel);
 	fCurY -= levelLabelSize.height;
 	m_pLevelLabel->setPosition(fCurX, fCurY + levelLabelSize.height / 2);
 	m_pLevelLabel->setTextColor(Color4B::BLACK);
-	this->addChild(m_pLevelLabel);
+	this->addChild(m_pLevelLabel);*/
+	fCurY -= NUM_HEIGHT + NUM_PADDING * 10;
+	m_pArrLevel[0] = CREATE_SPRITEWITHNAME("0.png");
+	m_pArrLevel[0]->setPosition(fCurX, fCurY + NUM_HEIGHT / 2);
+	this->addChild(m_pArrLevel[0]);
+
+	m_pArrLevel[1] = CREATE_SPRITEWITHNAME("0.png");
+	m_pArrLevel[1]->setPosition(fCurX, fCurY + NUM_HEIGHT / 2);
+	this->addChild(m_pArrLevel[1]);
+	m_pArrLevel[1]->setVisible(false);
 
 	//等级
 	auto pLevel = Sprite::create("level.png");
@@ -191,18 +265,16 @@ void CGameScene::InitUI()
 	this->addChild(pLevel);
 
 	//暂停图标
-	float fPauseScale = fSpriteScale - 0.04f;
+	//float fPauseScale = fSpriteScale - 0.04f;
 	m_pPauseSpr = Sprite::create("pause.png");
-	m_pPauseSpr->setScale(fPauseScale);
-	Size pauseSize = GET_CONTENTSIZE(m_pPauseSpr) * fPauseScale;
+	m_pPauseSpr->setScale(fSpriteScale);
+	Size pauseSize = GET_CONTENTSIZE(m_pPauseSpr) * fSpriteScale;
 	fCurY -= pauseSize.height;
 	m_pPauseSpr->setPosition(fCurX, fCurY + pauseSize.height / 2);
 	this->addChild(m_pPauseSpr);
 
 	//默认非暂停状态
 	m_pPauseSpr->setVisible(m_bGamePause);
-
-	log("Leave CGameScene::InitUI");
 }
 
 
@@ -211,60 +283,63 @@ void CGameScene::InitCotroller()
 	//剩余高度，用于调整控制按钮位置
 	float fHeight = m_visibleSize.height - BRICK_HEIGHT * ROW_NUM;
 
-	float fBtnScale = 1.4f;
-	float fBtnPadding = 25 * fBtnScale;
+	float fBtnScale = 1.45f;
+	//float fBtnPadding = 30 * fBtnScale;
 
 	//上
-	Button* pUpBtn = Button::create("up_0.png", "up_1.png");
+	Button* pUpBtn = Button::create("btn_0.png", "btn_1.png");
 	pUpBtn->setScale(fBtnScale);
 	pUpBtn->addTouchEventListener(CC_CALLBACK_2(CGameScene::OnButtonEvent, this, BTN_UP));
 	Size upBtnSize = pUpBtn->getContentSize() * fBtnScale;
 
 	//右
-	Button* pRightBtn = Button::create("right_0.png", "right_1.png");
+	Button* pRightBtn = Button::create("btn_0.png", "btn_1.png");
 	pRightBtn->setScale(fBtnScale);
+	pRightBtn->setRotation(90);
 	pRightBtn->addTouchEventListener(CC_CALLBACK_2(CGameScene::OnButtonEvent, this, BTN_RIGHT));
 	Size rightBtnSize = pRightBtn->getContentSize() * fBtnScale;
 
 	//下
-	Button* pDownBtn = Button::create("down_0.png", "down_1.png");
+	Button* pDownBtn = Button::create("btn_0.png", "btn_1.png");
 	pDownBtn->setScale(fBtnScale);
+	pDownBtn->setRotation(180);
 	pDownBtn->addTouchEventListener(CC_CALLBACK_2(CGameScene::OnButtonEvent, this, BTN_DOWN));
 	Size downBtnSize = pDownBtn->getContentSize() * fBtnScale;
 
 	//左
-	Button* pLeftBtn = Button::create("left_0.png", "left_1.png");
+	Button* pLeftBtn = Button::create("btn_0.png", "btn_1.png");
 	pLeftBtn->setScale(fBtnScale);
+	pLeftBtn->setRotation(-90);
 	pLeftBtn->addTouchEventListener(CC_CALLBACK_2(CGameScene::OnButtonEvent, this, BTN_LEFT));
 	Size leftBtnSize = pLeftBtn->getContentSize() * fBtnScale;
 
 	//Fire
-	float fFireScale = fBtnScale - 0.1f;
+	float fFireScale = fBtnScale - 0.08f;
 	Button* pFireBtn = Button::create("fire_0.png", "fire_1.png");
 	pFireBtn->setScale(fFireScale);
 	pFireBtn->addTouchEventListener(CC_CALLBACK_2(CGameScene::OnButtonEvent, this, BTN_FIRE));
 	Size fireBtnSize = pFireBtn->getContentSize() * fFireScale;
 
 	//设置位置
-	float fTopPosY = fHeight - (fHeight - (leftBtnSize.width + fBtnPadding) * 2) / 3;
-	pLeftBtn->setPosition(Vec2(leftBtnSize.width * 0.7f, fTopPosY - upBtnSize.height - fBtnPadding));
-	pRightBtn->setPosition(Vec2(leftBtnSize.width * 1.2f + rightBtnSize.width / 2 + fBtnPadding * 2, fTopPosY - upBtnSize.height - fBtnPadding));
-	pDownBtn->setPosition(Vec2(leftBtnSize.width * 1.2f + fBtnPadding, fTopPosY - upBtnSize.height * 1.5f - fBtnPadding * 2));
-	pUpBtn->setPosition(Vec2(leftBtnSize.width * 1.2f + fBtnPadding, fTopPosY - upBtnSize.height / 2));
-	pFireBtn->setPosition(Vec2(m_visibleSize.width - leftBtnSize.width * 0.4f - fireBtnSize.width / 2, fTopPosY - upBtnSize.height - fBtnPadding));
+	float fTopPosY = fHeight - (fHeight - upBtnSize.height * 2) * 0.7f / 3;
+	pLeftBtn->setPosition(Vec2(upBtnSize.height * 0.7f + 4.0f, fTopPosY - upBtnSize.height));
+	pRightBtn->setPosition(Vec2(upBtnSize.height * 1.7f - 4.0f, fTopPosY - upBtnSize.height));
+	pDownBtn->setPosition(Vec2(upBtnSize.height * 1.2f, fTopPosY - upBtnSize.height * 1.5f + 4.0f));
+	pUpBtn->setPosition(Vec2(upBtnSize.height * 1.2f, fTopPosY - upBtnSize.height / 2 - 4.0f));
+	pFireBtn->setPosition(Vec2(m_visibleSize.width - upBtnSize.height * 0.4f - fireBtnSize.width / 2, fTopPosY - upBtnSize.height));
 	this->addChild(pLeftBtn);
 	this->addChild(pRightBtn);
 	this->addChild(pDownBtn);
 	this->addChild(pUpBtn);
 	this->addChild(pFireBtn);
 
-	fTopPosY -= (upBtnSize.height + fBtnPadding) * 2;
+	fTopPosY -= upBtnSize.height * 2;
 
 	//开始
-	float fSpriteScale = 1.7f;
+	float fSpriteScale = 0.38f;
 	auto startBtn = MenuItemSprite::create(
-		Sprite::create("start_0.png"),
-		Sprite::create("start_1.png"),
+		Sprite::create("play.png"),
+		Sprite::create("play.png"),
 		CC_CALLBACK_1(CGameScene::OnButtonClick, this, BTN_START)
 		);
 	startBtn->setScale(fSpriteScale);
@@ -273,13 +348,13 @@ void CGameScene::InitCotroller()
 	//获取声音状态
 	bool bSoundState = GET_SOUNDSTATE();
 	auto pSoundOnMenu = MenuItemSprite::create(
-		Sprite::create("sound_on_0.png"),
-		Sprite::create("sound_on_1.png"),
+		Sprite::create("sound_on.png"),
+		Sprite::create("sound_on.png"),
 		nullptr
 		);
 	auto pSoundOffMenu = MenuItemSprite::create(
-		Sprite::create("sound_off_0.png"),
-		Sprite::create("sound_off_1.png"),
+		Sprite::create("sound_off.png"),
+		Sprite::create("sound_off.png"),
 		nullptr
 		);
 
@@ -295,22 +370,50 @@ void CGameScene::InitCotroller()
 
 	//重置
 	auto resetBtn = MenuItemSprite::create(
-		Sprite::create("reset_0.png"),
-		Sprite::create("reset_1.png"),
+		Sprite::create("reset.png"),
+		Sprite::create("reset.png"),
 		CC_CALLBACK_1(CGameScene::OnButtonClick, this, BTN_RESET)
 		);
 	resetBtn->setScale(fSpriteScale);
 	Size resetBtnSize = resetBtn->getContentSize() * fSpriteScale;
 
+	//底部按钮高度
 	fHeight = (fTopPosY - soundBtnSize.height) / 2 + soundBtnSize.height / 2;
+	//按钮间距
+	float fBtnPadding = soundBtnSize.width * 1.2f;
+
+#if CC_TARGET_PLATFORM == CC_PLATFORM_WP8
+	//额外功能
+	auto extremeBtn = MenuItemSprite::create(
+		Sprite::create("star.png"),
+		Sprite::create("star.png"),
+		CC_CALLBACK_1(CGameScene::OnButtonClick, this, BTN_GIVESCORE)
+		);
+	extremeBtn->setScale(fSpriteScale);
+	Size themeBtnSize = extremeBtn->getContentSize() * fSpriteScale;
+
+	//位置
+	soundBtn->setPosition(m_visibleSize.width / 2 - fBtnPadding / 2 - soundBtnSize.width / 2, fHeight);
+	startBtn->setPosition(m_visibleSize.width / 2 - fBtnPadding * 3 / 2 - soundBtnSize.width - startBtnSize.width / 2, fHeight);
+	resetBtn->setPosition(m_visibleSize.width / 2 + fBtnPadding / 2 + resetBtnSize.width / 2, fHeight);
+	extremeBtn->setPosition(m_visibleSize.width / 2 + fBtnPadding * 3 / 2 + resetBtnSize.width + themeBtnSize.width / 2, fHeight);
+
+	auto menu = Menu::create(soundBtn, startBtn, resetBtn, extremeBtn, nullptr);
+	float fCurHeight = 0;
+	menu->setPosition(Vec2::ZERO);
+	this->addChild(menu);
+#else
 	soundBtn->setPosition(m_visibleSize.width / 2, fHeight);
-	startBtn->setPosition(m_visibleSize.width / 2 - 20 - soundBtnSize.width / 2 - startBtnSize.width / 2, fHeight);
-	resetBtn->setPosition(m_visibleSize.width / 2 + 20 + soundBtnSize.width / 2 + resetBtnSize.width / 2, fHeight);
+	startBtn->setPosition(m_visibleSize.width / 2 - soundBtnSize.width / 2 - fBtnPadding - startBtnSize.width / 2, fHeight);
+	resetBtn->setPosition(m_visibleSize.width / 2 + soundBtnSize.width / 2 + fBtnPadding + resetBtnSize.width / 2, fHeight);
 
 	auto menu = Menu::create(soundBtn, startBtn, resetBtn, nullptr);
 	float fCurHeight = 0;
 	menu->setPosition(Vec2::ZERO);
 	this->addChild(menu);
+
+#endif
+
 }
 
 
@@ -344,6 +447,10 @@ void CGameScene::CreateKeyListener()
 		{
 			log("K Pressed");
 			OnButtonPressed(BTN_FIRE);
+		}
+		else if (EventKeyboard::KeyCode::KEY_SPACE == keyCode)
+		{
+			OnButtonClick(nullptr, BTN_START);
 		}
 	};
 
@@ -426,6 +533,10 @@ void CGameScene::CreateGameObj()
 	//弹球
 	CPinballGame* pPinballGame = new CPinballGame(this);
 	m_mapGameObj[SCENE_PINBALL] = pPinballGame;
+
+	//俄罗斯方块
+	CTetrisGame* pTetrisGame = new CTetrisGame(this);
+	m_mapGameObj[SCENE_TETRIS] = pTetrisGame;
 }
 
 
@@ -460,6 +571,9 @@ void CGameScene::UpdateBrick(int iRowIndex, int iColIndex, bool bSmallBrickFlag,
 //更新所有Brick状态
 void CGameScene::UpdateBricks( int iStartRowIdx, int iStartColIdx, int iEndRowIdx, int iEndColIdx )
 {
+	//边界检查
+	iEndRowIdx = (iEndRowIdx > ROW_NUM ? ROW_NUM : iEndRowIdx);
+	iEndColIdx = (iEndColIdx > COLUMN_NUM ? COLUMN_NUM : iEndColIdx);
 
 	for (int i = (iStartRowIdx == -1 ? 0 : iStartRowIdx); i < (iEndRowIdx == -1 ? ROW_NUM : iEndRowIdx); ++i)
 	{
@@ -586,7 +700,9 @@ void CGameScene::OnButtonClick(Ref* pSender, int iBtnIndex)
 	{
 		case BTN_START:
 		{
-			if (m_iSceneIndex < SCENE_RACING)
+			PLAY_EFFECT(EFFECT_CHANGE2);
+
+			if (m_iSceneIndex <= SCENE_CHOOSEGAME)
 			{
 				m_mapGameObj[m_iSceneIndex]->OnStart();
 			}
@@ -617,7 +733,7 @@ void CGameScene::OnButtonClick(Ref* pSender, int iBtnIndex)
 				PLAY_EFFECT(EFFECT_SOUNDON);
 				if (m_iSceneIndex <= SCENE_CHOOSEGAME)
 				{
-					PLAY_BGMUSIC(BGM_START);
+					PLAY_BGMUSIC(BGM_START, true);
 				}
 			}
 			else
@@ -628,7 +744,31 @@ void CGameScene::OnButtonClick(Ref* pSender, int iBtnIndex)
 		}
 		break;
 
-	case BTN_RESET:
+		case BTN_RESET:
+		{
+			PLAY_EFFECT(EFFECT_CHANGE2);
+
+			//如果暂停了，则恢复更新
+			if (m_bGamePause)
+			{
+				m_bGamePause = false;
+				m_pPauseSpr->setVisible(false);
+				this->scheduleUpdate();
+			}
+
+			if (m_iSceneIndex > SCENE_CHOOSEGAME)
+			{
+				RunScene(SCENE_GAMEOVER);
+			}
+		}
+		break;
+		case BTN_GIVESCORE:
+		{
+#if CC_TARGET_PLATFORM == CC_PLATFORM_WP8
+			PLAY_EFFECT(EFFECT_CHANGE2);
+			GLView::sharedOpenGLView()->OnGiveScore();
+#endif
+		}
 		break;
 	}
 }
@@ -651,7 +791,13 @@ void CGameScene::UpdateScore(int iScore, bool bPlayEffect)
 	}
 
 	log("Current Score: %d", iScore);
-	m_pScoreLabel->setString(StringUtils::format("%06d", iScore));
+
+	char arrNum[7] = {'\0'};
+	sprintf(arrNum, "%06d", iScore);
+	for (int i = 0; i < 6; ++i)
+	{
+		m_pArrScore[i]->setSpriteFrame(StringUtils::format("%c.png", arrNum[i]));
+	}
 
 	UpdateHighScore(m_iSceneIndex - 2, iScore);
 }
@@ -674,7 +820,13 @@ void CGameScene::UpdateHighScore(int iGameIdx, int iHighScore)
 	{
 		CGeneralManager::getInstance()->SetHighScore(iGameIdx, iHighScore);
 	}
-	m_pHighScoreLabel->setString(StringUtils::format("%06d", iHighScore));
+	
+	char arrNum[7] = { '\0' };
+	sprintf(arrNum, "%06d", iHighScore);
+	for (int i = 0; i < 6; ++i)
+	{
+		m_pArrHighScore[i]->setSpriteFrame(StringUtils::format("%c.png", arrNum[i]));
+	}
 }
 
 
@@ -682,7 +834,24 @@ void CGameScene::UpdateHighScore(int iGameIdx, int iHighScore)
 void CGameScene::UpdateLevel(int iLevel)
 {
 	log("Current Level: %d", iLevel);
-	m_pLevelLabel->setString(StringUtils::format("%d", iLevel));
+	
+	float fCenterPosX = (GET_VISIBLESIZE().width - COLUMN_NUM * BRICK_WIDTH) / 2 + COLUMN_NUM * BRICK_WIDTH;
+	if (iLevel == 10)
+	{
+		m_pArrLevel[0]->setSpriteFrame("1.png");
+		m_pArrLevel[0]->setPositionX(fCenterPosX - NUM_WIDTH / 2);
+		m_pArrLevel[1]->setPositionX(fCenterPosX + NUM_WIDTH / 2);
+		m_pArrLevel[1]->setVisible(true);
+	}
+	else
+	{
+		if (m_pArrLevel[1]->isVisible())
+		{
+			m_pArrLevel[1]->setVisible(false);
+			m_pArrLevel[0]->setPositionX(fCenterPosX);
+		}
+		m_pArrLevel[0]->setSpriteFrame(StringUtils::format("%d.png", iLevel));
+	}
 }
 
 
@@ -690,7 +859,24 @@ void CGameScene::UpdateLevel(int iLevel)
 void CGameScene::UpdateSpeed(int iSpeed)
 {
 	log("Current Speed: %d", iSpeed);
-	m_pSpeedLabel->setString(StringUtils::format("%d", iSpeed));
+	
+	float fCenterPosX = (GET_VISIBLESIZE().width - COLUMN_NUM * BRICK_WIDTH) / 2 + COLUMN_NUM * BRICK_WIDTH;
+	if (iSpeed == 10)
+	{
+		m_pArrSpeed[0]->setSpriteFrame("1.png");
+		m_pArrSpeed[0]->setPositionX(fCenterPosX - NUM_WIDTH / 2);
+		m_pArrSpeed[1]->setPositionX(fCenterPosX + NUM_WIDTH / 2);
+		m_pArrSpeed[1]->setVisible(true);
+	}
+	else
+	{
+		if (m_pArrSpeed[1]->isVisible())
+		{
+			m_pArrSpeed[1]->setVisible(false);
+			m_pArrSpeed[0]->setPositionX(fCenterPosX);
+		}
+		m_pArrSpeed[0]->setSpriteFrame(StringUtils::format("%d.png", iSpeed));
+	}
 }
 
 

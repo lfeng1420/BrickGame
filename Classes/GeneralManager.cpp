@@ -47,50 +47,26 @@ void CGeneralManager::Init()
 //加载动画
 bool CGeneralManager::LoadGameAnim()
 {
-	//动画文件
-	const string arrAnimFilePath[ANIM_NUM * GAME_MAX] =
+	//加载动画文件
+	for (int i = 0; i < GAME_MAX; ++i)
 	{
-		"Anims/a1_1.txt",
-		"Anims/a1_2.txt",
-		"Anims/a1_3.txt",
-		"Anims/a1_4.txt",
-		"Anims/b1_1.txt",
-		"Anims/b1_2.txt",
-		"Anims/b1_3.txt",
-		"Anims/b1_4.txt",
-		"Anims/c1_1.txt",
-		"Anims/c1_2.txt",
-		"Anims/c1_3.txt",
-		"Anims/c1_4.txt",
-		"Anims/d1_1.txt",
-		"Anims/d1_2.txt",
-		"Anims/d1_3.txt",
-		"Anims/d1_4.txt",
-		"Anims/e1_1.txt",
-		"Anims/e1_2.txt",
-		"Anims/e1_3.txt",
-		"Anims/e1_4.txt",
-		"Anims/f1_1.txt",
-		"Anims/f1_2.txt",
-		"Anims/f1_3.txt",
-		"Anims/f1_4.txt",
-	};
-
-	for (int i = 0; i < GAME_MAX * ANIM_NUM; ++i)
-	{
-		string strPath = FileUtils::getInstance()->fullPathForFilename(arrAnimFilePath[i]);
-		string strContent = FileUtils::getInstance()->getStringFromFile(strPath);
-
-		TVECTOR_ANIMDATA& vecAnimData = m_mapGameAnim[i];
-		for (unsigned int i = 0; i < strContent.size(); ++i)
+		for (int j = 0; j < ANIM_NUM; ++j)
 		{
-			if (strContent[i] == '0')
+			string strFilePath = StringUtils::format("Anims/%c1_%d.txt", i + 'a', j + 1);
+			string strFullPath = FileUtils::getInstance()->fullPathForFilename(strFilePath);
+			string strContent = FileUtils::getInstance()->getStringFromFile(strFullPath);
+
+			TVECTOR_ANIMDATA& vecAnimData = m_mapGameAnim[i * ANIM_NUM + j];
+			for (unsigned int k = 0; k < strContent.size(); ++k)
 			{
-				vecAnimData.push_back(1);
-			}
-			else if (strContent[i] == '-')
-			{
-				vecAnimData.push_back(0);
+				if (strContent[k] == '0')
+				{
+					vecAnimData.push_back(1);
+				}
+				else if (strContent[k] == '-')
+				{
+					vecAnimData.push_back(0);
+				}
 			}
 		}
 	}

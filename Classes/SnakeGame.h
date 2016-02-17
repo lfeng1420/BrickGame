@@ -71,11 +71,11 @@ private:
 
 		SNAKE_MAX_LEN = 18,							//蛇身最大长度，会随着等级变化而变化
 
-		SNAKE_EAT_ADD_SCORE = 100,					//每次吃掉一个苹果加的分数
+		SNAKE_EAT_ADD_SCORE = 10,					//每次吃掉一个苹果加的分数
 
 		BOOM_SHOWCOUNT = 16,						//闪烁显示爆炸效果次数
 
-		GAMEPASS_ADDSCORE = 100,					//通过时增加100
+		GAMEPASS_ADDSCORE = 10,						//通过时增加10
 
 		GAMEPASS_ADDCOUNT = 10,						//增加10次
 

@@ -36,14 +36,106 @@ void CPinballGame::Init()
 //更新
 void CPinballGame::Play(float dt)
 {
-	BallMove(dt);
+	if (m_enGameState == GAMESTATE_RUNNING || m_enGameState == GAMESTATE_PAUSE)
+	{
+		if (!GuardMove(dt) && !BallMove(dt))
+		{
+			return;
+		}
+	}
+
+	if (m_enGameState == GAMESTATE_PASS)
+	{
+		//时间更新
+		m_fWaitTime += dt;
+		if (m_fWaitTime < GAMEPASS_REFRESH_INTERVAL)
+		{
+			return;
+		}
+		m_fWaitTime = 0;
+
+		if (m_iAddScoreCount < GAMEPASS_ADDCOUNT)
+		{
+			++m_iAddScoreCount;
+			m_iScore += GAMEPASS_ADDSCORE;
+			m_pGameScene->UpdateScore(m_iScore);
+			return;
+		}
+		else
+		{
+			//更新速度和等级
+			if (++m_iSpeed > 10)
+			{
+				m_iSpeed = 0;
+				if (++m_iLevel > 10)
+				{
+					m_iLevel = 0;
+				}
+			}
+
+			//更新显示
+			m_pGameScene->UpdateLevel(m_iLevel);
+			m_pGameScene->UpdateSpeed(m_iSpeed);
+
+			//重置数据
+			InitData();
+		}
+	}
+	else if (m_enGameState == GAMESTATE_OVER)
+	{
+		//时间更新
+		m_fWaitTime += dt;
+		if (m_fWaitTime < BOOM_REFRESH_INTERVAL)
+		{
+			return;
+		}
+		m_fWaitTime = 0;
+
+		if (m_iShowBoomCount < BOOM_SHOWCOUNT)
+		{
+			m_bShowBoom = !m_bShowBoom;
+			++m_iShowBoomCount;
+		}
+		else
+		{
+			//设置剩余生命
+			--m_iLife;
+			m_pGameScene->UpdateSmallBricks();
+
+			//检查是否有剩余生命，没有则返回游戏结束界面
+			if (m_iLife <= 0)
+			{
+				m_pGameScene->RunScene(SCENE_GAMEOVER);
+				return;
+			}
+
+			//重置数据
+			InitData();
+		}
+	}
+
+	m_pGameScene->UpdateBricks();
 }
 
 
 //获取当前Brick状态
 bool CPinballGame::GetBrickState(int iRowIndex, int iColIndex)
 {
-	return false;
+	if (m_enGameState == GAMESTATE_OVER && iRowIndex >= ROW_NUM - 4)
+	{
+		int iEndColIdx = (m_stBallPos.m_iColIdx < 3 ? 3 : m_stBallPos.m_iColIdx);
+		if (iColIndex <= iEndColIdx && iColIndex >= iEndColIdx - 3)
+		{
+			return m_bShowBoom && BOOM_STATE[iRowIndex - (ROW_NUM - 4)][iColIndex - (iEndColIdx - 3)];
+		}
+	}
+
+	if (iRowIndex == ROW_NUM - 1 && iColIndex >= m_iGuardColIdx && iColIndex < m_iGuardColIdx + GUARD_BRICK_COUNT)
+	{
+		return true;
+	}
+
+	return m_arrBricks[iRowIndex][iColIndex];
 }
 
 
@@ -69,163 +161,365 @@ SCENE_INDEX CPinballGame::GetSceneType()
 //左按下
 void CPinballGame::OnLeftBtnPressed()
 {
+	PLAY_EFFECT(EFFECT_CHANGE2);
 
+	bLeftMoveFlag = true;
 }
 
 
 //左释放
 void CPinballGame::OnLeftBtnReleased()
 {
-
+	bLeftMoveFlag = false;
 }
 
 
 //右按下
 void CPinballGame::OnRightBtnPressed()
 {
+	PLAY_EFFECT(EFFECT_CHANGE2);
 
+	bRightMoveFlag = true;
 }
 
 
 //右释放
 void CPinballGame::OnRightBtnReleased()
 {
-
+	bRightMoveFlag = false;
 }
 
 
 //Fire按下
 void CPinballGame::OnFireBtnPressed()
 {
-	if (m_enGameState != GAMESTATE_PAUSE)
+	PLAY_EFFECT(EFFECT_CHANGE2);
+
+	if (m_enGameState == GAMESTATE_PAUSE)
 	{
-		return;
+		m_enGameState = GAMESTATE_RUNNING;
 	}
 
-	m_enGameState = GAMESTATE_RUNNING;
+	if (m_enGameState == GAMESTATE_RUNNING)
+	{
+		m_bImproveSpeedFlag = true;
+	}
+}
+
+
+void CPinballGame::OnFireBtnReleased()
+{
+	if (m_enGameState == GAMESTATE_RUNNING)
+	{
+		m_bImproveSpeedFlag = false;
+	}
 }
 
 
 void CPinballGame::InitData()
 {
-	//重置界面
-	m_pGameScene->UpdateBricks();
-
 	//初始化球每次移动的距离
-	m_stBallDis = {-1, 1};
+	m_stBallDis.m_iRowIdx = -1;
+	m_stBallDis.m_iColIdx = 1;
 
-	//挡板的位置
-	m_stGuard = { ROW_NUM - 1, (COLUMN_NUM - GUARD_BRICK_COUNT) / 2 };
-	for (int i = 0; i < GUARD_BRICK_COUNT; ++i)
+	int iStartRowIdx = 2 + m_iLevel / 2;
+	for (int i = 0; i < ROW_NUM; ++i)
 	{
-		m_pGameScene->UpdateBrick(m_stGuard.m_iRowIdx, m_stGuard.m_iColIdx + i, false, true);
-	}
-
-	//球位置
-	m_stBall = { ROW_NUM - 2, m_stGuard.m_iColIdx + (GUARD_BRICK_COUNT - 1) / 2 };
-	m_pGameScene->UpdateBrick(m_stBall.m_iRowIdx, m_stBall.m_iColIdx, false, true);
-
-	//初始化各个方块位置
-	int iBrickIdx = 0;
-	for (int i = 5 - m_iSpeed / 2; i <= ROW_NUM / 2 - 1; ++i)
-	{
-		int iStartColIdx = (i % 2 == 0 ? 2 : 1);
-		for (int j = iStartColIdx; j <= COLUMN_NUM - iStartColIdx - 1; ++j)
+		if (i >= iStartRowIdx && i < iStartRowIdx + BRICKS_ROWCOUNT)
 		{
-			m_mapBrick[iBrickIdx++] = {i, j};
-			m_pGameScene->UpdateBrick(i, j, false, true);
+			
+			for (int j = 0; j < COLUMN_NUM / 2; ++j)
+			{
+				m_arrBricks[i][j] = (Random(0, 10) >= 5);
+			}
+
+			for (int j = COLUMN_NUM / 2; j < COLUMN_NUM; ++j)
+			{
+				m_arrBricks[i][j] = m_arrBricks[i][COLUMN_NUM - j - 1];
+			}
+		}
+		else
+		{
+			for (int j = 0; j < COLUMN_NUM; ++j)
+			{
+				m_arrBricks[i][j] = false;
+			}
 		}
 	}
+
+	//初始化左右移状态
+	bLeftMoveFlag = false;
+	bRightMoveFlag = false;
+
+	//加速状态
+	m_bImproveSpeedFlag = false;
+
+	//爆炸相关
+	m_bShowBoom = true;
+	m_iAddScoreCount = 0;
+	m_iShowBoomCount = 0;
+
+	//挡板的位置
+	m_iGuardColIdx = (COLUMN_NUM - GUARD_BRICK_COUNT) / 2;
+
+	//球位置
+	m_stBallPos.m_iRowIdx = ROW_NUM - 2;
+	m_stBallPos.m_iColIdx = m_iGuardColIdx + (GUARD_BRICK_COUNT - 1) / 2;
+	m_arrBricks[ROW_NUM - 2][m_iGuardColIdx + (GUARD_BRICK_COUNT - 1) / 2] = true;
 
 	//游戏状态
 	m_enGameState = GAMESTATE_PAUSE;
 
 	//时间相关
-	m_fMoveTime = 0;
+	m_fWaitTime = 0;
+	m_fBtnCheckTime = 0;
 }
 
-void CPinballGame::BallMove( float dt )
+bool CPinballGame::BallMove( float dt )
 {
 	if (m_enGameState != GAMESTATE_RUNNING)
 	{
-		return;
+		return false;
 	}
 
 	//时间更新
-	m_fMoveTime += dt;
-	if (m_fMoveTime < BALL_MOVE_INTERVAL - 13 * m_iSpeed)
+	m_fWaitTime += dt;
+	if (m_fWaitTime < (BALL_MOVE_INTERVAL - 8 * m_iSpeed) * (m_bImproveSpeedFlag ? 0.5f : 1))
 	{
-		return;
+		return false;
 	}
 	//重置
-	m_fMoveTime = 0;
+	m_fWaitTime = 0;
 
-	//检查下一个位置
-	POSITION stNextPos = m_stBall + m_stBallDis;
-	
-	//获取仅横向/纵向移动时的坐标
-	POSITION stNextRowPos = { m_stBall.m_iRowIdx + m_stBallDis.m_iRowIdx, m_stBall.m_iColIdx };
-	POSITION stNextColPos = { m_stBall.m_iRowIdx, m_stBall.m_iColIdx + m_stBallDis.m_iColIdx };
-
-	int iRowHitIdx = GetHitBrickIndex(stNextRowPos);
-	int iColHitIdx = GetHitBrickIndex(stNextColPos);
-	int iActHitIdx = GetHitBrickIndex(stNextPos);
-
-	if (stNextPos.m_iRowIdx < 0)
+	//检查游戏结束
+	if (m_stBallPos.m_iRowIdx >= ROW_NUM - 1)
 	{
-		if (stNextPos.m_iColIdx < 0 || stNextPos.m_iColIdx >= COLUMN_NUM)
-		{
-			m_stBallDis.m_iColIdx *= -1;
-		}
-		m_stBallDis.m_iRowIdx *= -1;
+		m_enGameState = GAMESTATE_OVER;
+		PLAY_EFFECT(EFFECT_BOOM);
+		return true;
 	}
 
-	if (stNextPos.m_iColIdx < 0 || stNextPos.m_iColIdx >= COLUMN_NUM)
+	bool bNextPosValidFlag = true;
+	POSITION stNextPos = m_stBallPos + m_stBallDis;
+
+	//位置检查
+	do 
 	{
-		if (iRowHitIdx >= 0)
+		if (stNextPos.m_iRowIdx < 0)
 		{
-			//修改方向
+			m_stBallDis.m_iRowIdx *= -1;
+
+			//是否需要反转列方向
+			if (stNextPos.m_iColIdx < 0 || stNextPos.m_iColIdx >= COLUMN_NUM)
+			{
+				m_stBallDis.m_iColIdx *= -1;
+			}
+
+			PLAY_EFFECT(EFFECT_WALL);
+
+			//下一个位置无效
+			bNextPosValidFlag = false;
+			break;
+		}
+
+		if (stNextPos.m_iColIdx < 0 || stNextPos.m_iColIdx >= COLUMN_NUM)
+		{
+			bNextPosValidFlag = false;
+
+			if (m_arrBricks[stNextPos.m_iRowIdx][m_stBallPos.m_iColIdx])
+			{
+				m_arrBricks[stNextPos.m_iRowIdx][m_stBallPos.m_iColIdx] = false;
+
+				//方向变更
+				m_stBallDis.m_iRowIdx *= -1;
+
+				//加分
+				AddScore(10);
+			}
+			else if (m_arrBricks[stNextPos.m_iRowIdx][m_stBallPos.m_iColIdx - m_stBallDis.m_iColIdx])
+			{
+				m_arrBricks[stNextPos.m_iRowIdx][m_stBallPos.m_iColIdx - m_stBallDis.m_iColIdx] = false;
+
+				//方向变更
+				m_stBallDis.m_iRowIdx *= -1;
+
+				//加分
+				AddScore(10);
+			}
+			else
+			{
+				//音效
+				PLAY_EFFECT(EFFECT_WALL);
+			}
+
+			//列方向反转
+			m_stBallDis.m_iColIdx *= -1;
+
+			break;
+		}
+
+		if (m_arrBricks[stNextPos.m_iRowIdx][m_stBallPos.m_iColIdx]
+			&& m_arrBricks[m_stBallPos.m_iRowIdx][stNextPos.m_iColIdx])
+		{
+			m_arrBricks[stNextPos.m_iRowIdx][m_stBallPos.m_iColIdx] = false;
+			m_arrBricks[m_stBallPos.m_iRowIdx][stNextPos.m_iColIdx] = false;
+
+			//加分
+			AddScore(20);
+
+			//方向变更
 			m_stBallDis.m_iColIdx *= -1;
 			m_stBallDis.m_iRowIdx *= -1;
 
-			//移除方块
-			m_mapBrick.erase(iRowHitIdx);
+			//下一个位置无效
+			bNextPosValidFlag = false;
+			break;
+		}
+		else if (m_arrBricks[stNextPos.m_iRowIdx][stNextPos.m_iColIdx])
+		{
+			m_arrBricks[stNextPos.m_iRowIdx][stNextPos.m_iColIdx] = false;
 
 			//加分
-			m_iScore += 100;
-			m_pGameScene->UpdateScore(m_iScore);
+			AddScore(10);
+
+			//方向变更
+			m_stBallDis.m_iColIdx *= -1;
+			m_stBallDis.m_iRowIdx *= -1;
+
+			//下一个位置无效
+			bNextPosValidFlag = false;
+			break;
 		}
-	}
-
-	
-	if (stNextPos.m_iColIdx >= m_stGuard.m_iColIdx && stNextPos.m_iRowIdx == m_stGuard.m_iRowIdx
-			&& stNextPos.m_iColIdx < m_stGuard.m_iColIdx + GUARD_BRICK_COUNT)
-	{
-		m_stBallDis.m_iRowIdx *= -1;
-	}
-
-
-	//取消之前的显示
-	m_pGameScene->UpdateBrick(m_stBall.m_iRowIdx, m_stBall.m_iColIdx, false, false);
-
-	//位置更新
-	m_stBall += m_stBallDis;
-
-	//显示新位置
-	m_pGameScene->UpdateBrick(m_stBall.m_iRowIdx, m_stBall.m_iColIdx, false, true);
-}
-
-
-//获取击中的方块索引
-int CPinballGame::GetHitBrickIndex(const POSITION& stPos)
-{
-	for (int i = 0; i < m_mapBrick.size(); ++i)
-	{
-		if (stPos == m_mapBrick[i])
+		else if (m_arrBricks[stNextPos.m_iRowIdx][m_stBallPos.m_iColIdx]
+			&& !m_arrBricks[m_stBallPos.m_iRowIdx][stNextPos.m_iColIdx])
 		{
-			return i;
+			m_arrBricks[stNextPos.m_iRowIdx][m_stBallPos.m_iColIdx] = false;
+
+			//加分
+			AddScore(10);
+
+			//方向变更
+			m_stBallDis.m_iRowIdx *= -1;
+
+			//下一个位置无效
+			bNextPosValidFlag = false;
+			break;
+		}
+		else if (!m_arrBricks[stNextPos.m_iRowIdx][m_stBallPos.m_iColIdx]
+			&& m_arrBricks[m_stBallPos.m_iRowIdx][stNextPos.m_iColIdx])
+		{
+			m_arrBricks[m_stBallPos.m_iRowIdx][stNextPos.m_iColIdx] = false;
+
+			//加分
+			AddScore(10);
+
+			//方向变更
+			m_stBallDis.m_iColIdx *= -1;
+
+			//下一个位置无效
+			bNextPosValidFlag = false;
+			break;
+		}
+
+	} while (0);
+
+	//更新位置
+	m_arrBricks[m_stBallPos.m_iRowIdx][m_stBallPos.m_iColIdx] = false;
+	m_stBallPos = bNextPosValidFlag ? stNextPos : (m_stBallPos + m_stBallDis);
+	m_arrBricks[m_stBallPos.m_iRowIdx][m_stBallPos.m_iColIdx] = true;
+
+	//挡板是否挡住球
+	if (m_stBallPos.m_iRowIdx == ROW_NUM - 2 
+		&& m_stBallPos.m_iColIdx >= m_iGuardColIdx && m_stBallPos.m_iColIdx < m_iGuardColIdx + GUARD_BRICK_COUNT)
+	{
+		m_stBallDis.m_iRowIdx = -1;
+		
+		//音效
+		PLAY_EFFECT(EFFECT_WALL);
+
+		return true;
+	}
+
+	//检查是否通过当前等级
+	if (CheckGamePass())
+	{
+		m_enGameState = GAMESTATE_PASS;
+	}
+
+	return true;
+}
+
+
+bool CPinballGame::GuardMove(float dt)
+{
+	//时间更新
+	m_fBtnCheckTime += dt;
+	if (m_fBtnCheckTime < BTN_CHECK_INTERVAL)
+	{
+		return false;
+	}
+
+	m_fBtnCheckTime = 0;
+
+	//按钮检查
+	if (bLeftMoveFlag && m_iGuardColIdx > 0)
+	{
+		//需要先检查小球所在位置，避免小球正好在更新后的挡板位置列范围内
+		if (m_enGameState == GAMESTATE_PAUSE ||
+			(m_stBallPos.m_iRowIdx == ROW_NUM - 2 && m_stBallPos.m_iColIdx >= m_iGuardColIdx &&
+			m_stBallPos.m_iColIdx < m_iGuardColIdx + GUARD_BRICK_COUNT))
+		{
+			m_arrBricks[m_stBallPos.m_iRowIdx][m_stBallPos.m_iColIdx] = false;
+			--m_stBallPos.m_iColIdx;
+			m_arrBricks[m_stBallPos.m_iRowIdx][m_stBallPos.m_iColIdx] = true;
+		}
+
+		--m_iGuardColIdx;
+	}
+	else if (bRightMoveFlag && m_iGuardColIdx < COLUMN_NUM - GUARD_BRICK_COUNT)
+	{
+		if (m_enGameState == GAMESTATE_PAUSE ||
+			(m_stBallPos.m_iRowIdx == ROW_NUM - 2 && m_stBallPos.m_iColIdx >= m_iGuardColIdx &&
+			m_stBallPos.m_iColIdx < m_iGuardColIdx + GUARD_BRICK_COUNT))
+		{
+			m_arrBricks[m_stBallPos.m_iRowIdx][m_stBallPos.m_iColIdx] = false;
+			++m_stBallPos.m_iColIdx;
+			m_arrBricks[m_stBallPos.m_iRowIdx][m_stBallPos.m_iColIdx] = true;
+		}
+
+		++m_iGuardColIdx;
+	}
+
+	return true;
+}
+
+
+void CPinballGame::AddScore(int iScore)
+{
+	//加分
+	m_iScore += iScore;
+	m_pGameScene->UpdateScore(m_iScore);
+
+	//音效
+	PLAY_EFFECT(EFFECT_ADD);
+}
+
+
+bool CPinballGame::CheckGamePass()
+{
+	int iStartRowIdx = 2 + m_iLevel / 2;
+	for (int i = iStartRowIdx; i < iStartRowIdx + BRICKS_ROWCOUNT; ++i)
+	{
+		for (int j = 0; j < COLUMN_NUM; ++j)
+		{
+			if (m_arrBricks[i][j])
+			{
+				return false;
+			}
 		}
 	}
 
-	return -1;
+	return true;
 }
+
+

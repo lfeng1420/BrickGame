@@ -7,7 +7,7 @@
             <key>black.png</key>
             <dict>
                 <key>frame</key>
-                <string>{{36,2},{32,32}}</string>
+                <string>{{70,2},{32,32}}</string>
                 <key>offset</key>
                 <string>{0,0}</string>
                 <key>rotated</key>
@@ -18,6 +18,19 @@
                 <string>{32,32}</string>
             </dict>
             <key>empty.png</key>
+            <dict>
+                <key>frame</key>
+                <string>{{36,2},{32,32}}</string>
+                <key>offset</key>
+                <string>{0,0}</string>
+                <key>rotated</key>
+                <false/>
+                <key>sourceColorRect</key>
+                <string>{{0,0},{32,32}}</string>
+                <key>sourceSize</key>
+                <string>{32,32}</string>
+            </dict>
+            <key>white.png</key>
             <dict>
                 <key>frame</key>
                 <string>{{2,2},{32,32}}</string>
@@ -38,9 +51,9 @@
             <key>realTextureFileName</key>
             <string>Brick.png</string>
             <key>size</key>
-            <string>{70,36}</string>
+            <string>{104,36}</string>
             <key>smartupdate</key>
-            <string>$TexturePacker:SmartUpdate:51f423308edcce2f311e2c57e50f610d$</string>
+            <string>$TexturePacker:SmartUpdate:aff7397588fcb45b936fcc455d60fc77$</string>
             <key>textureFileName</key>
             <string>Brick.png</string>
         </dict>

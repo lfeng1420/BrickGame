@@ -55,7 +55,7 @@ using namespace ui;
 
 #define PRELOAD_BGMUSIC(name) CocosDenshion::SimpleAudioEngine::getInstance()->preloadBackgroundMusic(name)
 
-#define PLAY_BGMUSIC(name) CGeneralManager::getInstance()->PlayMusic(name)
+#define PLAY_BGMUSIC(name, loop) CGeneralManager::getInstance()->PlayMusic(name, loop)
 
 #define LOOP_PLAY_BGMUSIC(name) CGeneralManager::getInstance()->PlayMusic(name, true)
 
@@ -172,6 +172,8 @@ enum SCENE_INDEX
 
 	SCENE_PINBALL,				//游戏界面 - 弹球
 
+	SCENE_TETRIS,				//游戏界面 - 俄罗斯方块
+
 	SCENE_MAX,					//最大值
 };
 
@@ -190,6 +192,8 @@ enum GAME_LIST
 	GAME_FROGGER,				//青蛙过河
 
 	GAME_PINBALL,				//弹球
+
+	GAME_TETRIS,				//俄罗斯方块
 
 	GAME_MAX,					//最大值
 };

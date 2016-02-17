@@ -65,7 +65,7 @@ private:
 	void ChangeType(DIRECTION enDirection, bool bPressed);
 
 	//更新我方方块
-	void UpdateMyBricks(float dt);
+	void UpdateMyBricks(DIRECTION enDirection);
 
 	//更新游戏状态
 	void UpdateGameState();
@@ -79,7 +79,7 @@ private:
 
 		BOOM_SHOWCOUNT = 16,					//闪烁显示爆炸效果次数
 
-		MACTHSUCC_ADDSCORE = 100,				//通过时增加100
+		MACTHSUCC_ADDSCORE = 10,				//通过时增加10
 
 		GAMEPASS_MATCHCOUNT = 10,				//通过等级需要匹配成功的次数
 
@@ -128,7 +128,5 @@ private:
 	bool m_arrBtnState[4];						//按钮状态
 
 	bool m_bConfirmMatch;						//是否确认匹配
-
-	float m_fBrickChangeTime;					//等待变换时间
 };
 

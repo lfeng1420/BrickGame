@@ -94,10 +94,22 @@ private:
 		BTN_START,
 		BTN_SOUND,
 		BTN_RESET,
+		BTN_GIVESCORE,
+	};
+
+	enum 
+	{
+		NUM_WIDTH = 22,				//数字宽度
+
+		NUM_HEIGHT = 36,			//数字高度
+
+		NUM_PADDING = 2,			//数字间距
+
+		BGPIC_COUNT = 2,			//背景图片数量
 	};
 
 private:
-	Sprite* m_pArrBrick[ROW_NUM][COLUMN_NUM];				//Sprite数组
+	Sprite* m_pArrBrick[ROW_NUM][COLUMN_NUM];			//Sprite数组
 
 	Size m_visibleSize;									//屏幕大小
 
@@ -107,18 +119,30 @@ private:
 
 	bool m_arrBrickState[ROW_NUM][COLUMN_NUM];			//保存的当前所有Brick状态
 
-	Label* m_pScoreLabel;								//分数序列
-
-	Label* m_pHighScoreLabel;							//分数序列
-
 	Sprite* m_pArrSmallBrick[4][4];						//小方块序列
 
-	Label* m_pLevelLabel;								//等级
+	//Label* m_pLevelLabel;								//等级文本
 
-	Label* m_pSpeedLabel;								//速度
+	//Label* m_pSpeedLabel;								//速度文本
+
+	//Label* m_pScoreLabel;								//分数文本
+
+	//Label* m_pHighScoreLabel;							//最高分文本
+
+	Sprite* m_pArrSpeed[2];								//速度Sprite序列
+
+	Sprite* m_pArrLevel[2];								//等级Sprite序列
+
+	Sprite* m_pArrScore[6];								//分数Sprite序列
+
+	Sprite* m_pArrHighScore[6];							//最高分Sprite序列
 
 	Sprite* m_pPauseSpr;								//暂停图标
 
+	Sprite* m_pBgSpr;									//背景图片
+
 	bool m_bGamePause;									//暂停标志
+
+	int m_iBgColor;									//当前背景颜色序号，0白色，>=1自定义
 };
 

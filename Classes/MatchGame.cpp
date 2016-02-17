@@ -1,109 +1,23 @@
 #include "MatchGame.h"
 
-const bool BRICK_STATE[][3][3] =
+const bool BRICK_STATE[][2][2] =
 {
 	{
-		{ false, false, false },
-		{ false, false, false },
-		{ false,  true, false },
+		{ false, false },
+		{ true, false, },
 	},
 	{
-		{ false, false, false },
-		{ false, false, false },
-		{  true,  true, false },
+		{ true, false },
+		{ true, false, },
 	},
 	{
-		{ false, false, false },
-		{ false,  true, false },
-		{ false,  true, false },
+		{ true, false },
+		{ true, true, },
 	},
 	{
-		{ false, false, false },
-		{  true,  true, false },
-		{  true, false, false },
+		{ true, true },
+		{ true, true, },
 	},
-	{
-		{ false, false, false },
-		{  true,  true, false },
-		{ false,  true, false },
-	},
-	{
-		{ false, false, false },
-		{ false,  true, false },
-		{  true,  true, false },
-	},
-	{
-		{ false, false, false },
-		{  true, false, false },
-		{  true,  true, false },
-	},
-	
-	{
-		{  true, false, false },
-		{  true, false, false },
-		{  true,  true, false },
-	},
-	{
-		{ false, false, false },
-		{  true,  true,  true },
-		{  true, false, false },
-	},
-	{
-		{  true,  true, false },
-		{ false,  true, false },
-		{ false,  true, false },
-	},
-	{
-		{ false, false, false },
-		{ false, false,  true },
-		{  true,  true,  true },
-	},
-	{
-		{ false, false, false },
-		{ false,  true, false },
-		{  true,  true,  true },
-	},
-	{
-		{  true, false, false },
-		{  true,  true, false },
-		{  true, false, false },
-	},
-	{
-		{ false, false, false },
-		{  true,  true,  true },
-		{ false,  true, false },
-	},
-	{
-		{ false,  true, false },
-		{  true,  true, false },
-		{ false,  true, false },
-	},
-	{
-		{ false, false, false },
-		{  true, false, false },
-		{  true,  true,  true },
-	},
-	{
-		{ false,  true,  true },
-		{ false,  true, false },
-		{ false,  true, false },
-	},
-	{
-		{ false, false, false },
-		{  true,  true,  true },
-		{ false, false,  true },
-	},
-	{
-		{ false,  true, false },
-		{ false,  true, false },
-		{  true,  true, false },
-	},
-	{
-		{ false, false, false },
-		{  true,  true, false },
-		{  true,  true, false },
-	},
-	
 };
 
 CMatchGame::CMatchGame(CGameScene* pGameScene) : CSceneBase(pGameScene)
@@ -164,10 +78,10 @@ void CMatchGame::Play(float dt)
 		else
 		{
 			//更新速度和等级
-			if (++m_iSpeed >= 10)
+			if (++m_iSpeed > 10)
 			{
 				m_iSpeed = 0;
-				if (++m_iLevel >= 10)
+				if (++m_iLevel > 10)
 				{
 					m_iLevel = 0;
 				}
@@ -187,9 +101,6 @@ void CMatchGame::Play(float dt)
 
 	if (m_enGameState == GAMESTATE_RUNNING)
 	{
-		//更新方块
-		UpdateMyBricks(dt);
-
 		//目标方块移动
 		if (!DestBricksMove(dt) && !MyBricksMove(dt))
 		{
@@ -258,11 +169,11 @@ bool CMatchGame::GetBrickState(int iRowIndex, int iColIndex)
 		bool bMyFlag = false;
 		int iAcutalRowIdx = 0;
 
-		if (iRowIndex < m_iDestRowIdx + 3 && iRowIndex >= m_iDestRowIdx)
+		if (iRowIndex < m_iDestRowIdx + 2 && iRowIndex >= m_iDestRowIdx)
 		{
 			iAcutalRowIdx = iRowIndex - m_iDestRowIdx;
 		}
-		else if (iRowIndex < m_iMyRowIdx + 3 && iRowIndex >= m_iMyRowIdx)
+		else if (iRowIndex < m_iMyRowIdx + 2 && iRowIndex >= m_iMyRowIdx)
 		{
 			iAcutalRowIdx = iRowIndex - m_iMyRowIdx;
 			bMyFlag = true;
@@ -273,7 +184,7 @@ bool CMatchGame::GetBrickState(int iRowIndex, int iColIndex)
 		}
 
 		int iIndex = iColIndex / 5;
-		if (iColIndex % 5 < 3)
+		if (iColIndex % 5 < 2)
 		{
 			int iType = bMyFlag ? m_arrMyBrick[iIndex] : m_arrDestBrick[iIndex];
 			int iActualColIdx = iColIndex - iIndex * 5;
@@ -371,7 +282,7 @@ void CMatchGame::OnFireBtnPressed()
 void CMatchGame::InitData()
 {
 	//初始化4个方块
-	int iTypeCount = sizeof(BRICK_STATE) / sizeof(bool) / 9;
+	int iTypeCount = sizeof(BRICK_STATE) / sizeof(bool) / 4;
 	for (int i = 0; i < BRICK_MATCH_NUM; ++i)
 	{
 		m_arrDestBrick[i] = Random(0, iTypeCount);
@@ -381,21 +292,14 @@ void CMatchGame::InitData()
 		m_arrBoomIndex[i] = -1;
 	}
 
-	//初始化按钮状态
-	for (int i = DIR_MIN; i < DIR_MAX; ++i)
-	{
-		m_arrBtnState[i] = false;
-	}
-
 	//目标方块所在行
 	m_iDestRowIdx = m_iLevel;
 
 	//我方方块所在行
-	m_iMyRowIdx = ROW_NUM - 3;
+	m_iMyRowIdx = ROW_NUM - 2;
 
 	//时间相关
 	m_fDestBrickMoveTime = 0;
-	m_fBrickChangeTime = 0;
 	m_fWaitTime = 0;
 
 	//游戏状态
@@ -408,7 +312,7 @@ void CMatchGame::InitData()
 	m_iAddScoreCount = 0;
 
 	//爆炸显示状态
-	m_bShowBoom = false;
+	m_bShowBoom = true;
 
 	//是否加速
 	m_bConfirmMatch = false;
@@ -431,7 +335,7 @@ bool CMatchGame::DestBricksMove( float dt )
 	m_fDestBrickMoveTime = 0;
 
 	//目标方块下降一格
-	if (++m_iDestRowIdx <= m_iMyRowIdx - 3)
+	if (++m_iDestRowIdx <= m_iMyRowIdx - 2)
 	{
 		return true;
 	}
@@ -452,43 +356,32 @@ void CMatchGame::ChangeType(DIRECTION enDirection, bool bPressed)
 	}
 
 	//按钮音效
-	PLAY_EFFECT(EFFECT_CHANGE2);
-
-	m_arrBtnState[enDirection] = bPressed;
+	if (bPressed)
+	{
+		PLAY_EFFECT(EFFECT_CHANGE2);
+		UpdateMyBricks(enDirection);
+	}
 }
 
 
 
-void CMatchGame::UpdateMyBricks(float dt)
+void CMatchGame::UpdateMyBricks(DIRECTION enDirection)
 {
-	m_fBrickChangeTime += dt;
-	if (m_fBrickChangeTime < BRICK_CHANGE_INTERVAL)
+	const int arrRelation[DIR_MAX] = { 2, -1, 0, 1 };
+	int iTypeCount = sizeof(BRICK_STATE) / sizeof(bool) / 4;
+
+	int iBrickIndex = arrRelation[enDirection];
+	if (iBrickIndex == -1)
 	{
 		return;
 	}
 
-	//重置
-	m_fBrickChangeTime = 0;
-
-	const int arrRelation[DIR_MAX] = { 2, -1, 0, 1 };
-	int iTypeCount = sizeof(BRICK_STATE) / sizeof(bool) / 9;
-
-	for (int i = DIR_MIN; i < DIR_MAX; ++i)
+	if (++m_arrMyBrick[iBrickIndex] > iTypeCount - 1)
 	{
-		int iBrickIndex = arrRelation[i];
-
-		if (!m_arrBtnState[i] || iBrickIndex == -1)
-		{
-			continue;
-		}
-
-		if (++m_arrMyBrick[iBrickIndex] > iTypeCount - 1)
-		{
-			m_arrMyBrick[iBrickIndex] = 0;
-		}
+		m_arrMyBrick[iBrickIndex] = 0;
 	}
 
-	m_pGameScene->UpdateBricks(m_iMyRowIdx, 0, m_iMyRowIdx + 3, COLUMN_NUM);
+	m_pGameScene->UpdateBricks(m_iMyRowIdx, 0, m_iMyRowIdx + 2, COLUMN_NUM);
 }
 
 
@@ -509,7 +402,7 @@ bool CMatchGame::MyBricksMove(float dt)
 	//重置
 	m_fWaitTime = 0;
 
-	if (--m_iMyRowIdx >= m_iDestRowIdx + 3)
+	if (--m_iMyRowIdx >= m_iDestRowIdx + 2)
 	{
 		return true;
 	}

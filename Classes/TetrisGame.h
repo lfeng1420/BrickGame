@@ -1,0 +1,107 @@
+#pragma once
+#include "SceneBase.h"
+class CTetrisGame : public CSceneBase
+{
+public:
+	CTetrisGame(CGameScene* pGameScene);
+	~CTetrisGame();
+
+	//---------------------    CSceneBase    ----------------------
+	//初始化
+	void Init();
+
+	//更新
+	void Play(float dt);
+
+	//获取当前Brick状态
+	bool GetBrickState(int iRowIndex, int iColIndex);
+
+	//获取小方块序列中的方块状态
+	bool GetSmallBrickState(int iRowIndex, int iColIndex);
+
+	//获取游戏类型
+	SCENE_INDEX GetSceneType();
+
+	//左按下
+	void OnLeftBtnPressed();
+
+	//左释放
+	void OnLeftBtnReleased();
+
+	//右按下
+	void OnRightBtnPressed();
+
+	//右释放
+	void OnRightBtnReleased();
+
+	//下按下
+	void OnDownPressed();
+
+	//下释放
+	void OnDownReleased();
+
+	//Fire按下
+	void OnFireBtnPressed();
+
+	//---------------------    CSceneBase    ----------------------
+
+
+public:
+	//初始化数据，与Init不同，Init在切换到该场景时调用，InitData在重置时调用
+	void InitData();
+
+	//随机产生新的方块形状
+	void RandNewShape();
+
+	//方块移动
+	bool BrickMove(float dt);
+
+	//检查位置是否有效
+	bool CheckBrickPos(int iShapeIdx, int iSrcRowIdx, int iSrcColIdx);
+
+	//消行
+	void DeleteLine();
+
+	//消除单行
+	void DeleteSingleLine(int iRowIdx);
+
+private:
+	enum 
+	{
+		TETRIS_MAXSHAPE = 19,			//最大类型索引
+
+		BRICK_MOVE_INTERVAL = 500,		//方块移动等待时间
+
+		DELETE_LINE_ADD_SCORE = 10,		//消除行加分
+
+		BTN_CHECK_INTERVAL = 60,		//按钮检查时间间隔
+	};
+
+private:
+	int m_iSpeed;								//速度
+
+	int m_iLevel;								//关卡
+
+	int m_iScore;								//分数
+
+	bool m_arrBrick[ROW_NUM][COLUMN_NUM];		//方块状态序列
+
+	int m_iNextShape;							//下一个类型
+
+	int m_iCurShape;							//当前类型
+
+	POSITION m_stCurPos;						//当前方块位置
+
+	GAME_STATE m_enGameState;					//游戏状态
+
+	float m_fMoveDownTime;						//下移刷新时间
+
+	float m_fWaitTime;							//等待时间
+
+	bool m_bLeftBtnPressed;						//左方向按钮按下状态
+
+	bool m_bRightBtnPressed;					//右方向按钮按下状态
+
+	bool m_bFastMoveDown;						//是否加速下降
+};
+

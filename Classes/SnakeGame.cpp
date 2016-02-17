@@ -47,12 +47,16 @@ void CSnakeGame::Play(float dt)
 {
 	if (m_enGameState == GAMESTATE_RUNNING)
 	{
+		//刷新标记
+		bool bNeedRefreshFlag = false;
+
 		m_fWaitRefreshTime += dt;
 		float fMaxTime = m_bImproveSpeed ? 50 : (SNAKE_MOVE_INTERVAL - 30 * m_iSpeed);
 		if (m_fWaitRefreshTime >= fMaxTime)
 		{
 			m_fWaitRefreshTime = 0;
 			SnakeMove();
+			bNeedRefreshFlag = true;
 		}
 
 		m_fAppleShowTime += dt;
@@ -60,6 +64,13 @@ void CSnakeGame::Play(float dt)
 		{
 			m_fAppleShowTime = 0;
 			m_bAppleState = !m_bAppleState;
+			bNeedRefreshFlag = true;
+		}
+
+		//是否需要刷新界面
+		if (!bNeedRefreshFlag)
+		{
+			return;
 		}
 	}
 	else if (m_enGameState == GAMESTATE_PASS)
@@ -82,10 +93,10 @@ void CSnakeGame::Play(float dt)
 		else
 		{
 			//更新速度和等级
-			if (++m_iSpeed >= 10)
+			if (++m_iSpeed > 10)
 			{
 				m_iSpeed = 0;
-				if (++m_iLevel >= 10)
+				if (++m_iLevel > 10)
 				{
 					m_iLevel = 0;
 				}
@@ -139,7 +150,9 @@ void CSnakeGame::Play(float dt)
 //获取当前Brick状态
 bool CSnakeGame::GetBrickState(int iRowIndex, int iColIndex)
 {
-	POSITION stCurPos = { iRowIndex, iColIndex };
+	POSITION stCurPos;
+	stCurPos.m_iRowIdx = iRowIndex;
+	stCurPos.m_iColIdx = iColIndex;
 	
 	//苹果
 	if (stCurPos == m_stApplePos)
@@ -207,7 +220,8 @@ void CSnakeGame::InitData()
 	for (int i = 0; i < SNAKE_DEFAULT_LEN; ++i, --iStartColIdx)
 	{
 		POSITION& refPos = m_mapSnakeNodes[i];
-		refPos = { ROW_NUM / 2 - 1, iStartColIdx };
+		refPos.m_iRowIdx = ROW_NUM / 2 - 1;
+		refPos.m_iColIdx = iStartColIdx;
 	}
 
 	//初始化时间
@@ -223,7 +237,7 @@ void CSnakeGame::InitData()
 	//爆炸显示计数
 	m_iShowBoomCount = 0;
 	//爆炸显示状态
-	m_bShowBoom = false;
+	m_bShowBoom = true;
 
 	//分数增加次数计数
 	m_iAddScoreCount = 0;
@@ -267,7 +281,8 @@ void CSnakeGame::RandApplePos()
 	int iRandIdx = Random(0, iCount);
 
 	//设置位置
-	m_stApplePos = { arrRowIdxList[iRandIdx], iColIndex };
+	m_stApplePos.m_iRowIdx = arrRowIdxList[iRandIdx];
+	m_stApplePos.m_iColIdx = iColIndex;
 }
 
 
@@ -300,6 +315,10 @@ void CSnakeGame::SnakeMove()
 
 	if (CheckGameOver(stHeaderPos))
 	{
+		//设置苹果显示状态
+		m_bAppleState = true;
+
+		//音效
 		PLAY_EFFECT(EFFECT_BOOM);
 		return;
 	}

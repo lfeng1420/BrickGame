@@ -69,13 +69,6 @@ void CRacingGame::InitData()
 //更新
 void CRacingGame::Play(float dt)
 {
-	//检查是否游戏结束
-	if (m_arrCurBrick[ROW_NUM - 4][m_iCarPos * 3 + 2] == 1 && m_arrCurBrick[ROW_NUM - 5][m_iCarPos * 3 + 2] == 1)
-	{
-		m_enGameState = GAMESTATE_OVER;
-		PLAY_EFFECT(EFFECT_BOOM);
-	}
-
 	if (!m_bFirstShow)
 	{
 		m_fWaitTime += dt;
@@ -96,8 +89,16 @@ void CRacingGame::Play(float dt)
 	if (m_enGameState == GAMESTATE_RUNNING)
 	{
 		UpdateBricks();
+
+		//检查是否游戏结束
+		if (m_arrCurBrick[ROW_NUM - 4][m_iCarPos * 3 + 2] == 1 && m_arrCurBrick[ROW_NUM - 5][m_iCarPos * 3 + 2] == 1)
+		{
+			m_enGameState = GAMESTATE_OVER;
+			PLAY_EFFECT(EFFECT_BOOM);
+		}
 	}
-	else if (m_enGameState == GAMESTATE_OVER)
+	
+	if (m_enGameState == GAMESTATE_OVER)
 	{
 		if (m_iShowBoomCount < BOOM_SHOWCOUNT)
 		{
@@ -133,10 +134,10 @@ void CRacingGame::Play(float dt)
 		else
 		{
 			//更新速度和等级
-			if (++m_iSpeed >= 10)
+			if (++m_iSpeed > 10)
 			{
 				m_iSpeed = 0;
-				if (++m_iLevel >= 10)
+				if (++m_iLevel > 10)
 				{
 					m_iLevel = 0;
 				}
@@ -338,7 +339,7 @@ void CRacingGame::UpdateBricks()
 	if (m_arrRowIdx[1] == ROW_DISTANCE * 2)
 	{
 		++m_iPassCarCount;
-		m_iScore += 100;
+		m_iScore += GAMEPASS_ADDSCORE;
 		m_pGameScene->UpdateScore(m_iScore);
 
 		if (m_iPassCarCount >= GAMEPASS_CARCOUNT)

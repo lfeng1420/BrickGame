@@ -17,6 +17,9 @@ public:
 	//获取当前Brick状态
 	bool GetBrickState(int iRowIndex, int iColIndex);
 
+	//获取小方块序列中的方块状态
+	bool GetSmallBrickState(int iRowIndex, int iColIndex);
+
 	//获取游戏类型
 	SCENE_INDEX GetSceneType();
 

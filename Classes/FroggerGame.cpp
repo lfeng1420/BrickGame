@@ -76,10 +76,10 @@ void CFroggerGame::Play(float dt)
 		m_iPassCount = 0;
 
 		//更新速度和等级
-		if (++m_iSpeed >= 10)
+		if (++m_iSpeed > 10)
 		{
 			m_iSpeed = 0;
-			if (++m_iLevel >= 10)
+			if (++m_iLevel > 10)
 			{
 				m_iLevel = 0;
 			}
@@ -100,18 +100,21 @@ void CFroggerGame::Play(float dt)
 	//进行中
 	if (m_enGameState == GAMESTATE_RUNNING)
 	{
-		//更新自己
-		UpdateSelf(dt);
+		if (!UpdateSelf(dt) && !UpdateRivers(dt))
+		{
+			return;
+		}
 
-		//河道更新
-		UpdateRivers(dt);
-
+		//更新游戏状态
 		UpdateGameState();
 	}
 
 	if (m_enGameState == GAMESTATE_OVER)
 	{
-		SetBoom(dt);
+		if (!SetBoom(dt))
+		{
+			return;
+		}
 
 		if (m_iShowBoomCount >= BOOM_SHOWCOUNT)
 		{
@@ -168,12 +171,12 @@ SCENE_INDEX CFroggerGame::GetSceneType()
 
 
 //更新所有河道
-void CFroggerGame::UpdateRivers(float dt)
+bool CFroggerGame::UpdateRivers(float dt)
 {
 	m_fRiverCurTime += dt;
 	if (m_fRiverCurTime < DEFAULT_REFRESHTIME - 30 * m_iSpeed)
 	{
-		return;
+		return false;
 	}
 	
 	//重置
@@ -192,13 +195,17 @@ void CFroggerGame::UpdateRivers(float dt)
 		}
 	}
 
+	bool bNeedRefreshFlag = false;
 	for (int i = RIVER_ROWTOP_INDEX + 1, iIndex = 0; i < ROW_NUM - 1; i += 2, ++iIndex)
 	{
 		if (arrUpdateFlag[iIndex])
 		{
 			UpdateRiver(i);
+			bNeedRefreshFlag = true;
 		}
 	}
+
+	return bNeedRefreshFlag;
 }
 
 //更新指定行的河道
@@ -259,14 +266,17 @@ void CFroggerGame::UpdateRiver(int iRowIndex)
 
 
 //更新自己
-void CFroggerGame::UpdateSelf(float dt)
+bool CFroggerGame::UpdateSelf(float dt)
 {
 	m_fSelfCurTime += dt;
 	if (m_fSelfCurTime >= SELF_REFRESHTIME)
 	{
 		m_fSelfCurTime = 0;
 		m_bSelfState = !m_bSelfState;
+		return true;
 	}
+
+	return false;
 }
 
 
@@ -350,12 +360,12 @@ void CFroggerGame::UpdateGameState()
 
 
 //设置爆炸
-void CFroggerGame::SetBoom( float dt )
+bool CFroggerGame::SetBoom( float dt )
 {
 	m_fBoomCurTime += dt;
 	if (m_fBoomCurTime < BOOM_REFRESHTIME)
 	{
-		return;
+		return false;
 	}
 
 	//重置
@@ -378,6 +388,7 @@ void CFroggerGame::SetBoom( float dt )
 	}
 
 	++m_iShowBoomCount;
+	return true;
 }
 
 
@@ -442,13 +453,13 @@ void CFroggerGame::OnUpBtnPressed()
 
 	UpdateGameState();
 
-	if (m_iSelfRowIdx == RIVER_ROWTOP_INDEX - 1)
+	if (m_iSelfRowIdx == RIVER_ROWTOP_INDEX - 1 && m_enGameState != GAMESTATE_OVER)
 	{
 		//到达顶端的方块不再闪烁显示
 		m_arrBrickState[m_iSelfRowIdx][m_iSelfColIdx] = true;
 
 		//到达最顶端，分数增加
-		m_iScore += 300;
+		m_iScore += 30;
 		m_pGameScene->UpdateScore(m_iScore);
 
 		//更新通过的青蛙数量

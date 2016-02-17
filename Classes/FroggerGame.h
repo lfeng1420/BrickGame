@@ -41,13 +41,13 @@ public:
 
 private:
 	//更新所有河道
-	void UpdateRivers(float dt);
+	bool UpdateRivers(float dt);
 
 	//更新指定行的河道
 	void UpdateRiver(int iRowIndex);
 
 	//更新自己
-	void UpdateSelf(float dt);
+	bool UpdateSelf(float dt);
 
 	//初始化数据、变量等
 	void InitData();
@@ -56,7 +56,7 @@ private:
 	void UpdateGameState();
 
 	//设置爆炸
-	void SetBoom(float dt);
+	bool SetBoom(float dt);
 
 private:
 	enum

@@ -17,8 +17,12 @@ CChooseGame::~CChooseGame()
 void CChooseGame::Init()
 {
 	m_iGameIndex = GET_INTVALUE("GAME", GAME_RACING);
-	m_iSpeed = GET_INTVALUE("SPEED", 0);
-	m_iLevel = GET_INTVALUE("LEVEL", 0);
+	
+	//更新速度和等级显示
+	m_iSpeed = 0;
+	m_iLevel = 0;
+	m_pGameScene->UpdateLevel(m_iLevel);
+	m_pGameScene->UpdateSpeed(m_iSpeed);
 
 	m_iAnimIndex = 0;
 	m_pAnimData = nullptr;
@@ -28,6 +32,15 @@ void CChooseGame::Init()
 	//重置分数
 	m_pGameScene->UpdateScore(0, false);
 	m_pGameScene->UpdateHighScore(m_iGameIndex);
+
+	//背景音乐
+	if (!AUDIO_INSTANCE()->isBackgroundMusicPlaying())
+	{
+		PLAY_BGMUSIC(BGM_START, true);
+	}
+
+	//重置小方块状态
+	m_pGameScene->UpdateSmallBricks();
 }
 
 
@@ -66,6 +79,12 @@ bool CChooseGame::GetBrickState(int iRowIndex, int iColIndex)
 {
 	int iIndex = iRowIndex * COLUMN_NUM + iColIndex;
 	return m_pAnimData->at(iIndex) == 1;
+}
+
+
+bool CChooseGame::GetSmallBrickState(int iRowIndex, int iColIndex)
+{
+	return false;
 }
 
 //获取游戏类型
@@ -148,6 +167,7 @@ const int GAMEIDX_TO_SCENEIDX[] =
 	SCENE_MATCH,	//对应GAME_MATCH
 	SCENE_FROGGER,	//对应GAME_FROGGER
 	SCENE_PINBALL,	//对应GAME_PINBALL
+	SCENE_TETRIS,	//对应GAME_TETRIS
 };
 
 //开始

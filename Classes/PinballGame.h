@@ -38,6 +38,9 @@ public:
 	//Fire按下
 	void OnFireBtnPressed();
 
+	//Fire释放
+	void OnFireBtnReleased();
+
 	//---------------------    CSceneBase    ----------------------
 
 private:
@@ -45,41 +48,72 @@ private:
 	void InitData();
 
 	//小球移动
-	void BallMove(float dt);
+	bool BallMove(float dt);
 
-	//获取击中的方块索引
-	int GetHitBrickIndex(const POSITION& stPos);
+	//挡板移动
+	bool GuardMove(float dt);
+
+	//加分
+	void AddScore(int iScore);
+
+	//检查是否通过
+	bool CheckGamePass();
 
 private:
-	typedef map<int, POSITION> TMAP_BRICK;
-	typedef TMAP_BRICK::iterator TMAP_BRICK_ITER;
-
 	enum 
 	{
-		GUARD_BRICK_COUNT = 4,		//挡板方块数量
+		GUARD_BRICK_COUNT = 4,				//挡板方块数量
 
-		BALL_MOVE_INTERVAL = 150,	//球移动时间间隔
+		BALL_MOVE_INTERVAL = 100,			//球移动时间间隔
+
+		BRICKS_ROWCOUNT = 5,				//方块行数
+
+		BTN_CHECK_INTERVAL = 50,			//按钮检查时间间隔
+
+		GAMEPASS_ADDCOUNT = 10,				//增加10次
+
+		GAMEPASS_ADDSCORE = 10,				//通过时每次增加的分数
+
+		GAMEPASS_REFRESH_INTERVAL = 200,	//通过显示刷新时间
+
+		BOOM_REFRESH_INTERVAL = 50,			//爆炸效果刷新时间
+
+		BOOM_SHOWCOUNT = 16,				//闪烁显示爆炸效果次数
 	};
 
 private:
-	int m_iSpeed;								//速度
+	int m_iSpeed;											//速度
 
-	int m_iLevel;								//关卡
+	int m_iLevel;											//关卡
 
-	int m_iLife;								//剩余生命
+	int m_iLife;											//剩余生命
 
-	int m_iScore;								//分数
+	int m_iScore;											//分数
 
-	POSITION m_stBall;							//球位置
+	bool m_arrBricks[ROW_NUM][COLUMN_NUM];					//方块状态
 
-	POSITION m_stBallDis;						//球每次移动的距离
+	POSITION m_stBallPos;									//球位置
 
-	POSITION m_stGuard;							//挡板位置
+	POSITION m_stBallDis;									//球每次移动的距离
 
-	TMAP_BRICK m_mapBrick;						//各个方块位置
+	int m_iGuardColIdx;										//挡板所在列
 
-	GAME_STATE m_enGameState;					//游戏状态
+	GAME_STATE m_enGameState;								//游戏状态
 
-	float m_fMoveTime;							//移动等待时间
+	float m_fWaitTime;										//移动等待时间
+
+	float m_fBtnCheckTime;									//按钮检查时间
+
+	bool bLeftMoveFlag;										//左移标记
+
+	bool bRightMoveFlag;									//右移标记
+
+	bool m_bImproveSpeedFlag;								//加速标记
+
+	bool m_bShowBoom;										//爆炸显示/隐藏标记（闪烁）
+
+	int m_iShowBoomCount;									//闪烁显示爆炸效果次数
+
+	int m_iAddScoreCount;									//当前分数增加次数
 };
 

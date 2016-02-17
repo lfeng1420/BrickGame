@@ -78,7 +78,7 @@ private:
 
 		BOOM_SHOWCOUNT = 10,					//闪烁显示爆炸效果次数
 
-		GAMEPASS_ADDSCORE = 100,				//通过时增加100
+		GAMEPASS_ADDSCORE = 10,					//通过时增加10
 
 		GAMEPASS_ADDCOUNT = 10,					//增加10次
 
