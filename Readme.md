@@ -14,7 +14,7 @@ BrickGame
 
 发布记录
 ===
-WP
+Windows Phone
 ---
 ### 	  2016/02/	  V1.1.0.0
 1、新增游戏：<br>
