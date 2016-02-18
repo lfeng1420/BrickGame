@@ -35,4 +35,7 @@ Windows Phone
 
 Android
 ---
-第一版还在审核中。<br>
+### 	  2016/02/18	  V1.0.0.0
+方块游戏第一版已上线360手机助手。<br>
+360手机助手：http://zhushou.360.cn/detail/index/soft_id/3222557<br>
+下载地址：http://openbox.mobilem.360.cn/index/d/sid/3222557<br>
