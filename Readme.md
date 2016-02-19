@@ -32,6 +32,9 @@ Windows Phone
 
 ### 	  2016/02/11	  V1.0.0.0
 方块游戏第一版。<br>
+链接：https://www.microsoft.com/zh-cn/store/games/方块游戏/9nblggh5h3fk
+
+
 
 Android
 ---
