@@ -38,6 +38,9 @@ Windows Phone
 
 Android
 ---
+### 	  2016/02/19	  V1.0.1.0
+删除无用的网络权限。<br>
+
 ### 	  2016/02/18	  V1.0.0.0
 方块游戏第一版已上线360手机助手。<br>
 360手机助手：http://zhushou.360.cn/detail/index/soft_id/3222557<br>
