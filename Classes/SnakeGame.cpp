@@ -346,11 +346,11 @@ void CSnakeGame::SnakeMove()
 		m_mapSnakeNodes[iNodeCount] = stLastPos;
 
 		//检查是否通过
-		if (iNodeCount + 1 == SNAKE_MAX_LEN)
+		/*if (iNodeCount + 1 == SNAKE_MAX_LEN)
 		{
 			m_enGameState = GAMESTATE_PASS;
 			return;
-		}
+		}*/
 
 		//苹果不显示
 		m_pGameScene->UpdateBrick(m_stApplePos.m_iRowIdx, m_stApplePos.m_iColIdx, false, false);

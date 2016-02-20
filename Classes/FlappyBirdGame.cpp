@@ -261,7 +261,7 @@ bool CFlappyBirdGame::GetSmallBrickState(int iRowIndex, int iColIndex)
 //获取游戏类型
 SCENE_INDEX CFlappyBirdGame::GetSceneType()
 {
-
+	return SCENE_FLAPPYBIRD;
 }
 
 
