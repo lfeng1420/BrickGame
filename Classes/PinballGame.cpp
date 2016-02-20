@@ -38,7 +38,9 @@ void CPinballGame::Play(float dt)
 {
 	if (m_enGameState == GAMESTATE_RUNNING || m_enGameState == GAMESTATE_PAUSE)
 	{
-		if (!GuardMove(dt) && !BallMove(dt))
+		bool bUpdateFlag = GuardMove(dt);
+		bUpdateFlag = BallMove(dt) || bUpdateFlag;
+		if (!bUpdateFlag)
 		{
 			return;
 		}

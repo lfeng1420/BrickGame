@@ -100,7 +100,13 @@ void CFroggerGame::Play(float dt)
 	//进行中
 	if (m_enGameState == GAMESTATE_RUNNING)
 	{
-		if (!UpdateSelf(dt) && !UpdateRivers(dt))
+		//更新自己
+		bool bUpdateFlag = UpdateSelf(dt);
+
+		//更新河道
+		bUpdateFlag = UpdateRivers(dt) || bUpdateFlag;
+
+		if (!bUpdateFlag)
 		{
 			return;
 		}

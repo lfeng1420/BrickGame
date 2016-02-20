@@ -39,7 +39,7 @@ void CFlappyBirdGame::Play(float dt)
 	if (m_enGameState == GAMESTATE_RUNNING)
 	{
 		bool bRefreshFlag = BirdMove(dt);
-		bRefreshFlag = PillarMove(dt) && bRefreshFlag;
+		bRefreshFlag = PillarMove(dt) || bRefreshFlag;
 		if (!bRefreshFlag)
 		{
 			return;

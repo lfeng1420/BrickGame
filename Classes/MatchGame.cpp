@@ -101,8 +101,10 @@ void CMatchGame::Play(float dt)
 
 	if (m_enGameState == GAMESTATE_RUNNING)
 	{
-		//目标方块移动
-		if (!DestBricksMove(dt) && !MyBricksMove(dt))
+		//方块移动
+		bool bUpdateFlag = DestBricksMove(dt);
+		bUpdateFlag = MyBricksMove(dt) || bUpdateFlag;
+		if (!bUpdateFlag)
 		{
 			return;
 		}
