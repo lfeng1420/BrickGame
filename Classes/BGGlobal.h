@@ -174,8 +174,6 @@ enum SCENE_INDEX
 
 	SCENE_TETRIS,				//游戏界面 - 俄罗斯方块
 
-	SCENE_FLAPPYBIRD,			//游戏界面 - FlappyBird
-
 	SCENE_MAX,					//最大值
 };
 
@@ -196,8 +194,6 @@ enum GAME_LIST
 	GAME_PINBALL,				//弹球
 
 	GAME_TETRIS,				//俄罗斯方块
-
-	GAME_FLAPPYBIRD,			//FlappyBird
 
 	GAME_MAX,					//最大值
 };

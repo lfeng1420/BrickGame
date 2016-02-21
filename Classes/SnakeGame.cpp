@@ -154,12 +154,6 @@ bool CSnakeGame::GetBrickState(int iRowIndex, int iColIndex)
 	stCurPos.m_iRowIdx = iRowIndex;
 	stCurPos.m_iColIdx = iColIndex;
 	
-	//苹果
-	if (stCurPos == m_stApplePos)
-	{
-		return m_bAppleState;
-	}
-
 	if (m_enGameState == GAMESTATE_OVER)
 	{
 		const POSITION& stHeaderPos = m_mapSnakeNodes[0];
@@ -169,12 +163,18 @@ bool CSnakeGame::GetBrickState(int iRowIndex, int iColIndex)
 		{
 			for (int j = iColStartIdx; j < iColStartIdx + 4; ++j)
 			{
-				if (iRowIndex == i && iColIndex == j )
+				if (iRowIndex == i && iColIndex == j)
 				{
 					return m_bShowBoom && BOOM_STATE[i - iRowStartIdx][j - iColStartIdx];
 				}
 			}
 		}
+	}
+
+	//苹果
+	if (stCurPos == m_stApplePos)
+	{
+		return m_bAppleState;
 	}
 
 	//蛇
