@@ -26,9 +26,6 @@ public:
 	//上按下
 	void OnUpBtnPressed();
 
-	//上释放
-	void OnUpBtnReleased();
-
 	//Fire按下
 	void OnFireBtnPressed();
 
@@ -62,11 +59,13 @@ private:
 
 		PILLAR_MAXLEN = 10,				//柱子最大长度
 
-		BIRD_DOWN_INTERVAL = 50,		//鸟移动移动时间间隔
+		BIRD_DOWN_INTERVAL = 1000,		//鸟移动移动时间间隔
 
 		BIRD_DOWN_ACCELERATION = 10,	//鸟下降的加速度
 
-		PILLAR_MOVE_INTERVAL = 160,		//柱子移动时间间隔
+		PILLAR_MOVE_INTERVAL = 500,		//柱子移动时间间隔
+
+		BTN_CHECK_INTERVAL = 50,		//按钮检查间隔
 
 		GAMEPASS_ADDSCORE = 10,			//通过时增加10
 

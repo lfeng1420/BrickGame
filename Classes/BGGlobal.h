@@ -9,6 +9,7 @@
 #include "json/document.h"
 #include "json/prettywriter.h"
 #include "json/stringbuffer.h"
+#include "../cocos/audio/include/SimpleAudioEngine.h"
 
 #include <map>
 #include <vector>
@@ -19,6 +20,7 @@ using namespace std;
 
 USING_NS_CC;
 USING_NS_CC_EXT;
+
 using namespace ui;
 
 #define FLOAT_EQ(a, b) (fabs(a - b) < 1e-6)
@@ -174,6 +176,8 @@ enum SCENE_INDEX
 
 	SCENE_TETRIS,				//游戏界面 - 俄罗斯方块
 
+	SCENE_FLAPPYBIRD,			//游戏界面 - flappybird
+
 	SCENE_MAX,					//最大值
 };
 
@@ -194,6 +198,8 @@ enum GAME_LIST
 	GAME_PINBALL,				//弹球
 
 	GAME_TETRIS,				//俄罗斯方块
+
+	GAME_FLAPPYBIRD,			//FlappyBird
 
 	GAME_MAX,					//最大值
 };

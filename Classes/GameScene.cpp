@@ -9,6 +9,7 @@
 #include "MatchGame.h"
 #include "PinballGame.h"
 #include "TetrisGame.h"
+#include "FlappyBirdGame.h"
 
 CGameScene::CGameScene() : m_iSceneIndex(SCENE_GAMEOVER)
 {
@@ -74,6 +75,9 @@ void CGameScene::InitData()
 
 	//初始化暂停标记
 	m_bGamePause = false;
+
+	//initialize the count of clicking 'love' button
+	m_iClickTime = -1;
 }
 
 
@@ -133,7 +137,17 @@ void CGameScene::InitUI()
 	float fSpriteScale = 0.38f;
 
 	//背景
-	m_pBgSpr = Sprite::create("bg.png");
+	m_iBgColor = GET_INTVALUE("BGCOLOR", 0);
+	if (m_iBgColor > 0)
+	{
+		m_pBgSpr = CREATE_SPRITEWITHNAME(StringUtils::format("bg%d.png", m_iBgColor));
+	}
+	else
+	{
+		m_pBgSpr = CREATE_SPRITEWITHNAME("bg1.png");
+		m_pBgSpr->setVisible(false);
+	}
+	
 	m_pBgSpr->setPosition(visibleSize.width / 2, visibleSize.height / 2);
 	m_pBgSpr->setScale(GET_CONTENTSIZE(m_pBgSpr).width / visibleSize.width);
 	this->addChild(m_pBgSpr);
@@ -266,7 +280,7 @@ void CGameScene::InitUI()
 
 	//暂停图标
 	//float fPauseScale = fSpriteScale - 0.04f;
-	m_pPauseSpr = Sprite::create("pause.png");
+	m_pPauseSpr = Sprite::create("tea.png");
 	m_pPauseSpr->setScale(fSpriteScale);
 	Size pauseSize = GET_CONTENTSIZE(m_pPauseSpr) * fSpriteScale;
 	fCurY -= pauseSize.height;
@@ -337,13 +351,14 @@ void CGameScene::InitCotroller()
 
 	//开始
 	float fSpriteScale = 0.38f;
-	auto startBtn = MenuItemSprite::create(
-		Sprite::create("play.png"),
-		Sprite::create("play.png"),
-		CC_CALLBACK_1(CGameScene::OnButtonClick, this, BTN_START)
+	m_pStartBtn = MenuItemToggle::createWithCallback(
+		CC_CALLBACK_1(CGameScene::OnButtonClick, this, BTN_START),
+		MenuItemSprite::create(Sprite::create("play.png"), Sprite::create("play.png"), nullptr),
+		MenuItemSprite::create(Sprite::create("pause.png"), Sprite::create("pause.png"), nullptr),
+		nullptr
 		);
-	startBtn->setScale(fSpriteScale);
-	Size startBtnSize = startBtn->getContentSize() * fSpriteScale;
+	m_pStartBtn->setScale(fSpriteScale);
+	Size startBtnSize = m_pStartBtn->getContentSize() * fSpriteScale;
 
 	//获取声音状态
 	bool bSoundState = GET_SOUNDSTATE();
@@ -382,7 +397,6 @@ void CGameScene::InitCotroller()
 	//按钮间距
 	float fBtnPadding = soundBtnSize.width * 1.2f;
 
-#if CC_TARGET_PLATFORM == CC_PLATFORM_WP8
 	//额外功能
 	auto extremeBtn = MenuItemSprite::create(
 		Sprite::create("star.png"),
@@ -394,25 +408,14 @@ void CGameScene::InitCotroller()
 
 	//位置
 	soundBtn->setPosition(m_visibleSize.width / 2 - fBtnPadding / 2 - soundBtnSize.width / 2, fHeight);
-	startBtn->setPosition(m_visibleSize.width / 2 - fBtnPadding * 3 / 2 - soundBtnSize.width - startBtnSize.width / 2, fHeight);
+	m_pStartBtn->setPosition(m_visibleSize.width / 2 - fBtnPadding * 3 / 2 - soundBtnSize.width - startBtnSize.width / 2, fHeight);
 	resetBtn->setPosition(m_visibleSize.width / 2 + fBtnPadding / 2 + resetBtnSize.width / 2, fHeight);
 	extremeBtn->setPosition(m_visibleSize.width / 2 + fBtnPadding * 3 / 2 + resetBtnSize.width + themeBtnSize.width / 2, fHeight);
 
-	auto menu = Menu::create(soundBtn, startBtn, resetBtn, extremeBtn, nullptr);
+	auto menu = Menu::create(soundBtn, m_pStartBtn, resetBtn, extremeBtn, nullptr);
 	float fCurHeight = 0;
 	menu->setPosition(Vec2::ZERO);
 	this->addChild(menu);
-#else
-	soundBtn->setPosition(m_visibleSize.width / 2, fHeight);
-	startBtn->setPosition(m_visibleSize.width / 2 - soundBtnSize.width / 2 - fBtnPadding - startBtnSize.width / 2, fHeight);
-	resetBtn->setPosition(m_visibleSize.width / 2 + soundBtnSize.width / 2 + fBtnPadding + resetBtnSize.width / 2, fHeight);
-
-	auto menu = Menu::create(soundBtn, startBtn, resetBtn, nullptr);
-	float fCurHeight = 0;
-	menu->setPosition(Vec2::ZERO);
-	this->addChild(menu);
-
-#endif
 
 }
 
@@ -495,6 +498,18 @@ void CGameScene::CreateKeyListener()
 
 void CGameScene::update(float dt)
 {
+#if CC_TARGET_PLATFORM == CC_PLATFORM_WP8
+	if (m_iClickTime >= 0)
+	{
+		m_iClickTime += dt * 1000;
+		if (m_iClickTime > CHANGEBG_INTERVAL)
+		{
+			m_iClickTime = -1;
+			GLView::sharedOpenGLView()->OnGiveScore();
+		}
+	}
+#endif
+
 	m_mapGameObj[m_iSceneIndex]->Play(dt * 1000);
 }
 
@@ -537,6 +552,9 @@ void CGameScene::CreateGameObj()
 	//俄罗斯方块
 	CTetrisGame* pTetrisGame = new CTetrisGame(this);
 	m_mapGameObj[SCENE_TETRIS] = pTetrisGame;
+
+	CFlappyBirdGame* pFlappyBirdGame = new CFlappyBirdGame(this);
+	m_mapGameObj[SCENE_FLAPPYBIRD] = pFlappyBirdGame;
 
 }
 
@@ -701,6 +719,7 @@ void CGameScene::OnButtonClick(Ref* pSender, int iBtnIndex)
 	{
 		case BTN_START:
 		{
+			//play effect
 			PLAY_EFFECT(EFFECT_CHANGE2);
 
 			if (m_iSceneIndex <= SCENE_CHOOSEGAME)
@@ -711,6 +730,8 @@ void CGameScene::OnButtonClick(Ref* pSender, int iBtnIndex)
 			{
 				m_bGamePause = !m_bGamePause;
 				m_pPauseSpr->setVisible(m_bGamePause);
+				ChangePlayState(!m_bGamePause);
+
 				//如果暂停，则停止更新
 				if (m_bGamePause)
 				{
@@ -765,14 +786,53 @@ void CGameScene::OnButtonClick(Ref* pSender, int iBtnIndex)
 		break;
 		case BTN_GIVESCORE:
 		{
-#if CC_TARGET_PLATFORM == CC_PLATFORM_WP8
 			PLAY_EFFECT(EFFECT_CHANGE2);
-			GLView::sharedOpenGLView()->OnGiveScore();
+#if CC_TARGET_PLATFORM == CC_PLATFORM_WP8
+			if (m_iClickTime < 0)
+			{
+				m_iClickTime = 0.1f;
+			}
+			else if (m_iClickTime >= 0 && m_iClickTime < CHANGEBG_INTERVAL)
+			{
+				GLView::sharedOpenGLView()->OnGiveScore();
+				m_iClickTime = -1;
+			}
+			else if (m_iClickTime >= CHANGEBG_INTERVAL)
+			{
+				ChangeBGPic();
+				m_iClickTime = -1;
+			}
+#else
+			ChangeBGPic();
 #endif
 		}
 		break;
 	}
 }
+
+
+void CGameScene::ChangePlayState(bool bPlay)
+{
+	m_pStartBtn->setSelectedIndex(bPlay ? 1 : 0);
+}
+
+
+void CGameScene::ChangeBGPic()
+{
+	if (++m_iBgColor > BGPIC_COUNT)
+	{
+		m_iBgColor = 0;
+	}
+
+	if (m_iBgColor > 0)
+	{
+		m_pBgSpr->setSpriteFrame(GET_SPRITEFRAME(StringUtils::format("bg%d.png", m_iBgColor)));
+	}
+	m_pBgSpr->setVisible(m_iBgColor > 0);
+
+	SET_INTVALUE("BGCOLOR", m_iBgColor);
+}
+
 
 //显示新场景
 void CGameScene::RunScene(int iSceneIndex)
@@ -780,6 +840,9 @@ void CGameScene::RunScene(int iSceneIndex)
 	log("Old Scene: %d   Current Scene: %d", m_iSceneIndex, iSceneIndex);
 	m_iSceneIndex = iSceneIndex;
 	m_mapGameObj[m_iSceneIndex]->Init();
+
+	//Change the play button state
+	ChangePlayState(m_iSceneIndex > SCENE_CHOOSEGAME);
 }
 
 

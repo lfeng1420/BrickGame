@@ -79,6 +79,12 @@ private:
 	//按钮按下 iBtnIndex 对应BTN_INDEX索引
 	void OnButtonClick(Ref* pSender, int iBtnIndex);
 
+	//Change the background image
+	void ChangeBGPic();
+
+	//Change the play button state when game state changed
+	void ChangePlayState(bool bPlay);
+
 private:
 	typedef map<int, CSceneBase*> TMAP_GAMEOBJ;
 	typedef TMAP_GAMEOBJ::iterator TMAP_GAMEOBJ_ITER;
@@ -106,6 +112,8 @@ private:
 		NUM_PADDING = 2,			//数字间距
 
 		BGPIC_COUNT = 2,			//背景图片数量
+
+		CHANGEBG_INTERVAL = 500,	//更改背景的间隔
 	};
 
 private:
@@ -141,8 +149,12 @@ private:
 
 	Sprite* m_pBgSpr;									//背景图片
 
+	MenuItemToggle* m_pStartBtn;						//Start Button
+
 	bool m_bGamePause;									//暂停标志
 
-	int m_iBgColor;									//当前背景颜色序号，0白色，>=1自定义
+	int m_iBgColor;										//当前背景颜色序号，0白色，>=1自定义
+
+	float m_iClickTime;									//Click love btn time, two:change the background with WP
 };
 

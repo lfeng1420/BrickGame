@@ -111,7 +111,7 @@ void CFlappyBirdGame::Play(float dt)
 bool CFlappyBirdGame::PillarMove(float dt)
 {
 	m_fPillarMoveTime += dt;
-	if (m_fPillarMoveTime < m_bImproveSpeed ? 20 : (PILLAR_MOVE_INTERVAL - m_iSpeed * 13))
+	if (m_fPillarMoveTime < PILLAR_MOVE_INTERVAL - m_iSpeed * 13)
 	{
 		return false;
 	}
@@ -135,21 +135,6 @@ bool CFlappyBirdGame::PillarMove(float dt)
 
 		//创建新柱子
 		CreatePillar();
-	}
-
-	//检查鸟是否碰到柱子
-	for (int i = 0; i < PILLAR_MAXCOUNT; ++i)
-	{
-		const PILLAR& stData = m_arrPillar[i];
-		if (stData.m_iRowIdx == ROW_NUM / 2 || stData.m_iRowIdx == ROW_NUM / 2 - 1)
-		{
-			int iDownLen = PILLAR_MAXLEN - stData.m_iLen;
-			if ((m_iBirdRowIdx >= 0 && m_iBirdRowIdx < stData.m_iLen) ||
-				(m_iBirdRowIdx >= iDownLen && m_iBirdRowIdx < ROW_NUM))
-			{
-				m_enGameState = GAMESTATE_OVER;
-			}
-		}
 	}
 
 	return true;
@@ -176,8 +161,9 @@ void CFlappyBirdGame::CreatePillar()
 bool CFlappyBirdGame::BirdMove(float dt)
 {
 	float fInterval = BIRD_DOWN_INTERVAL - 3 * m_iSpeed;
-	fInterval *= m_bImproveSpeed ? 0.4f : 1;
+	//fInterval *= m_bImproveSpeed ? 0.4f : 1;
 
+	//时间更新
 	m_fBirdMoveTime += dt;
 	if (m_fBirdMoveTime < fInterval)
 	{
@@ -187,38 +173,50 @@ bool CFlappyBirdGame::BirdMove(float dt)
 	//重置
 	m_fBirdMoveTime = 0;
 
-	//如果是上升状态
-	if (m_bBirdUpState)
-	{
-		if (--m_iBirdRowIdx < 0)
-		{
-			m_enGameState = GAMESTATE_OVER;
-			m_iBirdRowIdx = 0;
-		}
-	}
-	else
-	{
-		//下降行数
-		int iDownColCount = (int)(0.5f * fInterval * fInterval);
+	//下降行数
+	int iDownColCount = 1;
 
-		//检查下降的距离是否超过范围
-		if (ROW_NUM - m_iBirdRowIdx <= iDownColCount)
-		{
-			m_enGameState = GAMESTATE_OVER;
-			iDownColCount = ROW_NUM - m_iBirdRowIdx - 1;
-		}
-
-		//更新所在行
-		m_iBirdRowIdx += iDownColCount;
+	//检查下降的距离是否超过范围
+	if (ROW_NUM - m_iBirdRowIdx <= iDownColCount)
+	{
+		m_enGameState = GAMESTATE_OVER;
+		iDownColCount = ROW_NUM - m_iBirdRowIdx - 1;
 	}
+
+	//更新所在行
+	m_iBirdRowIdx += iDownColCount;
 
 	return true;
+}
+
+
+void CFlappyBirdGame::UpdateGameState()
+{
+	//检查鸟是否碰到柱子
+	for (int i = 0; i < PILLAR_MAXCOUNT; ++i)
+	{
+		const PILLAR& stData = m_arrPillar[i];
+		if (stData.m_iColIdx == COLUMN_NUM / 2 || stData.m_iColIdx == COLUMN_NUM / 2 - 1)
+		{
+			int iDownLen = PILLAR_MAXLEN - stData.m_iLen;
+			if ((m_iBirdRowIdx >= 0 && m_iBirdRowIdx < stData.m_iLen) ||
+				(m_iBirdRowIdx >= ROW_NUM - iDownLen && m_iBirdRowIdx < ROW_NUM))
+			{
+				m_enGameState = GAMESTATE_OVER;
+			}
+		}
+	}
 }
 
 
 //获取当前Brick状态
 bool CFlappyBirdGame::GetBrickState(int iRowIndex, int iColIndex)
 {
+	if (iRowIndex == m_iBirdRowIdx && iColIndex == COLUMN_NUM / 2 - 1)
+	{
+		return true;
+	}
+
 	//柱子
 	for(int i = 0; i < PILLAR_MAXCOUNT; ++i)
 	{
@@ -274,21 +272,14 @@ void CFlappyBirdGame::OnUpBtnPressed()
 	//按钮音效
 	PLAY_EFFECT(EFFECT_CHANGE2);
 
-	//设置标记
-	m_bBirdUpState = true;
-}
-
-
-//上释放
-void CFlappyBirdGame::OnUpBtnReleased()
-{
-	if (m_enGameState != GAMESTATE_RUNNING)
+	if (--m_iBirdRowIdx < 0)
 	{
+		m_iBirdRowIdx = 0;
+		m_enGameState = GAMESTATE_OVER;
 		return;
 	}
 
-	//设置标记
-	m_bBirdUpState = false;
+	UpdateGameState();
 }
 
 
@@ -349,5 +340,7 @@ void CFlappyBirdGame::InitData()
 
 	//初始化移动列数计数
 	m_iMoveCount = 0;
+
+	m_bImproveSpeed = false;
 }
 

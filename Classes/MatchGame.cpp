@@ -158,7 +158,7 @@ bool CMatchGame::GetBrickState(int iRowIndex, int iColIndex)
 			int iIndex = iColIndex / 5;
 			for (int i = 0; i < BRICK_MATCH_NUM; ++i)
 			{
-				if (m_arrBoomIndex[i] == iColIndex / 5 && iColIndex % 5 < 4)
+				if ((m_arrBoomIndex[i] == iColIndex / 5) && (iColIndex % 5 < 4))
 				{
 					return m_bShowBoom && BOOM_STATE[iRowIndex - iBoomStartRowIdx][iColIndex % 5];
 				}
