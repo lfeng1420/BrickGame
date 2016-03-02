@@ -53,13 +53,13 @@ private:
 private:
 	enum
 	{
-		PILLAR_COLUMN_DISTANCE = 6,		//柱子之间间隔4列
+		PILLAR_COLUMN_DISTANCE = 5,		//柱子之间间隔6列
 
 		PILLAR_MAXCOUNT = 3,			//柱子的最大数量
 
-		PILLAR_MAXLEN = 10,				//柱子最大长度
+		PILLAR_MAXLEN = 12,				//柱子最大长度
 
-		BIRD_DOWN_INTERVAL = 1000,		//鸟移动移动时间间隔
+		BIRD_DOWN_INTERVAL = 700,		//鸟移动移动时间间隔
 
 		BIRD_DOWN_ACCELERATION = 10,	//鸟下降的加速度
 
@@ -67,13 +67,9 @@ private:
 
 		BTN_CHECK_INTERVAL = 50,		//按钮检查间隔
 
-		GAMEPASS_ADDSCORE = 10,			//通过时增加10
-
-		GAMEPASS_ADDCOUNT = 10,			//增加10次
-
-		GAMEPASS_INTERVAL = 60,			//游戏通过时刷新间隔
-
 		GAMEOVER_WAITTIME = 2000,		//游戏结束等待时间
+
+		PILLAR_PASS_ADD_SCORE = 10,		//通过一根柱子加10分
 	};
 
 
@@ -101,6 +97,8 @@ private:
 
 	float m_fBirdMoveTime;						//鸟移动等待时间
 
+	float m_fBirdTotalTime;						//等待时长
+
 	float m_fRefreshTime;						//刷新等待时间
 
 	PILLAR m_arrPillar[PILLAR_MAXCOUNT];		//柱子所在列
@@ -109,9 +107,7 @@ private:
 
 	GAME_STATE m_enGameState;					//游戏状态
 
-	bool m_bBirdUpState;						//鸟上升状态
-
 	bool m_bImproveSpeed;						//加速
 
-	int m_iAddScoreCount;						//当前添加次数	
+	bool m_bCanAddScore;						//是否可以加分
 };
