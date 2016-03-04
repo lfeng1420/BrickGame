@@ -24,10 +24,10 @@ public:
 	SCENE_INDEX GetSceneType();
 	
 	//左按下
-	void OnUpBtnPressed();
+	void OnLeftBtnPressed();
 
 	//右按下
-	void OnUpBtnPressed();
+	void OnRightBtnPressed();
 
 	//Fire按下
 	void OnFireBtnPressed();
@@ -42,39 +42,57 @@ private:
 	void CreateBrickGroup();
 
 	//方块组移动
-	bool BrickGroupMove();
+	bool BrickGroupMove(float dt);
+
+	//找空白位置，返回其索引
+	int GetBlankIndex();
+
+	//更换形状
+	void RandShape();
 
 private:
 	enum
 	{
-		ROAD_COUNT =  3,			//每一次出现三个方块组
+		ROAD_COUNT =  3,					//每一次出现三个方块组
+		
+		BRICK_GROUP_MIN_WIDTH = 2,			//每组方块的最小宽度
 
-		BRICK_GROUP_MAX_WIDTH = 4,	//每组方块的最大宽度
+		BRICK_GROUP_MAX_WIDTH = 4,			//每组方块的最大宽度
 
-		BRICK_GROUP_MAX_HEIGHT = 5,	//每组方块的最大长度
+		BRICK_GROUP_MAX_HEIGHT = 4,			//每组方块的最大长度
 
-		BRICK_GROUP_DISTANCE = 5,	//每行方块组之间间距
+		BRICK_GROUP_MIN_HEIGHT = 1,			//每组方块的最小长度
+
+		BRICK_GROUP_MOVE_INTERVAL = 300,	//移动时间间隔
 	};
 
 	struct BRICKGROUP
 	{
-		int m_iType;			//类型
-
-		int m_iRoadIdx;			//位置索引，也表示所在列位置[(4 + 1) * m_iRoadIdx, (4 + 1) * m_iRoadIdx + 3]
+		int m_iColCount;		//列数量
 
 		int m_iRowIdx;			//行位置
 	};
 
 private:
-	int m_iLife;								//生命数
-
 	int m_iSpeed;								//当前速度
 
 	int m_iLevel;								//当前等级
 
 	int m_iScore;								//当前分数
 
+	int m_iMoveRowCount;						//移动的行数
+
 	BRICKGROUP m_arrBrickGroup[ROAD_COUNT][3];	//方块组序列，最多出现三行9个方块组
 
 	GAME_STATE m_enGameState;					//游戏状态
+
+	bool m_arrBricks[ROW_NUM][COLUMN_NUM];		//所有方块状态
+
+	float m_fBrickMoveTime;						//方块移动等待时间
+
+	int m_iCurShape;							//当前形状
+
+	int m_iNextShape;							//下一个形状
+
+	int m_iCurColIdx;							//当前所在列
 };

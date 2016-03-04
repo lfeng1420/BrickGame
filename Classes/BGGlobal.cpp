@@ -21,6 +21,9 @@ const char* EFFECT_SOUNDOFF = "Sounds/sndoff.mp3";
 const char* EFFECT_SOUNDON = "Sounds/sndon.mp3";
 const char* EFFECT_WALL = "Sounds/wall.mp3";
 
+//无效的数字列表，随机时将排除在外
+map<int, int> mapInvalidList;
+
 
 int Random(int iStart, int iEnd, int iStep)
 {
@@ -39,6 +42,11 @@ int Random(int iStart, int iEnd, int iStep)
 	vector<int> vecNum;
 	for (int i = iStart < iEnd ? iStart : iEnd; i < (iEnd > iStart ? iEnd : iStart); i += iStep)
 	{
+		if (mapInvalidList[i] == 1)
+		{
+			continue;
+		}
+
 		vecNum.push_back(i);
 	}
 
@@ -51,4 +59,18 @@ int Random(int iStart, int iEnd, int iStep)
 		iIndex = rand() % vecNum.size();
 	}
 	return vecNum[iIndex];
+}
+
+
+//清空无效的数字
+void ClearInvalidNums()
+{
+	mapInvalidList.clear();
+}
+
+
+//添加无效的数字
+void AddInvalidNum(int iNum)
+{
+	mapInvalidList[iNum] = 1;
 }

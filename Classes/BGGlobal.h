@@ -178,6 +178,8 @@ enum SCENE_INDEX
 
 	SCENE_FLAPPYBIRD,			//游戏界面 - flappybird
 
+	SCENE_PUZZLE,				//游戏界面 - Puzzle
+
 	SCENE_MAX,					//最大值
 };
 
@@ -200,6 +202,8 @@ enum GAME_LIST
 	GAME_TETRIS,				//俄罗斯方块
 
 	GAME_FLAPPYBIRD,			//FlappyBird
+
+	GAME_PUZZLE,				//Puzzle
 
 	GAME_MAX,					//最大值
 };
@@ -236,3 +240,8 @@ extern const char* EFFECT_WALL;
 // ---- 通用函数 ---- 
 int Random(int iStart, int iEnd, int iStep = 1);
 
+//清空无效的数字
+void ClearInvalidNums();
+
+//添加无效的数字
+void AddInvalidNum(int iNum);
