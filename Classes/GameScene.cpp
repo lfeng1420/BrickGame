@@ -10,7 +10,6 @@
 #include "PinballGame.h"
 #include "TetrisGame.h"
 #include "FlappyBirdGame.h"
-#include "PuzzleGame.h"
 
 CGameScene::CGameScene() : m_iSceneIndex(SCENE_GAMEOVER)
 {
@@ -557,10 +556,6 @@ void CGameScene::CreateGameObj()
 	//FlappyBird
 	CFlappyBirdGame* pFlappyBirdGame = new CFlappyBirdGame(this);
 	m_mapGameObj[SCENE_FLAPPYBIRD] = pFlappyBirdGame;
-
-	//Puzzle
-	CPuzzleGame* pPuzzleGame = new CPuzzleGame(this);
-	m_mapGameObj[SCENE_PUZZLE] = pPuzzleGame;
 }
 
 

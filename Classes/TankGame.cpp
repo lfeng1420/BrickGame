@@ -368,7 +368,7 @@ bool CTankGame::CreateTank(float dt)
 	stData.m_iCurStep = 0;
 	stData.m_iMaxStep = Random(0, TANK_MOVE_MAXSTEP);
 	stData.m_fFireWaitTime = 0;
-	stData.m_fFireMaxTime = Random(0, BULLET_CREATE_MAXTIME - 450 * m_iSpeed);
+	stData.m_fFireMaxTime = Random(50, BULLET_CREATE_MAXTIME - 450 * m_iSpeed);
 
 	//坦克创建数量更新
 	++m_iTankCreateCount;
@@ -722,7 +722,7 @@ bool CTankGame::TankFire(float dt)
 		}
 
 		//随机时间
-		refData.m_fFireMaxTime = Random(0, BULLET_CREATE_MAXTIME - 450 * m_iSpeed);
+		refData.m_fFireMaxTime = Random(50, BULLET_CREATE_MAXTIME - 450 * m_iSpeed);
 		refData.m_fFireWaitTime = 0;
 
 		//创建子弹

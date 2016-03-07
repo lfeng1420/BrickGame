@@ -120,7 +120,7 @@ void CFlappyBirdGame::CreatePillar()
 		if (stData.m_iLen == 0)
 		{
 			stData.m_iColIdx = COLUMN_NUM - 1;
-			stData.m_iLen = Random(1, PILLAR_MAXLEN);
+			stData.m_iLen = Random(1, PILLAR_MAXLEN + m_iLevel / 3);
 			return;
 		}
 	}
@@ -174,7 +174,7 @@ void CFlappyBirdGame::UpdateGameState()
 
 		if (stData.m_iColIdx == COLUMN_NUM / 2 || stData.m_iColIdx == COLUMN_NUM / 2 - 1)
 		{
-			int iDownLen = PILLAR_MAXLEN - stData.m_iLen;
+			int iDownLen = (PILLAR_MAXLEN + m_iLevel / 3) - stData.m_iLen;
 			if ((m_iBirdRowIdx >= 0 && m_iBirdRowIdx < stData.m_iLen) ||
 				(m_iBirdRowIdx >= ROW_NUM - iDownLen && m_iBirdRowIdx < ROW_NUM))
 			{
@@ -211,7 +211,7 @@ bool CFlappyBirdGame::GetBrickState(int iRowIndex, int iColIndex)
 		}
 
 		//下方柱子长度
-		int iDownLen = PILLAR_MAXLEN - stData.m_iLen;
+		int iDownLen = (PILLAR_MAXLEN + m_iLevel / 3) - stData.m_iLen;
 
 		if (iColIndex == stData.m_iColIdx 
 			&& ((iRowIndex >= 0 && iRowIndex < stData.m_iLen) || 

@@ -253,36 +253,17 @@ void CSnakeGame::InitData()
 //随机苹果位置
 void CSnakeGame::RandApplePos()
 {
-	//先随机一列，因为不可能出现某一列被占满的情况
-	int iColIndex = Random(0, COLUMN_NUM - 1);
-
-	//统计当前行占位状态
-	bool arrRowStateList[ROW_NUM] = { false };
+	ClearInvalidNums();
 	for (int i = 0; i < m_mapSnakeNodes.size(); ++i)
 	{
-		POSITION& stNodePos = m_mapSnakeNodes[i];
-		if (stNodePos.m_iColIdx == iColIndex)
-		{
-			arrRowStateList[stNodePos.m_iRowIdx] = true;
-		}
+		AddInvalidNum(m_mapSnakeNodes[i].m_iRowIdx * COLUMN_NUM + m_mapSnakeNodes[i].m_iColIdx);
 	}
 
-	int arrRowIdxList[ROW_NUM] = {0};
-	int iCount = 0;
-	for (int i = 0; i < ROW_NUM; ++i)
-	{
-		if (!arrRowStateList[i])
-		{
-			arrRowIdxList[iCount++] = i;
-		}
-	}
-
-	//随机获取一个索引
-	int iRandIdx = Random(0, iCount);
+	int iTemp = Random(0, ROW_NUM * COLUMN_NUM);
 
 	//设置位置
-	m_stApplePos.m_iRowIdx = arrRowIdxList[iRandIdx];
-	m_stApplePos.m_iColIdx = iColIndex;
+	m_stApplePos.m_iRowIdx = iTemp / COLUMN_NUM;
+	m_stApplePos.m_iColIdx = iTemp % COLUMN_NUM;
 }
 
 
