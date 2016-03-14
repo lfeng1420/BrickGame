@@ -123,21 +123,40 @@ const bool TETRIS_SHAPE[][4][4] =
 		{ false, false, false, false },
 		{ false, false, false, false },
 	},
+	{
+		{true, false, false, false},	//1000
+		{ true, false, false, false },	//1000
+		{ false, false, false, false },	
+		{ false, false, false, false },
+	},
+	{
+		{ true, false, false, false },	//1000
+		{ true, false, false, false },	//1000
+		{ false, false, false, false },
+		{ false, false, false, false },
+	},
+	{
+		{ true, false, false, true },	//1001
+		{ false, true, true, false },	//0110
+		{ false, true, true, false },	//0110
+		{ true, false, false, true },	//1001
+	},
 };
 
 //偏移调整
-const int TETRIS_COLOFFSET[] = { 0, 1, 0, 1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1, 1, 0 };
+const int TETRIS_COLOFFSET[] = { 0, 1, 0, 1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1, 1, 0, 1, 1, 0 };
 
 //纵向长度
-const int TETRIS_ROWCOUNT[] = { 2, 3, 2, 3, 2, 3, 2, 3, 3, 2, 3, 2, 3, 2, 3, 2, 2, 4, 1 };
+const int TETRIS_ROWCOUNT[] = { 2, 3, 2, 3, 2, 3, 2, 3, 3, 2, 3, 2, 3, 2, 3, 2, 2, 4, 1, 2, 2, 4 };
 
 //横向长度
-const int TETRIS_COLCOUNT[] = { 3, 2, 3, 2, 3, 2, 3, 2, 2, 3, 2, 3, 2, 3, 2, 3, 2, 1, 4 };
+const int TETRIS_COLCOUNT[] = { 3, 2, 3, 2, 3, 2, 3, 2, 2, 3, 2, 3, 2, 3, 2, 3, 2, 1, 4, 1, 1, 4 };
 
-const int TETRIS_TYPE_START_IDX[] = { 0, 2, 4, 8, 12, 16, 17 };
+//同类型开始索引
+const int TETRIS_TYPE_START_IDX[] = { 0, 2, 4, 8, 12, 16, 17, 19, 20, 21 };
 
 
-CTetrisGame::CTetrisGame(CGameScene* pGameScene) : CSceneBase(pGameScene)
+CTetrisGame::CTetrisGame(CGameScene* pGameScene, bool bMode) : CSceneBase(pGameScene), m_bExtraMode(bMode)
 {
 }
 
@@ -214,7 +233,13 @@ SCENE_INDEX CTetrisGame::GetSceneType()
 
 void CTetrisGame::OnLeftBtnPressed()
 {
+	//音效
 	PLAY_EFFECT(EFFECT_CHANGE2);
+
+	//移动一次
+	m_fWaitTime = BTN_CHECK_INTERVAL;
+
+	//开启持续移动状态
 	m_bLeftBtnPressed = true;
 }
 
@@ -227,7 +252,13 @@ void CTetrisGame::OnLeftBtnReleased()
 
 void CTetrisGame::OnRightBtnPressed()
 {
+	//音效
 	PLAY_EFFECT(EFFECT_CHANGE2);
+
+	//移动一次
+	m_fWaitTime = BTN_CHECK_INTERVAL;
+
+	//开启持续移动状态
 	m_bRightBtnPressed = true;
 }
 
@@ -254,10 +285,37 @@ void CTetrisGame::OnFireBtnPressed()
 {
 	PLAY_EFFECT(EFFECT_CHANGE2);
 
+	//处理特殊方块
+	if (m_iCurShape == 19 || m_iCurShape == 20)
+	{
+		bool bAddFlag = (m_iCurShape == 19);
+
+		//获取当前位置对应列包含的方块数量
+		int iRowIdx = GetNextAddOrSubColIdx(m_stCurPos.m_iColIdx, bAddFlag);
+		if (iRowIdx < 0 || iRowIdx > ROW_NUM - 1)
+		{
+			return;
+		}
+		int iColIdx = m_stCurPos.m_iColIdx;
+
+		//设置状态
+		m_arrBrick[iRowIdx][iColIdx] = bAddFlag;
+		m_pGameScene->UpdateBrick(iRowIdx, iColIdx, false, bAddFlag);
+
+		//如果是加方块，需要检查是否可以消除行
+		if (bAddFlag)
+		{
+			DeleteLine();
+		}
+
+		return;
+	}
+
+
 	//检查当前形状所属类型
 	int iAllTypeCount = sizeof(TETRIS_TYPE_START_IDX) / sizeof(int);
 	int iStartIdx = TETRIS_TYPE_START_IDX[iAllTypeCount - 1];
-	int iEndIdx = TETRIS_MAXSHAPE;
+	int iEndIdx = GetShapeCount();
 	for (int i = 0; i < iAllTypeCount; ++i)
 	{
 		if (m_iCurShape < TETRIS_TYPE_START_IDX[i])
@@ -305,7 +363,7 @@ void CTetrisGame::InitData()
 	}
 
 	//随机下一个方块类型
-	m_iNextShape = Random(0, TETRIS_MAXSHAPE);
+	m_iNextShape = Random(0, GetShapeCount());
 
 	//产生新的方块
 	RandNewShape();
@@ -331,7 +389,7 @@ void CTetrisGame::RandNewShape()
 {
 	//设置当前方块类型，重新随机下一个方块类型
 	int iShape = m_iNextShape;
-	m_iNextShape = Random(0, TETRIS_MAXSHAPE);
+	m_iNextShape = Random(17, GetShapeCount());
 
 	//更新小方块区域显示
 	m_pGameScene->UpdateSmallBricks();
@@ -409,15 +467,38 @@ bool CTetrisGame::BrickMove(float dt)
 		iNextColIdx = m_stCurPos.m_iColIdx;
 		if (!CheckBrickPos(m_iCurShape, iNextRowIdx, iNextColIdx))
 		{
-			//已无法再往下移动或已到达最后一行，保存当前方块
-			for (int i = 0; i < 4; ++i)
+			//处理非特殊方块
+			if (m_iCurShape < 19)
 			{
-				for (int j = 0; j < 4; ++j)
+				//已无法再往下移动或已到达最后一行，保存当前方块
+				for (int i = 0; i < 4; ++i)
 				{
-					if (TETRIS_SHAPE[m_iCurShape][i][j])
+					for (int j = 0; j < 4; ++j)
 					{
-						m_arrBrick[m_stCurPos.m_iRowIdx + i][m_stCurPos.m_iColIdx + j] = true;
+						if (TETRIS_SHAPE[m_iCurShape][i][j])
+						{
+							m_arrBrick[m_stCurPos.m_iRowIdx + i][m_stCurPos.m_iColIdx + j] = true;
+						}
 					}
+				}
+			}
+			else
+			{
+				//如果是爆炸方块，消除底下的指定行数
+				if (m_iCurShape == 21)
+				{
+					int iStartRowIdx = m_stCurPos.m_iRowIdx;
+					int iEndRowIdx = iStartRowIdx + TETRIS_ROWCOUNT[m_iCurShape] + BOOM_SHAPE_DELETE_LINE_COUNT;
+					iEndRowIdx = (iEndRowIdx > ROW_NUM ? ROW_NUM : iEndRowIdx);
+					for (int i = iStartRowIdx; i < iEndRowIdx; ++i)
+					{
+						for (int j = m_stCurPos.m_iColIdx; j < m_stCurPos.m_iColIdx + TETRIS_COLCOUNT[m_iCurShape]; ++j)
+						{
+							m_arrBrick[i][j] = false;
+							m_pGameScene->UpdateBrick(i, j, false, false);
+						}
+					}
+					
 				}
 			}
 
@@ -516,4 +597,28 @@ void CTetrisGame::DeleteSingleLine(int iRowIdx)
 		m_arrBrick[0][j] = false;
 	}
 }
+
+
+int CTetrisGame::GetShapeCount()
+{
+	int iCount = sizeof(TETRIS_SHAPE) / sizeof(bool) / 16;
+	return (m_bExtraMode ? iCount : iCount - 3);
+}
+
+
+int CTetrisGame::GetNextAddOrSubColIdx(int iColIdx, bool bAddFlag)
+{
+	int iIndex = ROW_NUM;
+	for (int i = 0; i < ROW_NUM; ++i)
+	{
+		if (m_arrBrick[i][iColIdx])
+		{
+			iIndex = i;
+			break;
+		}
+	}
+
+	return bAddFlag ? (iIndex - 1) : iIndex;
+}
+
 

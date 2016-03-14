@@ -550,12 +550,16 @@ void CGameScene::CreateGameObj()
 	m_mapGameObj[SCENE_PINBALL] = pPinballGame;
 
 	//俄罗斯方块
-	CTetrisGame* pTetrisGame = new CTetrisGame(this);
+	CTetrisGame* pTetrisGame = new CTetrisGame(this, false);
 	m_mapGameObj[SCENE_TETRIS] = pTetrisGame;
 
 	//FlappyBird
 	CFlappyBirdGame* pFlappyBirdGame = new CFlappyBirdGame(this);
 	m_mapGameObj[SCENE_FLAPPYBIRD] = pFlappyBirdGame;
+
+	//俄罗斯方块2
+	CTetrisGame* pTetrisGame2 = new CTetrisGame(this, true);
+	m_mapGameObj[SCENE_TETRIS2] = pTetrisGame2;
 }
 
 

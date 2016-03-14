@@ -615,6 +615,10 @@ void CTankGame::OnFireBtnPressed()
 	//按钮音效
 	PLAY_EFFECT(EFFECT_CHANGE2);
 
+	//创建子弹
+	CreateBullet(-1);
+
+	//开启连发状态
 	m_bFireState = true;
 }
 

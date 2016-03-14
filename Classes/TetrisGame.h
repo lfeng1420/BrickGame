@@ -3,7 +3,7 @@
 class CTetrisGame : public CSceneBase
 {
 public:
-	CTetrisGame(CGameScene* pGameScene);
+	CTetrisGame(CGameScene* pGameScene, bool bMode);
 	~CTetrisGame();
 
 	//---------------------    CSceneBase    ----------------------
@@ -65,16 +65,22 @@ public:
 	//消除单行
 	void DeleteSingleLine(int iRowIdx);
 
+	//获取可用形状数量
+	inline int GetShapeCount();
+
+	//获取指定列的方块数量
+	int GetNextAddOrSubColIdx(int iColIdx, bool bAddFlag);
+
 private:
 	enum 
 	{
-		TETRIS_MAXSHAPE = 19,			//最大类型索引
+		BRICK_MOVE_INTERVAL = 500,			//方块移动等待时间
 
-		BRICK_MOVE_INTERVAL = 500,		//方块移动等待时间
+		DELETE_LINE_ADD_SCORE = 10,			//消除行加分
 
-		DELETE_LINE_ADD_SCORE = 10,		//消除行加分
+		BTN_CHECK_INTERVAL = 100,			//按钮检查时间间隔
 
-		BTN_CHECK_INTERVAL = 60,		//按钮检查时间间隔
+		BOOM_SHAPE_DELETE_LINE_COUNT = 3,	//爆炸方块消除的行数
 	};
 
 private:
@@ -103,5 +109,7 @@ private:
 	bool m_bRightBtnPressed;					//右方向按钮按下状态
 
 	bool m_bFastMoveDown;						//是否加速下降
+
+	bool m_bExtraMode;							//是否开启附加模式
 };
 
