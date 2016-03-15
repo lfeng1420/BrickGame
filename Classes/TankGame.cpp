@@ -53,9 +53,13 @@ void CTankGame::Init()
 void CTankGame::Play(float dt)
 {
 	//状态切换
-	if (CheckGamePass())
+	if (m_enGameState == GAMESTATE_RUNNING && CheckAllTankDead())
 	{
-		m_enGameState = GAMESTATE_PASS;
+		//切换到暂停状态，
+		m_enGameState = GAMESTATE_PAUSE;
+
+		//重置时间
+		m_fWaitRefreshTime = 0;
 	}
 
 	if (GAMESTATE_OVER == m_enGameState)
@@ -127,7 +131,7 @@ void CTankGame::Play(float dt)
 			InitData();
 		}
 	}
-	else
+	else if (GAMESTATE_RUNNING == m_enGameState)
 	{
 		//子弹移动
 		bool bRefreshFlag = BulletMove(dt);
@@ -150,6 +154,20 @@ void CTankGame::Play(float dt)
 		if (!bRefreshFlag)
 		{
 			return;
+		}
+	}
+	else if (GAMESTATE_PAUSE == m_enGameState)
+	{
+		bool bDoneFlag = false;
+		if (!WaitToMoveBottomCenter(dt, bDoneFlag))
+		{
+			return;
+		}
+
+		if (bDoneFlag)
+		{
+			//移动完成，创建Boss，切换状态
+
 		}
 	}
 
@@ -629,7 +647,62 @@ void CTankGame::OnFireBtnReleased()
 }
 
 
-const int POS_CHANGE_LIST[16] = 
+
+bool CTankGame::WaitToMoveBottomCenter(float dt, bool& bDoneFlag)
+{
+	bDoneFlag = false;
+
+	m_fWaitRefreshTime += dt;
+	if (m_fWaitRefreshTime < TANK_SELF_MOVE_INTERVAL - 3 * m_iSpeed)
+	{
+		return false;
+	}
+
+	m_fWaitRefreshTime = 0;
+
+	//距离
+	int iRowDis = ROW_NUM - 2 - m_stSelfTank.m_stPos.m_iRowIdx;
+	int iColDis = COLUMN_NUM / 2 - 1 - m_stSelfTank.m_stPos.m_iColIdx;
+
+	//重置方向
+	m_arrBtnState[DIR_DOWN] = false;
+	m_arrBtnState[DIR_LEFT] = false;
+	m_arrBtnState[DIR_RIGHT] = false;
+	m_arrBtnState[DIR_UP] = false;
+
+	//设置我方坦克移动等待时间（可移动）
+	m_fSelfMoveTime = TANK_SELF_MOVE_INTERVAL;
+
+	if (iRowDis == 0 && iColDis == 0 && m_stSelfTank.m_iDirection == DIR_UP)
+	{
+		bDoneFlag = true;
+	}
+	else if (iRowDis > 0)
+	{
+		m_arrBtnState[DIR_DOWN] = true;
+		SelfTankMove(0);
+	}
+	else if (iColDis > 0)
+	{
+		m_arrBtnState[DIR_RIGHT] = true;
+		SelfTankMove(0);
+	}
+	else if (iColDis < 0)
+	{
+		m_arrBtnState[DIR_LEFT] = true;
+		SelfTankMove(0);
+	}
+	else if (m_stSelfTank.m_iDirection != DIR_UP)
+	{
+		m_arrBtnState[DIR_UP] = true;
+		SelfTankMove(0);
+	}
+
+	return true;
+}
+
+
+const int POS_CHANGE_LIST[16] =
 {
 	-1, -2, 1, -2,
 	-2, -1, -2, 1,
@@ -928,7 +1001,7 @@ void CTankGame::BulletShoot()
 }
 
 //是否通过当前等级
-bool CTankGame::CheckGamePass()
+bool CTankGame::CheckAllTankDead()
 {
 	if (m_enGameState == GAMESTATE_OVER || m_iTankCreateCount < TANK_CREATE_MAXCOUNT)
 	{

@@ -212,7 +212,7 @@ void CGameScene::InitUI()
 
 	//–°∑ΩøÈ–Ú¡–
 	float fBrickScale = 0.7f;
-	float fPadding = 4;
+	float fPadding = 2;
 	fCurY -= NUM_HEIGHT / 2;
 	for (int i = 0; i < 4; ++i)
 	{

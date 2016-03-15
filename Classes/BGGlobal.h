@@ -122,6 +122,22 @@ struct POSITION
 		temp += rhs;
 		return temp;
 	}
+
+
+	POSITION& operator-= (const POSITION& rhs)
+	{
+		this->m_iColIdx -= rhs.m_iColIdx;
+		this->m_iRowIdx -= rhs.m_iRowIdx;
+
+		return *this;
+	}
+
+	const POSITION operator- (const POSITION& rhs) const
+	{
+		POSITION temp(*this);
+		temp -= rhs;
+		return temp;
+	}
 };
 
 

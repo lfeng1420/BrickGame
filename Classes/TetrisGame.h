@@ -60,7 +60,7 @@ public:
 	bool CheckBrickPos(int iShapeIdx, int iSrcRowIdx, int iSrcColIdx);
 
 	//消行
-	void DeleteLine();
+	void DeleteLine(bool bEnd);
 
 	//消除单行
 	void DeleteSingleLine(int iRowIdx);
@@ -69,7 +69,10 @@ public:
 	inline int GetShapeCount();
 
 	//获取指定列的方块数量
-	int GetNextAddOrSubColIdx(int iColIdx, bool bAddFlag);
+	int GetNextAddOrSubRowIdx(int iColIdx);
+
+	//更新自己的显示状态
+	bool UpdateSelfState(float dt);
 
 private:
 	enum 
@@ -80,7 +83,9 @@ private:
 
 		BTN_CHECK_INTERVAL = 100,			//按钮检查时间间隔
 
-		BOOM_SHAPE_DELETE_LINE_COUNT = 3,	//爆炸方块消除的行数
+		BOOM_SHAPE_DELETE_LINE_COUNT = 2,	//爆炸方块消除的行数
+
+		SELF_FLASH_INTERVAL = 70,			//闪烁刷新时间
 	};
 
 private:
@@ -102,7 +107,13 @@ private:
 
 	float m_fMoveDownTime;						//下移刷新时间
 
-	float m_fWaitTime;							//等待时间
+	float m_fBtnCheckTime;						//按钮检查等待时间
+
+	float m_fSelfFlashTime;						//闪烁等待时间
+
+	bool m_bSelfShowFlag;						//显示标记
+
+	bool m_bFlashFlag;							//是否打开闪烁
 
 	bool m_bLeftBtnPressed;						//左方向按钮按下状态
 

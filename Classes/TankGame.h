@@ -90,6 +90,9 @@ public:
 	//Fire释放
 	void OnFireBtnReleased();
 
+	//等待移动到底部中间
+	bool WaitToMoveBottomCenter(float dt, bool& bDoneFlag);
+
 	//---------------------    CSceneBase    ----------------------
 
 private:
@@ -139,7 +142,7 @@ private:
 	bool ShowBoom(int iRowIndex, int iColIndex, bool& bState);
 
 	//是否通过当前等级
-	bool CheckGamePass();
+	bool CheckAllTankDead();
 
 	//获取一个有效的角落位置
 	bool GetCornerPos(int iTankIdx);
@@ -163,7 +166,7 @@ private:
 
 		TANK_SELF_MOVE_INTERVAL = 55,				//我方坦克每次移动等待时间
 
-		TANK_SELF_FIRE_TIME = 100,					//每次发射子弹后间隔
+		TANK_SELF_FIRE_TIME = 200,					//每次发射子弹后间隔
 
 		BOOM_SHOWCOUNT = 16,						//闪烁显示爆炸效果次数
 
@@ -175,7 +178,7 @@ private:
 
 		TANK_KILL_ADD_SCORE = 10,					//杀掉一个坦克增加的分数
 
-		TANK_CREATE_MAXCOUNT = 30,					//每一个等级坦克创建最大数量
+		TANK_CREATE_MAXCOUNT = 4,					//每一个等级坦克创建最大数量
 	};
 
 	//阵营
