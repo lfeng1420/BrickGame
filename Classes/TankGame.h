@@ -35,10 +35,27 @@ private:
 
 		float m_fMoveTime;		//移动等待时间
 
-		int m_iDirection;			//方向
+		int m_iDirection;		//方向
 
 		bool m_bValid;			//是否有效
 	};
+
+	//struct BOSS_DATA
+	//{
+	//	bool m_bDead;			//是否死亡
+
+	//	int m_iColIdx;			//列位置
+
+	//	float m_fMoveTime;		//移动等待时间
+
+	//	float m_fMoveMaxTime;	//移动等待最大间隔
+
+	//	float m_fFireTime;		//等待发射子弹时间
+
+	//	float m_fFireMaxTime;	//发射子弹等待最大间隔
+
+	//	int m_iDirection;		//方向
+	//};
 
 public:
 	CTankGame(CGameScene* pGameScene);
@@ -179,6 +196,10 @@ private:
 		TANK_KILL_ADD_SCORE = 10,					//杀掉一个坦克增加的分数
 
 		TANK_CREATE_MAXCOUNT = 4,					//每一个等级坦克创建最大数量
+
+		BOSS_FIRE_MIN_INTERVAL = 500,				//boss发射子弹最小时间间隔
+
+		BOSS_FIRE_MAX_INTERVAL = 2000,				//boss发射子弹最大时间间隔
 	};
 
 	//阵营
@@ -230,5 +251,9 @@ private:
 	bool m_bFireState;							//发射状态
 
 	int m_iTankCreateCount;						//坦克创建数量
+
+	TANK_DATA m_stBoss;							//boss数据
+
+	bool m_bBossFlag;							//是否开启BOSS阶段
 };
 
