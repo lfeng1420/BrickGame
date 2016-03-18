@@ -39,8 +39,11 @@ int Random(int iStart, int iEnd, int iStep)
 		bSameTime = false;
 	}
 
+	int iStartIdx = (iStart < iEnd ? iStart : iEnd);
+	int iEndIdx = (iEnd > iStart ? iEnd : iStart);
+
 	vector<int> vecNum;
-	for (int i = iStart < iEnd ? iStart : iEnd; i < (iEnd > iStart ? iEnd : iStart); i += iStep)
+	for (int i = iStartIdx; i < iEndIdx; i += iStep)
 	{
 		if (mapInvalidList[i] == 1)
 		{
@@ -51,7 +54,7 @@ int Random(int iStart, int iEnd, int iStep)
 	}
 
 	random_shuffle(vecNum.begin(), vecNum.end());
-	
+
 	//返回结果，如果是相同时间，则返回不同位置的值
 	int iIndex = 0;
 	if (bSameTime)

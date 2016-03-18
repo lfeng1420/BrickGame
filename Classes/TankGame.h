@@ -175,7 +175,7 @@ private:
 
 		BULLET_MOVE_INTERVAL = 40,					//子弹移动时间间隔
 
-		BULLET_CREATE_MAXTIME = 5500,				//最大发射子弹时间
+		BULLET_CREATE_MAXTIME = 4500,				//最大发射子弹时间
 
 		TANK_CREATE_TIME = TANK_MOVE_INTERVAL,		//坦克创建时间间隔
 
@@ -183,7 +183,7 @@ private:
 
 		TANK_SELF_MOVE_INTERVAL = 55,				//我方坦克每次移动等待时间
 
-		TANK_SELF_FIRE_TIME = 200,					//每次发射子弹后间隔
+		TANK_SELF_FIRE_TIME = 300,					//每次发射子弹后间隔
 
 		BOOM_SHOWCOUNT = 16,						//闪烁显示爆炸效果次数
 
@@ -195,11 +195,11 @@ private:
 
 		TANK_KILL_ADD_SCORE = 10,					//杀掉一个坦克增加的分数
 
-		TANK_CREATE_MAXCOUNT = 4,					//每一个等级坦克创建最大数量
+		TANK_CREATE_MAXCOUNT = 30,					//每一个等级坦克创建最大数量
 
-		BOSS_FIRE_MIN_INTERVAL = 500,				//boss发射子弹最小时间间隔
+		BOSS_FIRE_MIN_INTERVAL = 600,				//boss发射子弹最小时间间隔
 
-		BOSS_FIRE_MAX_INTERVAL = 2000,				//boss发射子弹最大时间间隔
+		BOSS_FIRE_MAX_INTERVAL = 1300,				//boss发射子弹最大时间间隔
 	};
 
 	//阵营

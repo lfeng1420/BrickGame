@@ -43,6 +43,9 @@
     <Filter Include="Classes\Scene\Game\Tetris">
       <UniqueIdentifier>{e00d805c-3523-4378-b03d-77607c1db747}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Classes\Scene\Game\FlappyBird">
+      <UniqueIdentifier>{4a15d1a1-065f-4fff-ac96-0ef24a8728c0}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -93,6 +96,9 @@
     <ClCompile Include="..\Classes\TetrisGame.cpp">
       <Filter>Classes\Scene\Game\Tetris</Filter>
     </ClCompile>
+    <ClCompile Include="..\Classes\FlappyBirdGame.cpp">
+      <Filter>Classes\Scene\Game\FlappyBird</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="main.h">
@@ -142,6 +148,9 @@
     </ClInclude>
     <ClInclude Include="..\Classes\TetrisGame.h">
       <Filter>Classes\Scene\Game\Tetris</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\FlappyBirdGame.h">
+      <Filter>Classes\Scene\Game\FlappyBird</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
