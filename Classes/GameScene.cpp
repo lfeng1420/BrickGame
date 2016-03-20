@@ -798,11 +798,6 @@ void CGameScene::OnButtonClick(Ref* pSender, int iBtnIndex)
 			}
 			else if (m_iClickTime >= 0 && m_iClickTime < CHANGEBG_INTERVAL)
 			{
-				GLView::sharedOpenGLView()->OnGiveScore();
-				m_iClickTime = -1;
-			}
-			else if (m_iClickTime >= CHANGEBG_INTERVAL)
-			{
 				ChangeBGPic();
 				m_iClickTime = -1;
 			}

@@ -1,0 +1,160 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="pch.cpp" />
+    <ClCompile Include="..\..\Classes\AppDelegate.cpp">
+      <Filter>Classes</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Cocos2dRenderer.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Direct3DContentProvider.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Direct3DInterop.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\DirectXBase.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\EditBoxEvent.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Classes\BGGlobal.cpp">
+      <Filter>Classes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Classes\ChooseGame.cpp">
+      <Filter>Classes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Classes\FlappyBirdGame.cpp">
+      <Filter>Classes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Classes\FroggerGame.cpp">
+      <Filter>Classes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Classes\GameOver.cpp">
+      <Filter>Classes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Classes\GameScene.cpp">
+      <Filter>Classes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Classes\GeneralManager.cpp">
+      <Filter>Classes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Classes\LoadScene.cpp">
+      <Filter>Classes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Classes\MatchGame.cpp">
+      <Filter>Classes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Classes\PinballGame.cpp">
+      <Filter>Classes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Classes\RacingGame.cpp">
+      <Filter>Classes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Classes\SceneBase.cpp">
+      <Filter>Classes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Classes\SnakeGame.cpp">
+      <Filter>Classes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Classes\TankGame.cpp">
+      <Filter>Classes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Classes\TetrisGame.cpp">
+      <Filter>Classes</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="pch.h" />
+    <ClInclude Include="..\..\Classes\AppDelegate.h">
+      <Filter>Classes</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Cocos2dRenderer.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Direct3DContentProvider.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Direct3DInterop.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\DirectXBase.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\DirectXHelper.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\EditBoxEvent.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Classes\BGGlobal.h">
+      <Filter>Classes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Classes\ChooseGame.h">
+      <Filter>Classes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Classes\FlappyBirdGame.h">
+      <Filter>Classes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Classes\FroggerGame.h">
+      <Filter>Classes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Classes\GameOver.h">
+      <Filter>Classes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Classes\GameScene.h">
+      <Filter>Classes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Classes\GeneralManager.h">
+      <Filter>Classes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Classes\LoadScene.h">
+      <Filter>Classes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Classes\MatchGame.h">
+      <Filter>Classes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Classes\PinballGame.h">
+      <Filter>Classes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Classes\RacingGame.h">
+      <Filter>Classes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Classes\SceneBase.h">
+      <Filter>Classes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Classes\SnakeGame.h">
+      <Filter>Classes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Classes\TankGame.h">
+      <Filter>Classes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Classes\TetrisGame.h">
+      <Filter>Classes</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Classes">
+      <UniqueIdentifier>{facbd0ff-d271-46ef-8324-beff0cbcb424}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src">
+      <UniqueIdentifier>{6fcff44b-bb9f-4ed9-8553-558855bc91e3}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\cocos2d\external\wp8-specific\angle\prebuilt\Win32\libEGL_phone.dll" />
+    <None Include="..\..\cocos2d\external\wp8-specific\angle\prebuilt\Win32\libGLESv2_phone.dll" />
+    <None Include="..\..\cocos2d\external\wp8-specific\angle\prebuilt\ARM\libEGL_phone.dll" />
+    <None Include="..\..\cocos2d\external\wp8-specific\angle\prebuilt\ARM\libGLESv2_phone.dll" />
+    <None Include="..\..\cocos2d\external\curl\prebuilt\wp8\win32\libcurl.dll" />
+    <None Include="..\..\cocos2d\external\curl\prebuilt\wp8\win32\libeay32.dll" />
+    <None Include="..\..\cocos2d\external\curl\prebuilt\wp8\win32\ssleay32.dll" />
+    <None Include="..\..\cocos2d\external\curl\prebuilt\wp8\arm\libcurl.dll" />
+    <None Include="..\..\cocos2d\external\curl\prebuilt\wp8\arm\libeay32.dll" />
+    <None Include="..\..\cocos2d\external\curl\prebuilt\wp8\arm\ssleay32.dll" />
+    <None Include="..\..\cocos2d\external\websockets\prebuilt\wp8\win32\libwebsockets.dll" />
+    <None Include="..\..\cocos2d\external\websockets\prebuilt\wp8\arm\libwebsockets.dll" />
+  </ItemGroup>
+</Project>

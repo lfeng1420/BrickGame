@@ -403,9 +403,8 @@ void CTetrisGame::InitData()
 	m_bLeftBtnPressed = false;
 	m_bRightBtnPressed = false;
 	m_bFastMoveDown = false;
-	m_bFlashFlag = false;
+	m_bSelfShowFlag = true;
 
-	//更新界面
 	m_pGameScene->UpdateBricks();
 }
 
@@ -516,7 +515,7 @@ bool CTetrisGame::BrickMove(float dt)
 				if (m_iCurShape == 21)
 				{
 					int iStartRowIdx = m_stCurPos.m_iRowIdx;
-					int iEndRowIdx = iStartRowIdx + TETRIS_ROWCOUNT[m_iCurShape] + BOOM_SHAPE_DELETE_LINE_COUNT;
+					int iEndRowIdx = iStartRowIdx + TETRIS_ROWCOUNT[m_iCurShape] + BOOM_SHAPE_DELETE_LINE_COUNT + m_iSpeed / 4;
 					iEndRowIdx = (iEndRowIdx > ROW_NUM ? ROW_NUM : iEndRowIdx);
 					for (int i = iStartRowIdx; i < iEndRowIdx; ++i)
 					{

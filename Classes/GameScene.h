@@ -113,7 +113,7 @@ private:
 
 		BGPIC_COUNT = 2,			//背景图片数量
 
-		CHANGEBG_INTERVAL = 500,	//更改背景的间隔
+		CHANGEBG_INTERVAL = 800,	//更改背景的间隔
 	};
 
 private:
