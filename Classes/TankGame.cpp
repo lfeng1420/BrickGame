@@ -470,7 +470,7 @@ bool CTankGame::CreateTank(float dt)
 	stData.m_iCurStep = 0;
 	stData.m_iMaxStep = Random(0, TANK_MOVE_MAXSTEP);
 	stData.m_fFireWaitTime = 0;
-	stData.m_fFireMaxTime = Random(1, (BULLET_CREATE_MAXTIME - 350 * m_iSpeed) / 100) * 100;
+	stData.m_fFireMaxTime = Random(1, (BULLET_CREATE_MAXTIME - 300 * m_iSpeed) / 100) * 100;
 
 	//坦克创建数量更新
 	++m_iTankCreateCount;
@@ -965,7 +965,7 @@ bool CTankGame::TankFire(float dt)
 			}
 
 			//随机时间
-			refData.m_fFireMaxTime = Random(1, (BULLET_CREATE_MAXTIME - 350 * m_iSpeed) / 100) * 100;
+			refData.m_fFireMaxTime = Random(1, (BULLET_CREATE_MAXTIME - 300 * m_iSpeed) / 100) * 100;
 			refData.m_fFireWaitTime = 0;
 
 			//创建子弹
@@ -1138,58 +1138,98 @@ void CTankGame::BulletShoot()
 {
 	for (int i = 0; i < BULLET_MAXNUM; ++i)
 	{
+		do 
+		{
+			BULLET_DATA& refData = m_arrBullet[i];
+			if (!refData.m_bValid)
+			{
+				continue;
+			}
+
+			int iTankIdx = GetBulletFireTankIndex(refData.m_stPos, refData.m_iCamp);
+			if (iTankIdx >= 0)
+			{
+				if (refData.m_iCamp == CAMP_A)
+				{
+					if (m_bBossFlag)
+					{
+						if (++m_stBoss.m_iCurStep >= m_stBoss.m_iMaxStep)
+						{
+							m_enGameState = GAMESTATE_PASS;
+						}
+
+						log("m_iCurStep=%d  m_iMaxStep=%d", m_stBoss.m_iCurStep, m_stBoss.m_iMaxStep);
+					}
+					else
+					{
+						TANK_DATA& refTankData = m_arrTank[iTankIdx];
+
+						//敌方坦克死亡
+						refTankData.m_bDead = true;
+
+						//重画对应区域状态
+						POSITION& stDeadTankPos = refTankData.m_stPos;
+						m_pGameScene->UpdateBricks(stDeadTankPos.m_iRowIdx - 1, stDeadTankPos.m_iColIdx - 1,
+							stDeadTankPos.m_iRowIdx + 2, stDeadTankPos.m_iColIdx + 2);
+
+						//分数增加
+						m_iScore += TANK_KILL_ADD_SCORE;
+						m_pGameScene->UpdateScore(m_iScore);
+					}
+				}
+				else if (refData.m_iCamp == CAMP_B)
+				{
+					//我方坦克死亡
+					m_enGameState = GAMESTATE_OVER;
+					PLAY_EFFECT(EFFECT_BOOM);
+				}
+
+				//子弹状态
+				refData.m_bValid = false;
+
+				//不显示
+				m_pGameScene->UpdateBrick(refData.m_stPos.m_iRowIdx, refData.m_stPos.m_iColIdx, false, false);
+				break;
+			}
+
+			//如果没击中坦克，检查是否和敌方子弹相抵
+			int iBulletIdx = GetBulletFireBulletIndex(refData.m_stPos, refData.m_iCamp);
+			if (iBulletIdx >= 0)
+			{
+				log("iBulletIdx=%d", iBulletIdx);
+				//隐藏这两个子弹
+				refData.m_bValid = false;
+				m_pGameScene->UpdateBrick(refData.m_stPos.m_iRowIdx, refData.m_stPos.m_iColIdx, false, false);
+
+				BULLET_DATA& refSecBulletData = m_arrBullet[iBulletIdx];
+				refSecBulletData.m_bValid = false;
+				m_pGameScene->UpdateBrick(refSecBulletData.m_stPos.m_iRowIdx, refSecBulletData.m_stPos.m_iColIdx, false, false);
+			}
+		} while (0);
+	}
+}
+
+
+int CTankGame::GetBulletFireBulletIndex(const POSITION& stBulletPos, int iCamp)
+{
+	for (int i = 0; i < BULLET_MAXNUM; ++i)
+	{
 		BULLET_DATA& refData = m_arrBullet[i];
 		if (!refData.m_bValid)
 		{
 			continue;
 		}
 
-		int iTankIdx = GetBulletFireTankIndex(refData.m_stPos, refData.m_iCamp);
-		if (iTankIdx >= 0)
+		//不同阵营且位置相同时算击中
+		if (refData.m_stPos == stBulletPos && iCamp != refData.m_iCamp)
 		{
-			if (refData.m_iCamp == CAMP_A)
-			{
-				if (m_bBossFlag)
-				{
-					if (++m_stBoss.m_iCurStep >= m_stBoss.m_iMaxStep)
-					{
-						m_enGameState = GAMESTATE_PASS;
-					}
-
-					log("m_iCurStep=%d  m_iMaxStep=%d", m_stBoss.m_iCurStep, m_stBoss.m_iMaxStep);
-				}
-				else
-				{
-					TANK_DATA& refTankData = m_arrTank[iTankIdx];
-
-					//敌方坦克死亡
-					refTankData.m_bDead = true;
-
-					//重画对应区域状态
-					POSITION& stDeadTankPos = refTankData.m_stPos;
-					m_pGameScene->UpdateBricks(stDeadTankPos.m_iRowIdx - 1, stDeadTankPos.m_iColIdx - 1,
-						stDeadTankPos.m_iRowIdx + 2, stDeadTankPos.m_iColIdx + 2);
-
-					//分数增加
-					m_iScore += TANK_KILL_ADD_SCORE;
-					m_pGameScene->UpdateScore(m_iScore);
-				}
-			}
-			else if (refData.m_iCamp == CAMP_B)
-			{
-				//我方坦克死亡
-				m_enGameState = GAMESTATE_OVER;
-				PLAY_EFFECT(EFFECT_BOOM);
-			}
-
-			//子弹状态
-			refData.m_bValid = false;
-
-			//不显示
-			m_pGameScene->UpdateBrick(refData.m_stPos.m_iRowIdx, refData.m_stPos.m_iColIdx, false, false);
+			return i;
 		}
 	}
+
+	return -1;
 }
+
 
 //是否通过当前等级
 bool CTankGame::CheckAllTankDead()

@@ -152,6 +152,9 @@ private:
 	//子弹
 	void BulletShoot();
 
+	//获取子弹打中的子弹索引
+	int GetBulletFireBulletIndex(const POSITION& stBulletPos, int iCamp);
+
 	//子弹打中的坦克索引，未打中时返回-1
 	int GetBulletFireTankIndex(const POSITION& stBulletPos, int iCamp);
 

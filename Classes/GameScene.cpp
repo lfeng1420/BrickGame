@@ -94,18 +94,18 @@ void CGameScene::InitBrick()
 		false, false, true, true, true, true, true, false, false, false, false, false, false, false,
 		false, false, false, false, false, false, false, false, false, false, false, false, false, false,
 		false, false, false, false, false, true, true, true, true, false, false, false, false, false,
+		false, false, false, false, true, false, false, false, false, true, false, false, false, false,
+		false, false, false, false, true, false, false, false, false, true, false, false, false, false,
+		false, false, false, false, false, true, true, true, true, true, false, false, false, false,
 		false, false, false, false, false, false, false, false, false, true, false, false, false, false,
-		false, false, false, false, false, false, false, false, true, false, false, false, false, false,
-		false, false, false, false, false, false, false, true, false, false, false, false, false,
-		false, false, false, false, false, false, false, true, false, false, false, false, false, false,
-		false, false, false, false, false, false, false, true, false, false, false, false, false, false,
+		false, false, false, false, false, false, false, false, false, true, false, false, false, false,
 		false, false, false, false, false, false, false, false, false, false, false, false, false, false,
 		false, false, false, false, false, false, false, true, true, true, true, false, false, false,
 		false, false, false, false, false, false, true, false, false, false, false, false, false, false,
 		false, false, false, false, false, false, true, false, false, false, true, true, false, false,
 		false, false, false, false, false, false, true, false, false, false, false, true, false, false,
 		false, false, false, false, false, false, false, true, true, true, true, false, false, false,
-		false, false, false, false, false, false, false, false, false, false, false, false, false, false, 
+		false, false, false, false, false, false, false, false, false, false, false, false, false, false,
 	};
 
 	float fCurY = m_visibleSize.height;
