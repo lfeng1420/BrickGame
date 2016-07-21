@@ -43,6 +43,7 @@ public:
 	//重置所有小Brick
 	void ResetSmallBricks();
 
+
 	CREATE_FUNC(CGameScene);
 
 private:
@@ -114,6 +115,8 @@ private:
 		BGPIC_COUNT = 2,			//背景图片数量
 
 		CHANGEBG_INTERVAL = 800,	//更改背景的间隔
+
+		ONE_SECOND = 1,				//1秒
 	};
 
 private:
@@ -156,5 +159,9 @@ private:
 	int m_iBgColor;										//当前背景颜色序号，0白色，>=1自定义
 
 	float m_iClickTime;									//Click love btn time, two:change the background with WP
+
+	time_t m_tLastClickExitTime;						//上一次点击退出时间
+
+	time_t m_tLastClickResetTime;						//上一次点击重置时间
 };
 

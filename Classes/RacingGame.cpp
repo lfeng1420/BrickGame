@@ -459,3 +459,9 @@ bool CRacingGame::GetSmallBrickState(int iRowIndex, int iColIndex)
 
 	return false;
 }
+
+
+void CRacingGame::SaveGameData()
+{
+	
+}

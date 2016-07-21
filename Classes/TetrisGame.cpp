@@ -201,6 +201,9 @@ void CTetrisGame::Play(float dt)
 
 	if (m_enGameState == GAMESTATE_OVER)
 	{
+		//标记存档无效
+		SET_BOOLVALUE("RECORD_VALID", false);
+
 		m_pGameScene->RunScene(SCENE_GAMEOVER);
 		return;
 	}
@@ -385,6 +388,13 @@ void CTetrisGame::InitData()
 		}
 	}
 
+	//加载存档
+	bool bRecordValidFlag = GET_BOOLVALUE("TETRIS_RECORD_VALID", false);
+	if (bRecordValidFlag)
+	{
+		CGeneralManager::getInstance()->LoadTetrisData(m_arrBrick);
+	}
+
 	//随机下一个方块类型
 	m_iNextShape = Random(0, GetShapeCount());
 
@@ -418,7 +428,7 @@ void CTetrisGame::RandNewShape()
 	//更新小方块区域显示
 	m_pGameScene->UpdateSmallBricks();
 
-	//检查位置是否有效
+	//检查位置是否有效  2 每个形状都是4*4 一半即是2
 	int iColIdx = COLUMN_NUM / 2 - 2 + TETRIS_COLOFFSET[iShape];
 	if (!CheckBrickPos(iShape, 0, iColIdx))
 	{
@@ -706,3 +716,17 @@ bool CTetrisGame::UpdateSelfState(float dt)
 	return true;
 }
 
+
+void CTetrisGame::SaveGameData()
+{
+	//仅在非结束状态下保存数据
+	if (m_enGameState == GAMESTATE_OVER)
+	{
+		return;
+	}
+
+	log("%s", __FUNCTION__);
+
+	//保存
+	CGeneralManager::getInstance()->SaveTetrisData(m_arrBrick);
+}

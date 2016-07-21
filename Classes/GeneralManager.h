@@ -46,6 +46,12 @@ public:
 	//设置最高分
 	void SetHighScore(int iGameIdx, int iScore);
 
+	//保存俄罗斯方块数据
+	void SaveTetrisData(const bool (&arrState)[ROW_NUM][COLUMN_NUM]);
+
+	//加载俄罗斯方块数据
+	void LoadTetrisData(bool (&arrState)[ROW_NUM][COLUMN_NUM]);
+
 private:
 	typedef vector<int> TVECTOR_ANIMDATA;
 	typedef TVECTOR_ANIMDATA::iterator TVECTOR_ANIMDATA_ITER;

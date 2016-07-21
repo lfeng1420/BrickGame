@@ -59,6 +59,9 @@ private:
 	//检查是否通过
 	bool CheckGamePass();
 
+	//游戏状态
+	void SaveGameData();
+
 private:
 	enum 
 	{

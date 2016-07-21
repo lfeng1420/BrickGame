@@ -60,6 +60,9 @@ public:
 	//©╙й╪
 	virtual void OnStart();
 
+	//сно╥в╢л╛
+	virtual void SaveGameData();
+
 protected:
 	CGameScene* m_pGameScene;
 };

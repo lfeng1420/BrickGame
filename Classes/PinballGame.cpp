@@ -525,3 +525,7 @@ bool CPinballGame::CheckGamePass()
 }
 
 
+void CPinballGame::SaveGameData()
+{
+	
+}

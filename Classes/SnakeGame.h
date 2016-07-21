@@ -41,6 +41,9 @@ public:
 	//Fire释放
 	void OnFireBtnReleased();
 
+	//游戏状态
+	void SaveGameData();
+
 	//---------------------    CSceneBase    ----------------------
 
 

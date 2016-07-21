@@ -445,3 +445,8 @@ void CSnakeGame::OnFireBtnReleased()
 	m_bImproveSpeed = false;
 }
 
+
+void CSnakeGame::SaveGameData()
+{
+	
+}

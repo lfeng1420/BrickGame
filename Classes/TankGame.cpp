@@ -343,7 +343,7 @@ void CTankGame::InitData()
 	m_stSelfTank.m_bDead = false;
 	m_stSelfTank.m_iCamp = CAMP_A;
 	m_stSelfTank.m_fFireWaitTime = 0;
-	m_stSelfTank.m_fFireMaxTime = TANK_SELF_FIRE_TIME - 5 * m_iSpeed;
+	m_stSelfTank.m_fFireMaxTime = TANK_SELF_FIRE_TIME - 50 * m_iSpeed;
 	m_stSelfTank.m_stPos.m_iRowIdx = ROW_NUM / 2 - 1;
 	m_stSelfTank.m_stPos.m_iColIdx = COLUMN_NUM / 2 - 1;
 	m_stSelfTank.m_iDirection = DIR_UP;
@@ -1280,4 +1280,10 @@ bool CTankGame::GetCornerPos( int iTankIdx )
 	stPos.m_iRowIdx = CORNER_POS[iValidIdx];
 	stPos.m_iColIdx = CORNER_POS[iValidIdx + 1];
 	return true;
+}
+
+
+void CTankGame::SaveGameData()
+{
+	
 }

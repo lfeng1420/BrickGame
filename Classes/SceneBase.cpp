@@ -111,3 +111,9 @@ void CSceneBase::OnStart()
 	
 }
 
+
+void CSceneBase::SaveGameData()
+{
+	
+}
+

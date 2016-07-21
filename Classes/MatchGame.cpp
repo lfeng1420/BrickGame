@@ -447,3 +447,9 @@ void CMatchGame::UpdateGameState()
 		}
 	}
 }
+
+
+void CMatchGame::SaveGameData()
+{
+	
+}

@@ -513,3 +513,9 @@ void CFroggerGame::OnFireBtnPressed()
 {
 	OnUpBtnPressed();
 }
+
+
+void CFroggerGame::SaveGameData()
+{
+	
+}

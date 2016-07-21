@@ -107,8 +107,8 @@ public:
 	//Fire释放
 	void OnFireBtnReleased();
 
-	//等待移动到底部中间
-	bool WaitToMoveBottomCenter(float dt, bool& bDoneFlag);
+	//游戏状态
+	void SaveGameData();
 
 	//---------------------    CSceneBase    ----------------------
 
@@ -167,6 +167,9 @@ private:
 	//获取一个有效的角落位置
 	bool GetCornerPos(int iTankIdx);
 
+	//等待移动到底部中间
+	bool WaitToMoveBottomCenter(float dt, bool& bDoneFlag);
+
 private:
 	enum
 	{
@@ -186,7 +189,7 @@ private:
 
 		TANK_SELF_MOVE_INTERVAL = 55,				//我方坦克每次移动等待时间
 
-		TANK_SELF_FIRE_TIME = 300,					//每次发射子弹后间隔
+		TANK_SELF_FIRE_TIME = 800,					//每次发射子弹后间隔
 
 		BOOM_SHOWCOUNT = 16,						//闪烁显示爆炸效果次数
 

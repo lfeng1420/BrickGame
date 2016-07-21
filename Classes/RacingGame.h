@@ -41,6 +41,9 @@ public:
 	//FireÊÍ·Å
 	void OnFireBtnReleased();
 
+	//ÓÎÏ·×´Ì¬
+	void SaveGameData();
+
 	//---------------------    CSceneBase    ----------------------
 
 private:

@@ -43,6 +43,9 @@ public:
 	//Fire°´ÏÂ
 	void OnFireBtnPressed();
 
+	//ÓÎÏ·×´Ì¬
+	void SaveGameData();
+
 	//---------------------    CSceneBase    ----------------------
 
 

@@ -11,7 +11,7 @@
 #include "TetrisGame.h"
 #include "FlappyBirdGame.h"
 
-CGameScene::CGameScene() : m_iSceneIndex(SCENE_GAMEOVER)
+CGameScene::CGameScene() : m_iSceneIndex(SCENE_GAMEOVER), m_tLastClickExitTime(0), m_tLastClickResetTime(0)
 {
 }
 
@@ -488,7 +488,20 @@ void CGameScene::CreateKeyListener()
 			EventKeyboard::KeyCode::KEY_ESCAPE == keyCode ||
 			EventKeyboard::KeyCode::KEY_BACKSPACE == keyCode)
 		{
-			DIRECTOR_INSTANCE()->end();
+			time_t tCurTime = time(NULL);
+			if (tCurTime - m_tLastClickExitTime < ONE_SECOND)
+			{
+				if (m_iSceneIndex == SCENE_TETRIS || m_iSceneIndex == SCENE_TETRIS2)
+				{
+					//保存数据
+					m_mapGameObj[m_iSceneIndex]->SaveGameData();
+				}
+
+				DIRECTOR_INSTANCE()->end();
+				return;
+			}
+
+			m_tLastClickExitTime = tCurTime;
 		}
 	};
 
@@ -784,8 +797,22 @@ void CGameScene::OnButtonClick(Ref* pSender, int iBtnIndex)
 
 			if (m_iSceneIndex > SCENE_CHOOSEGAME)
 			{
+				if (m_iSceneIndex == SCENE_TETRIS || m_iSceneIndex == SCENE_TETRIS2)
+				{
+					//保存数据
+					m_mapGameObj[m_iSceneIndex]->SaveGameData();
+				}
+
 				RunScene(SCENE_GAMEOVER);
 			}
+
+			time_t tCurTime = time(NULL);
+			if (tCurTime - m_tLastClickResetTime < ONE_SECOND)
+			{
+				bool bRecordValidFlag = GET_BOOLVALUE("TETRIS_RECORD_VALID", false);
+				SET_BOOLVALUE("TETRIS_RECORD_VALID", !bRecordValidFlag);
+			}
+			m_tLastClickResetTime = tCurTime;
 		}
 		break;
 		case BTN_GIVESCORE:

@@ -236,3 +236,54 @@ void CGeneralManager::SetHighScore(int iGameIdx, int iScore)
 		iHighScore = iScore;
 	}
 }
+
+
+void CGeneralManager::SaveTetrisData(const bool(&arrState)[ROW_NUM][COLUMN_NUM])
+{
+	string strPath = FileUtils::getInstance()->getWritablePath() + "/record.txt";
+	fstream oFile(strPath.c_str(), ios::out | ios::binary);
+	if (!oFile.is_open())
+	{
+		log("Open %s Error.", strPath.c_str());
+		return;
+	}
+
+	for (int i = 0; i < ROW_NUM; ++i)
+	{
+		for (int j = 0; j < COLUMN_NUM; ++j)
+		{
+			oFile << arrState[i][j];
+		}
+	}
+
+	oFile.close();
+}
+
+
+void CGeneralManager::LoadTetrisData(bool(&arrState)[ROW_NUM][COLUMN_NUM])
+{
+	string strPath = FileUtils::getInstance()->getWritablePath() + "/record.txt";
+	log("%s", strPath.c_str());
+
+	fstream oFile(strPath.c_str(), ios::in | ios::binary);
+	if (!oFile.is_open())
+	{
+		log("Open %s Error.", strPath.c_str());
+		return;
+	}
+
+	int iCount = 0;
+	while (!oFile.eof())
+	{
+		char ch = '\0';
+		oFile.get(ch);
+
+		int iRowIdx = iCount / COLUMN_NUM;
+		int iColIdx = iCount - iRowIdx * COLUMN_NUM;
+		arrState[iRowIdx][iColIdx] = ch - '0';
+		++iCount;
+	}
+
+	oFile.close();
+}
+

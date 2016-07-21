@@ -303,6 +303,12 @@ void CFlappyBirdGame::OnFireBtnReleased()
 }
 
 
+void CFlappyBirdGame::SaveGameData()
+{
+	
+}
+
+
 //初始化数据、变量等
 void CFlappyBirdGame::InitData()
 {
