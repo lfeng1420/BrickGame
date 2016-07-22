@@ -116,8 +116,20 @@ private:
 
 		CHANGEBG_INTERVAL = 800,	//更改背景的间隔
 
-		ONE_SECOND = 1,				//1秒
+		CLICK_INTERVAL = 2000,		//2秒
 	};
+
+	enum TipType
+	{
+		TIP_INVALID,
+		TIP_EXIT,
+		TIP_SAVEOPEN,
+		TIP_SAVECLOSE,
+	};
+
+private:
+	//显示提示
+	void ShowTips(TipType enTipType);
 
 private:
 	Sprite* m_pArrBrick[ROW_NUM][COLUMN_NUM];			//Sprite数组
@@ -152,16 +164,20 @@ private:
 
 	Sprite* m_pBgSpr;									//背景图片
 
+	Sprite* m_pTipSpr;									//提示
+
 	MenuItemToggle* m_pStartBtn;						//Start Button
 
 	bool m_bGamePause;									//暂停标志
 
 	int m_iBgColor;										//当前背景颜色序号，0白色，>=1自定义
 
-	float m_iClickTime;									//Click love btn time, two:change the background with WP
+	double m_lfClickTime;								//Click love btn time, two:change the background with WP
 
-	time_t m_tLastClickExitTime;						//上一次点击退出时间
+	double m_lfClickExitTime;							//上一次点击退出时间
 
-	time_t m_tLastClickResetTime;						//上一次点击重置时间
+	double m_lfClickResetTime;							//上一次点击重置时间
+
+	TipType m_enTipType;								//当前提示类型
 };
 

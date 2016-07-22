@@ -189,7 +189,7 @@ private:
 
 		TANK_SELF_MOVE_INTERVAL = 55,				//我方坦克每次移动等待时间
 
-		TANK_SELF_FIRE_TIME = 800,					//每次发射子弹后间隔
+		TANK_SELF_FIRE_TIME = 300,					//每次发射子弹后间隔
 
 		BOOM_SHOWCOUNT = 16,						//闪烁显示爆炸效果次数
 
@@ -261,5 +261,7 @@ private:
 	TANK_DATA m_stBoss;							//boss数据
 
 	bool m_bBossFlag;							//是否开启BOSS阶段
+
+	double m_lfCurTime;							//当前毫秒
 };
 

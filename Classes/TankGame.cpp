@@ -321,6 +321,7 @@ void CTankGame::InitData()
 	m_fTankCreateTime = 0;
 	m_fSelfMoveTime = 0;
 	m_fWaitRefreshTime = 0;
+	m_lfCurTime = -1;
 
 	//爆炸显示计数
 	m_iShowBoomCount = 0;
@@ -343,7 +344,7 @@ void CTankGame::InitData()
 	m_stSelfTank.m_bDead = false;
 	m_stSelfTank.m_iCamp = CAMP_A;
 	m_stSelfTank.m_fFireWaitTime = 0;
-	m_stSelfTank.m_fFireMaxTime = TANK_SELF_FIRE_TIME - 50 * m_iSpeed;
+	m_stSelfTank.m_fFireMaxTime = TANK_SELF_FIRE_TIME - 20 * m_iSpeed;
 	m_stSelfTank.m_stPos.m_iRowIdx = ROW_NUM / 2 - 1;
 	m_stSelfTank.m_stPos.m_iColIdx = COLUMN_NUM / 2 - 1;
 	m_stSelfTank.m_iDirection = DIR_UP;
@@ -743,11 +744,17 @@ void CTankGame::OnFireBtnPressed()
 		return;
 	}
 
+	//记录此时毫秒数
+	double lfCurTime = GetMillSecond();
+	if (lfCurTime - m_lfCurTime >= m_stSelfTank.m_fFireMaxTime)
+	{
+		//创建子弹
+		CreateBullet(-1);
+		m_lfCurTime = lfCurTime;
+	}
+
 	//按钮音效
 	PLAY_EFFECT(EFFECT_CHANGE2);
-
-	//创建子弹
-	CreateBullet(-1);
 
 	//开启连发状态
 	m_bFireState = true;
@@ -906,7 +913,7 @@ bool CTankGame::SelfTankMove( float dt )
 }
 
 
-//敌方坦克发射子弹
+//坦克发射子弹
 bool CTankGame::TankFire(float dt)
 {
 	//刷新标记
@@ -927,7 +934,7 @@ bool CTankGame::TankFire(float dt)
 			bRefreshFlag = true;
 		}
 	}
-
+	
 	if (m_bBossFlag)
 	{
 		m_stBoss.m_fFireWaitTime += dt;
@@ -975,7 +982,7 @@ bool CTankGame::TankFire(float dt)
 			bRefreshFlag = true;
 		}
 	}
-
+	
 	return bRefreshFlag;
 }
 

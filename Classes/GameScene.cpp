@@ -11,7 +11,7 @@
 #include "TetrisGame.h"
 #include "FlappyBirdGame.h"
 
-CGameScene::CGameScene() : m_iSceneIndex(SCENE_GAMEOVER), m_tLastClickExitTime(0), m_tLastClickResetTime(0)
+CGameScene::CGameScene() : m_iSceneIndex(SCENE_GAMEOVER), m_lfClickExitTime(0), m_lfClickResetTime(0), m_enTipType(TIP_INVALID)
 {
 }
 
@@ -76,8 +76,8 @@ void CGameScene::InitData()
 	//初始化暂停标记
 	m_bGamePause = false;
 
-	//initialize the count of clicking 'love' button
-	m_iClickTime = -1;
+	//初始化点击时间
+	m_lfClickTime = -1;
 }
 
 
@@ -289,6 +289,12 @@ void CGameScene::InitUI()
 
 	//默认非暂停状态
 	m_pPauseSpr->setVisible(m_bGamePause);
+
+	//提示
+	m_pTipSpr = CREATE_SPRITEWITHNAME("exit.png");
+	m_pTipSpr->setPosition(m_visibleSize.width / 2, m_visibleSize.height / 2);
+	this->addChild(m_pTipSpr, 999);
+	m_pTipSpr->setVisible(false);
 }
 
 
@@ -416,7 +422,6 @@ void CGameScene::InitCotroller()
 	float fCurHeight = 0;
 	menu->setPosition(Vec2::ZERO);
 	this->addChild(menu);
-
 }
 
 
@@ -488,8 +493,8 @@ void CGameScene::CreateKeyListener()
 			EventKeyboard::KeyCode::KEY_ESCAPE == keyCode ||
 			EventKeyboard::KeyCode::KEY_BACKSPACE == keyCode)
 		{
-			time_t tCurTime = time(NULL);
-			if (tCurTime - m_tLastClickExitTime < ONE_SECOND)
+			double lfCurTime = GetMillSecond();
+			if (lfCurTime - m_lfClickExitTime <= CLICK_INTERVAL)
 			{
 				if (m_iSceneIndex == SCENE_TETRIS || m_iSceneIndex == SCENE_TETRIS2)
 				{
@@ -501,8 +506,27 @@ void CGameScene::CreateKeyListener()
 				return;
 			}
 
-			m_tLastClickExitTime = tCurTime;
+			m_lfClickExitTime = lfCurTime;
+
+			//显示退出提示
+			ShowTips(TIP_EXIT);
 		}
+
+#if CC_TARGET_PLATFORM == CC_PLATFORM_WP8
+		else if (EventKeyboard::KeyCode::KEY_PLAY == keyCode)
+		{
+			//显示退出提示
+			ShowTips(TIP_EXIT);
+		}
+		else if (EventKeyboard::KeyCode::KEY_ENTER == keyCode)
+		{
+			if (m_iSceneIndex == SCENE_TETRIS || m_iSceneIndex == SCENE_TETRIS2)
+			{
+				//保存数据
+				m_mapGameObj[m_iSceneIndex]->SaveGameData();
+			}
+		}
+#endif
 	};
 
 	Director::getInstance()->getEventDispatcher()->addEventListenerWithSceneGraphPriority(keyListener, this);
@@ -511,18 +535,6 @@ void CGameScene::CreateKeyListener()
 
 void CGameScene::update(float dt)
 {
-#if CC_TARGET_PLATFORM == CC_PLATFORM_WP8
-	if (m_iClickTime >= 0)
-	{
-		m_iClickTime += dt * 1000;
-		if (m_iClickTime > CHANGEBG_INTERVAL)
-		{
-			m_iClickTime = -1;
-			GLView::sharedOpenGLView()->OnGiveScore();
-		}
-	}
-#endif
-
 	m_mapGameObj[m_iSceneIndex]->Play(dt * 1000);
 }
 
@@ -806,28 +818,42 @@ void CGameScene::OnButtonClick(Ref* pSender, int iBtnIndex)
 				RunScene(SCENE_GAMEOVER);
 			}
 
-			time_t tCurTime = time(NULL);
-			if (tCurTime - m_tLastClickResetTime < ONE_SECOND)
+			double lfCurTime = GetMillSecond();
+			if (lfCurTime - m_lfClickResetTime <= CLICK_INTERVAL)
 			{
 				bool bRecordValidFlag = GET_BOOLVALUE("TETRIS_RECORD_VALID", false);
-				SET_BOOLVALUE("TETRIS_RECORD_VALID", !bRecordValidFlag);
+				bRecordValidFlag = !bRecordValidFlag;
+				SET_BOOLVALUE("TETRIS_RECORD_VALID", bRecordValidFlag);
+
+				//显示退出提示
+				ShowTips(bRecordValidFlag ? TIP_SAVEOPEN : TIP_SAVECLOSE);
+				
+				//重置时间
+				m_lfClickResetTime = 0;
+				return;
 			}
-			m_tLastClickResetTime = tCurTime;
+			m_lfClickResetTime = lfCurTime;
 		}
 		break;
 		case BTN_GIVESCORE:
 		{
 			PLAY_EFFECT(EFFECT_CHANGE2);
+
 #if CC_TARGET_PLATFORM == CC_PLATFORM_WP8
-			if (m_iClickTime < 0)
+			double lfCurTime = GetMillSecond();
+			if (m_lfClickTime > 0)
 			{
-				m_iClickTime = 0.1f;
+				if (lfCurTime - m_lfClickTime <= CHANGEBG_INTERVAL)
+				{
+					ChangeBGPic();
+				}
+				else
+				{
+					GLView::sharedOpenGLView()->OnGiveScore();
+				}
 			}
-			else if (m_iClickTime >= 0 && m_iClickTime < CHANGEBG_INTERVAL)
-			{
-				ChangeBGPic();
-				m_iClickTime = -1;
-			}
+
+			m_lfClickTime = lfCurTime;
 #else
 			ChangeBGPic();
 #endif
@@ -840,6 +866,40 @@ void CGameScene::OnButtonClick(Ref* pSender, int iBtnIndex)
 void CGameScene::ChangePlayState(bool bPlay)
 {
 	m_pStartBtn->setSelectedIndex(bPlay ? 1 : 0);
+}
+
+
+void CGameScene::ShowTips(TipType enTipType)
+{
+	if (m_enTipType != enTipType)
+	{
+		m_enTipType = enTipType;
+		switch (m_enTipType)
+		{
+		case CGameScene::TIP_EXIT:
+			m_pTipSpr->setSpriteFrame(GET_SPRITEFRAME("exit.png"));
+			break;
+
+		case CGameScene::TIP_SAVEOPEN:
+			m_pTipSpr->setSpriteFrame(GET_SPRITEFRAME("saveopen.png"));
+			break;
+
+		case CGameScene::TIP_SAVECLOSE:
+			m_pTipSpr->setSpriteFrame(GET_SPRITEFRAME("saveclose.png"));
+			break;
+
+		default:
+			break;
+		}
+	}
+
+	//先停止所有动作
+	m_pTipSpr->stopAllActions();
+
+	m_pTipSpr->setVisible(true);
+	m_pTipSpr->runAction(
+		Sequence::create(FadeIn::create(0.5f), DelayTime::create(1.5f), FadeOut::create(0.5f), nullptr)
+	);
 }
 
 

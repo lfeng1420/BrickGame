@@ -262,3 +262,6 @@ void ClearInvalidNums();
 
 //添加无效的数字
 void AddInvalidNum(int iNum);
+
+//获取毫秒
+double GetMillSecond();
