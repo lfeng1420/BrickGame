@@ -56,7 +56,7 @@ private:
 private:
 	enum
 	{
-		PILLAR_COLUMN_DISTANCE = 5,		//柱子之间间隔6列
+		PILLAR_COLUMN_DISTANCE = 6,		//柱子之间间隔6列
 
 		PILLAR_MAXCOUNT = 3,			//柱子的最大数量
 
@@ -73,6 +73,8 @@ private:
 		GAMEOVER_WAITTIME = 2000,		//游戏结束等待时间
 
 		PILLAR_PASS_ADD_SCORE = 10,		//通过一根柱子加10分
+
+		UPDATE_SPEED_NEED_SCORE = 500,	//更新速度时所需分数
 	};
 
 

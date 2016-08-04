@@ -27,6 +27,7 @@ void CFlappyBirdGame::Init()
 	//更新界面，分数、等级和生命
 	m_pGameScene->UpdateScore(m_iScore, false);
 	m_pGameScene->UpdateLevel(m_iLevel);
+	m_pGameScene->UpdateSpeed(m_iSpeed);
 	m_pGameScene->UpdateSmallBricks();
 
 	InitData();
@@ -78,7 +79,7 @@ void CFlappyBirdGame::Play(float dt)
 bool CFlappyBirdGame::PillarMove(float dt)
 {
 	m_fPillarMoveTime += dt;
-	if (m_fPillarMoveTime < PILLAR_MOVE_INTERVAL - m_iSpeed * 20)
+	if (m_fPillarMoveTime < PILLAR_MOVE_INTERVAL - m_iSpeed * 30)
 	{
 		return false;
 	}
@@ -130,7 +131,8 @@ void CFlappyBirdGame::CreatePillar()
 //鸟移动
 bool CFlappyBirdGame::BirdMove(float dt)
 {
-	float fInterval = m_fBirdTotalTime / 2.0f;
+	const float fFactor = 1.5f;
+	float fInterval = m_fBirdTotalTime / fFactor;
 	//fInterval *= m_bImproveSpeed ? 0.4f : 1;
 
 	//时间更新
@@ -142,7 +144,7 @@ bool CFlappyBirdGame::BirdMove(float dt)
 
 	//重置
 	m_fBirdMoveTime = 0;
-	m_fBirdTotalTime /= 2.0f;
+	m_fBirdTotalTime /= fFactor;
 
 	//下降行数
 	int iDownColCount = 1;
@@ -187,6 +189,14 @@ void CFlappyBirdGame::UpdateGameState()
 				//更新分数
 				m_iScore += PILLAR_PASS_ADD_SCORE;
 				m_pGameScene->UpdateScore(m_iScore);
+
+				//设置速度（仅在速度大于当前速度时更新）
+				int iSpeed = m_iScore / UPDATE_SPEED_NEED_SCORE;
+				if (m_iSpeed < iSpeed)
+				{
+					m_iSpeed = iSpeed;
+					m_pGameScene->UpdateSpeed(m_iSpeed);
+				}
 			}
 		}
 	}

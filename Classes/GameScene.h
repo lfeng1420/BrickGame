@@ -114,9 +114,11 @@ private:
 
 		BGPIC_COUNT = 2,			//背景图片数量
 
-		CHANGEBG_INTERVAL = 800,	//更改背景的间隔
+		CHANGEBG_INTERVAL = 1000,	//更改背景的间隔
 
 		CLICK_INTERVAL = 2000,		//2秒
+
+		BTN_HEIGHT = 95,			//按钮高度
 	};
 
 	enum TipType
@@ -172,7 +174,7 @@ private:
 
 	int m_iBgColor;										//当前背景颜色序号，0白色，>=1自定义
 
-	double m_lfClickTime;								//Click love btn time, two:change the background with WP
+	double m_fClickTime;								//Click love btn time, two:change the background with WP
 
 	double m_lfClickExitTime;							//上一次点击退出时间
 

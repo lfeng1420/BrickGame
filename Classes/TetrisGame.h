@@ -77,6 +77,9 @@ public:
 	//更新自己的显示状态
 	bool UpdateSelfState(float dt);
 
+	//检查上方和下方是否有方块
+	bool CheckUpAndDownBricks();
+
 private:
 	enum 
 	{

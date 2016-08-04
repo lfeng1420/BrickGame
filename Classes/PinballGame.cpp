@@ -220,10 +220,6 @@ void CPinballGame::OnFireBtnReleased()
 
 void CPinballGame::InitData()
 {
-	//初始化球每次移动的距离
-	m_stBallDis.m_iRowIdx = -1;
-	m_stBallDis.m_iColIdx = 1;
-
 	int iStartRowIdx = 2 + m_iLevel / 2;
 	for (int i = 0; i < ROW_NUM; ++i)
 	{
@@ -248,6 +244,10 @@ void CPinballGame::InitData()
 			}
 		}
 	}
+
+	//初始化球每次移动的距离
+	m_stBallDis.m_iRowIdx = -1;
+	m_stBallDis.m_iColIdx = (Random(0, 2) == 1 ? -1 : 1);
 
 	//初始化左右移状态
 	bLeftMoveFlag = false;

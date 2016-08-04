@@ -124,9 +124,9 @@ const bool TETRIS_SHAPE[][4][4] =
 		{ false, false, false, false },
 	},
 	{
-		{true, false, false, false},	//1000
 		{ true, false, false, false },	//1000
-		{ false, false, false, false },	
+		{ true, false, false, false },	//1000
+		{ true, false, false, false },
 		{ false, false, false, false },
 	},
 	{
@@ -140,20 +140,26 @@ const bool TETRIS_SHAPE[][4][4] =
 		{ false, true, true, false },	//0110
 		{ false, true, true, false },	//0110
 		{ true, false, false, true },	//1001
+	},
+	{
+		{ true, false, false, false },	//1000
+		{ false, false, false, false },	//0000
+		{ false, false, false, false },
+		{ false, false, false, false },
 	},
 };
 
 //偏移调整
-const int TETRIS_COLOFFSET[] = { 0, 1, 0, 1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1, 1, 0, 1, 1, 0 };
+const int TETRIS_COLOFFSET[] = { 0, 1, 0, 1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1, 1, 0, 1, 1, 0, 0 };
 
 //纵向长度
-const int TETRIS_ROWCOUNT[] = { 2, 3, 2, 3, 2, 3, 2, 3, 3, 2, 3, 2, 3, 2, 3, 2, 2, 4, 1, 2, 2, 4 };
+const int TETRIS_ROWCOUNT[] = { 2, 3, 2, 3, 2, 3, 2, 3, 3, 2, 3, 2, 3, 2, 3, 2, 2, 4, 1, 3, 2, 4, 1 };
 
 //横向长度
-const int TETRIS_COLCOUNT[] = { 3, 2, 3, 2, 3, 2, 3, 2, 2, 3, 2, 3, 2, 3, 2, 3, 2, 1, 4, 1, 1, 4 };
+const int TETRIS_COLCOUNT[] = { 3, 2, 3, 2, 3, 2, 3, 2, 2, 3, 2, 3, 2, 3, 2, 3, 2, 1, 4, 1, 1, 4, 1 };
 
 //同类型开始索引
-const int TETRIS_TYPE_START_IDX[] = { 0, 2, 4, 8, 12, 16, 17, 19, 20, 21 };
+const int TETRIS_TYPE_START_IDX[] = { 0, 2, 4, 8, 12, 16, 17, 19, 20, 21, 22 };
 
 
 CTetrisGame::CTetrisGame(CGameScene* pGameScene, bool bMode) : CSceneBase(pGameScene), m_bExtraMode(bMode)
@@ -172,12 +178,9 @@ void CTetrisGame::Init()
 	m_iSpeed = GET_INTVALUE("SPEED", 0);
 	m_iLevel = GET_INTVALUE("LEVEL", 0);
 
-	//初始化当前分数
-	m_iScore = 0;
-
-	//更新界面，分数、等级和生命
-	m_pGameScene->UpdateScore(m_iScore, false);
+	//更新等级和速度
 	m_pGameScene->UpdateLevel(m_iLevel);
+	m_pGameScene->UpdateSpeed(m_iSpeed);
 
 	InitData();
 }
@@ -214,31 +217,31 @@ void CTetrisGame::Play(float dt)
 
 bool CTetrisGame::GetBrickState(int iRowIndex, int iColIndex)
 {
+	bool bBrickState = m_arrBrick[iRowIndex][iColIndex];
+
 	if (iRowIndex >= m_stCurPos.m_iRowIdx && iRowIndex < m_stCurPos.m_iRowIdx + 4
 		&& iColIndex >= m_stCurPos.m_iColIdx && iColIndex < m_stCurPos.m_iColIdx + 4)
 	{
 		int iActRowIdx = iRowIndex - m_stCurPos.m_iRowIdx;
 		int iActColIdx = iColIndex - m_stCurPos.m_iColIdx;
 
-		//该位置是否被其他方块占用
-		if (m_arrBrick[iRowIndex][iColIndex])
-		{
-			return true;
-		}
-
 		//如果开启了闪烁效果，则需要根据自身状态决定是否显示
 		bool bState = TETRIS_SHAPE[m_iCurShape][iActRowIdx][iActColIdx];
 		if (m_bFlashFlag)
 		{
-			bState = m_bSelfShowFlag && bState;
+			if (iActRowIdx < TETRIS_ROWCOUNT[m_iCurShape] && iActColIdx < TETRIS_COLCOUNT[m_iCurShape])
+			{
+				bState = m_bSelfShowFlag && bState;
+				return bState;
+			}
 		}
+		else
+		{
+			return bState || bBrickState;
+		}
+	}
 
-		return bState;
-	}
-	else
-	{
-		return m_arrBrick[iRowIndex][iColIndex];
-	}
+	return bBrickState;
 }
 
 
@@ -388,12 +391,19 @@ void CTetrisGame::InitData()
 		}
 	}
 
+	//初始化分数
+	m_iScore = 0;
+
 	//加载存档
 	bool bRecordValidFlag = GET_BOOLVALUE("TETRIS_RECORD_VALID", false);
 	if (bRecordValidFlag)
 	{
 		CGeneralManager::getInstance()->LoadTetrisData(m_arrBrick);
+		m_iScore = GET_INTVALUE("SCORE_RECORD", 0);
 	}
+
+	//更新显示分数
+	m_pGameScene->UpdateScore(m_iScore, false);
 
 	//随机下一个方块类型
 	m_iNextShape = Random(0, GetShapeCount());
@@ -505,12 +515,14 @@ bool CTetrisGame::BrickMove(float dt)
 		if (!CheckBrickPos(m_iCurShape, iNextRowIdx, iNextColIdx))
 		{
 			//处理非特殊方块
-			if (m_iCurShape < 19)
+			if (m_iCurShape < 19 || 
+				(m_iCurShape == 22 && (m_stCurPos.m_iRowIdx != ROW_NUM - 1 || (m_stCurPos.m_iRowIdx == ROW_NUM - 1 && CheckUpAndDownBricks())))
+				)
 			{
 				//已无法再往下移动或已到达最后一行，保存当前方块
-				for (int i = 0; i < 4; ++i)
+				for (int i = 0; i < 4 && m_stCurPos.m_iRowIdx + i < ROW_NUM; ++i)
 				{
-					for (int j = 0; j < 4; ++j)
+					for (int j = 0; j < 4 && m_stCurPos.m_iColIdx + j < COLUMN_NUM; ++j)
 					{
 						if (TETRIS_SHAPE[m_iCurShape][i][j])
 						{
@@ -549,6 +561,7 @@ bool CTetrisGame::BrickMove(float dt)
 
 			//产生新的方块
 			RandNewShape();
+
 			return true;
 		}
 	}
@@ -571,6 +584,19 @@ bool CTetrisGame::CheckBrickPos(int iShapeIdx, int iSrcRowIdx, int iSrcColIdx)
 	if (iSrcColIdx > ROW_NUM - TETRIS_COLCOUNT[iShapeIdx])
 	{
 		return false;
+	}
+
+	//特殊方块处理
+	if (iShapeIdx == 22)
+	{
+		int iCurRowIdx = m_stCurPos.m_iRowIdx;
+		int iCurColIdx = m_stCurPos.m_iColIdx;
+		if (CheckUpAndDownBricks() && !m_arrBrick[iCurRowIdx][iCurColIdx] && m_arrBrick[iSrcRowIdx][iSrcColIdx])
+		{
+			return false;
+		}
+
+		return true;
 	}
 
 	for (int i = 0; i < 4; ++i)
@@ -674,7 +700,7 @@ void CTetrisGame::DeleteSingleLine(int iRowIdx)
 int CTetrisGame::GetShapeCount()
 {
 	int iCount = sizeof(TETRIS_SHAPE) / sizeof(bool) / 16;
-	return (m_bExtraMode ? iCount : iCount - 3);
+	return (m_bExtraMode ? iCount : iCount - 4);
 }
 
 
@@ -717,6 +743,38 @@ bool CTetrisGame::UpdateSelfState(float dt)
 }
 
 
+bool CTetrisGame::CheckUpAndDownBricks()
+{
+	bool bValidFlag = false;
+	int iColIdx = m_stCurPos.m_iColIdx;
+	for (int i = 0; i < m_stCurPos.m_iRowIdx; ++i)
+	{
+		if (m_arrBrick[i][iColIdx])
+		{
+			bValidFlag = true;
+			break;
+		}
+	}
+
+	//如果上方都没有有效的方块，则返回false
+	if (!bValidFlag)
+	{
+		return false;
+	}
+
+	for (int i = m_stCurPos.m_iRowIdx + 1; i < ROW_NUM; ++i)
+	{
+		if (m_arrBrick[i][iColIdx])
+		{
+			bValidFlag = true;
+			break;
+		}
+	}
+
+	return bValidFlag;
+}
+
+
 void CTetrisGame::SaveGameData()
 {
 	//仅在非结束状态下保存数据
@@ -729,4 +787,6 @@ void CTetrisGame::SaveGameData()
 
 	//保存
 	CGeneralManager::getInstance()->SaveTetrisData(m_arrBrick);
+	//保存分数
+	SET_INTVALUE("SCORE_RECORD", m_iScore);
 }

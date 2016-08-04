@@ -40,6 +40,13 @@ private:
 		bool m_bValid;			//是否有效
 	};
 
+	enum OBJECT_TYPE
+	{
+		TYPE_BOSS,
+		TYPE_TANK,
+		TYPE_BULLET,
+	};
+
 	//struct BOSS_DATA
 	//{
 	//	bool m_bDead;			//是否死亡
@@ -135,7 +142,7 @@ private:
 	bool GetNextPos(int iTankIdx, POSITION& stOutPos);
 
 	//获取下一个位置
-	bool GetNextPos(const POSITION& stCurPos, int iDirection, POSITION& stOutPos, bool bTankFlag = true);
+	bool GetNextPos(const POSITION& stCurPos, int iDirection, POSITION& stOutPos, OBJECT_TYPE enType);
 
 	//我方坦克移动
 	bool SelfTankMove(float dt);
@@ -170,6 +177,12 @@ private:
 	//等待移动到底部中间
 	bool WaitToMoveBottomCenter(float dt, bool& bDoneFlag);
 
+	//我方标记闪烁
+	void SelfFlagFlash(float dt);
+
+	//获取标记所在位置
+	bool GetFlagPos(POSITION& stPos);
+
 private:
 	enum
 	{
@@ -189,7 +202,7 @@ private:
 
 		TANK_SELF_MOVE_INTERVAL = 55,				//我方坦克每次移动等待时间
 
-		TANK_SELF_FIRE_TIME = 300,					//每次发射子弹后间隔
+		TANK_SELF_FIRE_TIME = 400,					//每次发射子弹后间隔
 
 		BOOM_SHOWCOUNT = 16,						//闪烁显示爆炸效果次数
 
@@ -203,9 +216,11 @@ private:
 
 		TANK_CREATE_MAXCOUNT = 30,					//每一个等级坦克创建最大数量
 
-		BOSS_FIRE_MIN_INTERVAL = 600,				//boss发射子弹最小时间间隔
+		BOSS_FIRE_MIN_INTERVAL = 1000,				//boss发射子弹最小时间间隔
 
-		BOSS_FIRE_MAX_INTERVAL = 1300,				//boss发射子弹最大时间间隔
+		BOSS_FIRE_MAX_INTERVAL = 2000,				//boss发射子弹最大时间间隔
+
+		TANK_SELF_FLAG_FLASH_INTERVAL = 100,		//100毫秒刷新一次
 	};
 
 	//阵营
@@ -214,6 +229,12 @@ private:
 		CAMP_NONE,
 		CAMP_A,
 		CAMP_B,
+	};
+
+	enum TANK_INDEX
+	{
+		TANK_BOSS = -2,
+		TANK_SELF = -1,
 	};
 
 	typedef vector<BULLET_DATA> TVEC_BULLET;
@@ -263,5 +284,9 @@ private:
 	bool m_bBossFlag;							//是否开启BOSS阶段
 
 	double m_lfCurTime;							//当前毫秒
+
+	double m_lfSelfFlashTime;					//我方坦克标记闪烁时间
+
+	bool m_bSelfFlagVisible;					//我方标记显示状态
 };
 

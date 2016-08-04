@@ -11,6 +11,9 @@
 #include "TetrisGame.h"
 #include "FlappyBirdGame.h"
 
+//控制按钮最大缩放倍数
+const float FLOAT_CONTROLLER_SCALE_MAX = 1.72f;
+
 CGameScene::CGameScene() : m_iSceneIndex(SCENE_GAMEOVER), m_lfClickExitTime(0), m_lfClickResetTime(0), m_enTipType(TIP_INVALID)
 {
 }
@@ -77,7 +80,7 @@ void CGameScene::InitData()
 	m_bGamePause = false;
 
 	//初始化点击时间
-	m_lfClickTime = -1;
+	m_fClickTime = -1;
 }
 
 
@@ -300,61 +303,6 @@ void CGameScene::InitUI()
 
 void CGameScene::InitCotroller()
 {
-	//剩余高度，用于调整控制按钮位置
-	float fHeight = m_visibleSize.height - BRICK_HEIGHT * ROW_NUM;
-
-	float fBtnScale = 1.45f;
-	//float fBtnPadding = 30 * fBtnScale;
-
-	//上
-	Button* pUpBtn = Button::create("btn_0.png", "btn_1.png");
-	pUpBtn->setScale(fBtnScale);
-	pUpBtn->addTouchEventListener(CC_CALLBACK_2(CGameScene::OnButtonEvent, this, BTN_UP));
-	Size upBtnSize = pUpBtn->getContentSize() * fBtnScale;
-
-	//右
-	Button* pRightBtn = Button::create("btn_0.png", "btn_1.png");
-	pRightBtn->setScale(fBtnScale);
-	pRightBtn->setRotation(90);
-	pRightBtn->addTouchEventListener(CC_CALLBACK_2(CGameScene::OnButtonEvent, this, BTN_RIGHT));
-	Size rightBtnSize = pRightBtn->getContentSize() * fBtnScale;
-
-	//下
-	Button* pDownBtn = Button::create("btn_0.png", "btn_1.png");
-	pDownBtn->setScale(fBtnScale);
-	pDownBtn->setRotation(180);
-	pDownBtn->addTouchEventListener(CC_CALLBACK_2(CGameScene::OnButtonEvent, this, BTN_DOWN));
-	Size downBtnSize = pDownBtn->getContentSize() * fBtnScale;
-
-	//左
-	Button* pLeftBtn = Button::create("btn_0.png", "btn_1.png");
-	pLeftBtn->setScale(fBtnScale);
-	pLeftBtn->setRotation(-90);
-	pLeftBtn->addTouchEventListener(CC_CALLBACK_2(CGameScene::OnButtonEvent, this, BTN_LEFT));
-	Size leftBtnSize = pLeftBtn->getContentSize() * fBtnScale;
-
-	//Fire
-	float fFireScale = fBtnScale - 0.08f;
-	Button* pFireBtn = Button::create("fire_0.png", "fire_1.png");
-	pFireBtn->setScale(fFireScale);
-	pFireBtn->addTouchEventListener(CC_CALLBACK_2(CGameScene::OnButtonEvent, this, BTN_FIRE));
-	Size fireBtnSize = pFireBtn->getContentSize() * fFireScale;
-
-	//设置位置
-	float fTopPosY = fHeight - (fHeight - upBtnSize.height * 2) * 0.7f / 3;
-	pLeftBtn->setPosition(Vec2(upBtnSize.height * 0.7f + 4.0f, fTopPosY - upBtnSize.height));
-	pRightBtn->setPosition(Vec2(upBtnSize.height * 1.7f - 4.0f, fTopPosY - upBtnSize.height));
-	pDownBtn->setPosition(Vec2(upBtnSize.height * 1.2f, fTopPosY - upBtnSize.height * 1.5f + 4.0f));
-	pUpBtn->setPosition(Vec2(upBtnSize.height * 1.2f, fTopPosY - upBtnSize.height / 2 - 4.0f));
-	pFireBtn->setPosition(Vec2(m_visibleSize.width - upBtnSize.height * 0.4f - fireBtnSize.width / 2, fTopPosY - upBtnSize.height));
-	this->addChild(pLeftBtn);
-	this->addChild(pRightBtn);
-	this->addChild(pDownBtn);
-	this->addChild(pUpBtn);
-	this->addChild(pFireBtn);
-
-	fTopPosY -= upBtnSize.height * 2;
-
 	//开始
 	float fSpriteScale = 0.38f;
 	m_pStartBtn = MenuItemToggle::createWithCallback(
@@ -398,11 +346,6 @@ void CGameScene::InitCotroller()
 	resetBtn->setScale(fSpriteScale);
 	Size resetBtnSize = resetBtn->getContentSize() * fSpriteScale;
 
-	//底部按钮高度
-	fHeight = (fTopPosY - soundBtnSize.height) / 2 + soundBtnSize.height / 2;
-	//按钮间距
-	float fBtnPadding = soundBtnSize.width * 1.2f;
-
 	//额外功能
 	auto extremeBtn = MenuItemSprite::create(
 		Sprite::create("star.png"),
@@ -412,16 +355,88 @@ void CGameScene::InitCotroller()
 	extremeBtn->setScale(fSpriteScale);
 	Size themeBtnSize = extremeBtn->getContentSize() * fSpriteScale;
 
+	//底部按钮高度
+	//fHeight = (fTopPosY - soundBtnSize.height) / 2 + soundBtnSize.height / 2;
+	//按钮间距
+	float fBtnPadding = soundBtnSize.width * 1.2f;
+
 	//位置
-	soundBtn->setPosition(m_visibleSize.width / 2 - fBtnPadding / 2 - soundBtnSize.width / 2, fHeight);
-	m_pStartBtn->setPosition(m_visibleSize.width / 2 - fBtnPadding * 3 / 2 - soundBtnSize.width - startBtnSize.width / 2, fHeight);
-	resetBtn->setPosition(m_visibleSize.width / 2 + fBtnPadding / 2 + resetBtnSize.width / 2, fHeight);
-	extremeBtn->setPosition(m_visibleSize.width / 2 + fBtnPadding * 3 / 2 + resetBtnSize.width + themeBtnSize.width / 2, fHeight);
+	float fSmallBtnTopHeight = soundBtnSize.height * 1.3f;
+	float fSmallBtnCenterHeight = fSmallBtnTopHeight - soundBtnSize.height / 3;
+	soundBtn->setPosition(m_visibleSize.width / 2 - fBtnPadding / 2 - soundBtnSize.width / 2, fSmallBtnCenterHeight);
+	m_pStartBtn->setPosition(m_visibleSize.width / 2 - fBtnPadding * 3 / 2 - soundBtnSize.width - startBtnSize.width / 2, fSmallBtnCenterHeight);
+	resetBtn->setPosition(m_visibleSize.width / 2 + fBtnPadding / 2 + resetBtnSize.width / 2, fSmallBtnCenterHeight);
+	extremeBtn->setPosition(m_visibleSize.width / 2 + fBtnPadding * 3 / 2 + resetBtnSize.width + themeBtnSize.width / 2, fSmallBtnCenterHeight);
 
 	auto menu = Menu::create(soundBtn, m_pStartBtn, resetBtn, extremeBtn, nullptr);
-	float fCurHeight = 0;
 	menu->setPosition(Vec2::ZERO);
 	this->addChild(menu);
+
+
+	//剩余高度，用于调整控制按钮位置
+	float fHeight = m_visibleSize.height - BRICK_HEIGHT * ROW_NUM;
+
+	//按钮缩放大小
+	fBtnPadding = 2.0f;
+	float fControllerPadding = 10;
+	float fBtnScale = (fHeight - fSmallBtnTopHeight - fControllerPadding * 2) * 1.0f / 2 / BTN_HEIGHT;
+	log("fBtnScale=%f  fRemainHeight=%f", fBtnScale, fHeight - fSmallBtnTopHeight);
+	
+	//重新调整间距
+	if (fBtnScale > FLOAT_CONTROLLER_SCALE_MAX)
+	{
+		fBtnScale = FLOAT_CONTROLLER_SCALE_MAX;
+		fControllerPadding = (fHeight - fSmallBtnTopHeight - FLOAT_CONTROLLER_SCALE_MAX * BTN_HEIGHT * 2) / 2;
+		log("fControllerPadding=%f", fControllerPadding);
+	}
+
+	float fTopPosY = fHeight - fControllerPadding;
+
+	//上
+	Button* pUpBtn = Button::create("btn_0.png", "btn_1.png");
+	pUpBtn->setScale(fBtnScale);
+	pUpBtn->addTouchEventListener(CC_CALLBACK_2(CGameScene::OnButtonEvent, this, BTN_UP));
+	Size upBtnSize = pUpBtn->getContentSize() * fBtnScale;
+
+	//右
+	Button* pRightBtn = Button::create("btn_0.png", "btn_1.png");
+	pRightBtn->setScale(fBtnScale);
+	pRightBtn->setRotation(90);
+	pRightBtn->addTouchEventListener(CC_CALLBACK_2(CGameScene::OnButtonEvent, this, BTN_RIGHT));
+	Size rightBtnSize = pRightBtn->getContentSize() * fBtnScale;
+
+	//下
+	Button* pDownBtn = Button::create("btn_0.png", "btn_1.png");
+	pDownBtn->setScale(fBtnScale);
+	pDownBtn->setRotation(180);
+	pDownBtn->addTouchEventListener(CC_CALLBACK_2(CGameScene::OnButtonEvent, this, BTN_DOWN));
+	Size downBtnSize = pDownBtn->getContentSize() * fBtnScale;
+
+	//左
+	Button* pLeftBtn = Button::create("btn_0.png", "btn_1.png");
+	pLeftBtn->setScale(fBtnScale);
+	pLeftBtn->setRotation(-90);
+	pLeftBtn->addTouchEventListener(CC_CALLBACK_2(CGameScene::OnButtonEvent, this, BTN_LEFT));
+	Size leftBtnSize = pLeftBtn->getContentSize() * fBtnScale;
+
+	//Fire
+	float fFireScale = 1.37f;
+	Button* pFireBtn = Button::create("fire_0.png", "fire_1.png");
+	pFireBtn->setScale(fFireScale);
+	pFireBtn->addTouchEventListener(CC_CALLBACK_2(CGameScene::OnButtonEvent, this, BTN_FIRE));
+	Size fireBtnSize = pFireBtn->getContentSize() * fFireScale;
+
+	//设置位置
+	pLeftBtn->setPosition(Vec2(upBtnSize.height * 0.6f + fBtnPadding, fTopPosY - upBtnSize.height));
+	pRightBtn->setPosition(Vec2(upBtnSize.height * 1.6f - fBtnPadding, fTopPosY - upBtnSize.height));
+	pDownBtn->setPosition(Vec2(upBtnSize.height * 1.1f, fTopPosY - upBtnSize.height * 1.5f + fBtnPadding));
+	pUpBtn->setPosition(Vec2(upBtnSize.height * 1.1f, fTopPosY - upBtnSize.height * 0.5f - fBtnPadding));
+	pFireBtn->setPosition(Vec2(m_visibleSize.width - fireBtnSize.width * 0.8f, fTopPosY - upBtnSize.height));
+	this->addChild(pLeftBtn);
+	this->addChild(pRightBtn);
+	this->addChild(pDownBtn);
+	this->addChild(pUpBtn);
+	this->addChild(pFireBtn);
 }
 
 
@@ -535,6 +550,18 @@ void CGameScene::CreateKeyListener()
 
 void CGameScene::update(float dt)
 {
+#if CC_TARGET_PLATFORM == CC_PLATFORM_WP8 
+	if (m_fClickTime >= 0)
+ 	{
+		m_fClickTime += dt * 1000;
+		if (m_fClickTime > CHANGEBG_INTERVAL)
+		{
+			m_fClickTime = -1;
+ 			GLView::sharedOpenGLView()->OnGiveScore();
+ 		}
+ 	}
+#endif
+
 	m_mapGameObj[m_iSceneIndex]->Play(dt * 1000);
 }
 
@@ -839,24 +866,19 @@ void CGameScene::OnButtonClick(Ref* pSender, int iBtnIndex)
 		{
 			PLAY_EFFECT(EFFECT_CHANGE2);
 
-#if CC_TARGET_PLATFORM == CC_PLATFORM_WP8
-			double lfCurTime = GetMillSecond();
-			if (m_lfClickTime > 0)
-			{
-				if (lfCurTime - m_lfClickTime <= CHANGEBG_INTERVAL)
-				{
-					ChangeBGPic();
-				}
-				else
-				{
-					GLView::sharedOpenGLView()->OnGiveScore();
-				}
-			}
-
-			m_lfClickTime = lfCurTime;
-#else
-			ChangeBGPic();
-#endif
+#if CC_TARGET_PLATFORM == CC_PLATFORM_WP8 
+ 			if (m_fClickTime < 0) 
+ 			{ 
+				m_fClickTime = 0.1f;
+ 			} 
+			else if (m_fClickTime >= 0 && m_fClickTime < CHANGEBG_INTERVAL)
+ 			{ 
+ 				ChangeBGPic(); 
+				m_fClickTime = -1;
+ 			} 
+#else 
+ 			ChangeBGPic(); 
+#endif 
 		}
 		break;
 	}

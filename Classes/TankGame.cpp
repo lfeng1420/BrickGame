@@ -95,6 +95,12 @@ void CTankGame::Play(float dt)
 		}
 	}
 
+	//刷新标记显示状态
+	if (m_enGameState != GAMESTATE_OVER)
+	{
+		SelfFlagFlash(dt);
+	}
+
 	if (GAMESTATE_OVER == m_enGameState)
 	{
 		//时间更新
@@ -206,7 +212,7 @@ void CTankGame::Play(float dt)
 			//随机发射子弹时间间隔
 			m_stBoss.m_fFireMaxTime = Random(BOSS_FIRE_MIN_INTERVAL / 10 - m_iSpeed, BOSS_FIRE_MAX_INTERVAL / 10 - 3 * m_iSpeed) * 10;
 			m_stBoss.m_fFireWaitTime = 0;
-			m_stBoss.m_iMaxStep = 15 + m_iSpeed;	//击中最大次数
+			m_stBoss.m_iMaxStep = 12 + m_iSpeed;	//击中最大次数
 			m_stBoss.m_iCurStep = 0;
 			
 			//方向只有左右
@@ -241,6 +247,15 @@ bool CTankGame::GetBrickState(int iRowIndex, int iColIndex)
 	POSITION stTargetPos;
 	stTargetPos.m_iRowIdx = iRowIndex;
 	stTargetPos.m_iColIdx = iColIndex;
+
+	//获取标记所在位置
+	POSITION stFlagPos;
+	GetFlagPos(stFlagPos);
+	if (stTargetPos == stFlagPos)
+	{
+		//log("[Show] m_bSelfFlagVisible=%d", m_bSelfFlagVisible);
+		return m_bSelfFlagVisible;
+	}
 
 	//自己
 	if (DrawTank(m_stSelfTank.m_stPos, m_bBossFlag ? DIR_UP : m_stSelfTank.m_iDirection, stTargetPos))
@@ -316,7 +331,7 @@ SCENE_INDEX CTankGame::GetSceneType()
 //初始化数据
 void CTankGame::InitData()
 {
-	//初始化坦克移动等待时间
+	//初始化时间相关
 	m_fTankMoveTime = 0;
 	m_fTankCreateTime = 0;
 	m_fSelfMoveTime = 0;
@@ -330,6 +345,10 @@ void CTankGame::InitData()
 
 	//爆炸显示状态
 	m_bShowBoom = true;
+
+	//标记显示状态
+	m_bSelfFlagVisible = false;
+	m_lfSelfFlashTime = 0;
 
 	//坦克创建数量初始化
 	m_iTankCreateCount = 0;
@@ -484,8 +503,9 @@ bool CTankGame::DrawTank(const POSITION& stPos, int iDirection, const POSITION& 
 {
 	for (int j = 0; j < 12; j += 2)
 	{
-		if (stPos.m_iRowIdx + TANK_POS_LIST[iDirection][j] == stTargetPos.m_iRowIdx
-			&& stPos.m_iColIdx + TANK_POS_LIST[iDirection][j + 1] == stTargetPos.m_iColIdx)
+		int iNewRowIdx = stPos.m_iRowIdx + TANK_POS_LIST[iDirection][j];
+		int iNewColIdx = stPos.m_iColIdx + TANK_POS_LIST[iDirection][j + 1];
+		if (iNewRowIdx == stTargetPos.m_iRowIdx && iNewColIdx == stTargetPos.m_iColIdx)
 		{
 			return true;
 		}
@@ -542,13 +562,13 @@ bool CTankGame::TankMove(float dt)
 	{
 		//获取下一个位置，检查是否有效
 		POSITION stNextPos;
-		if (!GetNextPos(-2, stNextPos))
+		if (!GetNextPos(TANK_BOSS, stNextPos))
 		{
 			//更换方向
 			m_stBoss.m_iDirection = (m_stBoss.m_iDirection == DIR_LEFT ? DIR_RIGHT : DIR_LEFT);
 			
 			//重新获取一次下一个位置，理论上不会失败
-			if (!GetNextPos(-2, stNextPos))
+			if (!GetNextPos(TANK_BOSS, stNextPos))
 			{
 				log("%s GetNextPos return false!");
 				return false;
@@ -613,13 +633,18 @@ void CTankGame::UpdateTankPos(int iTankIdx)
 //获取下一个位置
 bool CTankGame::GetNextPos(int iTankIdx, POSITION& stOutPos)
 {
-	const TANK_DATA& refData = (iTankIdx >= 0 ? m_arrTank[iTankIdx] : (iTankIdx == -1 ? m_stSelfTank : m_stBoss));
-	return GetNextPos(refData.m_stPos, refData.m_iDirection, stOutPos, iTankIdx != -2); //BOSS不需要考虑间距
+	const TANK_DATA& refData = (iTankIdx >= 0 ? m_arrTank[iTankIdx] : (iTankIdx == TANK_SELF ? m_stSelfTank : m_stBoss));
+	OBJECT_TYPE enType = TYPE_TANK;
+	if (iTankIdx == TANK_BOSS)
+	{
+		enType = TYPE_BOSS;
+	}
+	return GetNextPos(refData.m_stPos, refData.m_iDirection, stOutPos, enType);
 }
 
 
 //获取下一个位置
-bool CTankGame::GetNextPos(const POSITION& stCurPos, int iDirection, POSITION& stOutPos, bool bTankFlag)
+bool CTankGame::GetNextPos(const POSITION& stCurPos, int iDirection, POSITION& stOutPos, OBJECT_TYPE enType)
 {
 	stOutPos = stCurPos;
 	switch (iDirection)
@@ -645,7 +670,15 @@ bool CTankGame::GetNextPos(const POSITION& stCurPos, int iDirection, POSITION& s
 	// 0
 	//010
 	//0 0
-	int iPadding = bTankFlag ? 1 : 0;
+	int iPadding = 0;
+	if (enType == TYPE_BOSS)
+	{
+		iPadding = 4;
+	}
+	else if (enType == TYPE_TANK)
+	{
+		iPadding = 1;
+	}
 
 	if (stOutPos.m_iColIdx < iPadding || stOutPos.m_iColIdx > COLUMN_NUM - 1 - iPadding
 		|| stOutPos.m_iRowIdx < iPadding || stOutPos.m_iRowIdx > ROW_NUM - 1 - iPadding)
@@ -822,6 +855,59 @@ bool CTankGame::WaitToMoveBottomCenter(float dt, bool& bDoneFlag)
 }
 
 
+void CTankGame::SelfFlagFlash(float dt)
+{
+	m_lfSelfFlashTime += dt;
+	if (m_lfSelfFlashTime < TANK_SELF_FLAG_FLASH_INTERVAL)
+	{
+		return;
+	}
+
+	m_lfSelfFlashTime = 0;
+	m_bSelfFlagVisible = !m_bSelfFlagVisible;
+	//log("[Change] m_bSelfFlagVisible=%d", m_bSelfFlagVisible);
+
+	POSITION stFlagPos;
+	GetFlagPos(stFlagPos);
+	m_pGameScene->UpdateBrick(stFlagPos.m_iRowIdx, stFlagPos.m_iColIdx, false, m_bSelfFlagVisible);
+}
+
+
+bool CTankGame::GetFlagPos(POSITION& stPos)
+{
+	stPos = m_stSelfTank.m_stPos;
+	if (m_bBossFlag)
+	{
+		//如果开启了BOSS阶段，此时方向已经固定，标记位置也固定了
+		stPos.m_iRowIdx += 1;
+		return true;
+	}
+
+	//获取标记位置
+	switch (m_stSelfTank.m_iDirection)
+	{
+	case DIR_UP:
+		++stPos.m_iRowIdx;
+		break;
+	case DIR_DOWN:
+		--stPos.m_iRowIdx;
+		break;
+	case DIR_LEFT:
+		++stPos.m_iColIdx;
+		break;
+	case DIR_RIGHT:
+		--stPos.m_iColIdx;
+		break;
+	default:
+		log("%s  Wrong Dirction Type. m_stSelfTank.m_iDirection=%d", __FUNCTION__, m_stSelfTank.m_iDirection);
+		return false;
+		break;
+	}
+
+	return true;
+}
+
+
 const int POS_CHANGE_LIST[16] =
 {
 	-1, -2, 1, -2,
@@ -858,7 +944,7 @@ bool CTankGame::SelfTankMove( float dt )
 
 		//检查下一个位置是否有效
 		POSITION stNextPos;
-		if (!GetNextPos(-1, stNextPos))
+		if (!GetNextPos(TANK_SELF, stNextPos))
 		{
 			return false;
 		}
@@ -890,7 +976,7 @@ bool CTankGame::SelfTankMove( float dt )
 			else
 			{
 				//方向与当前方向一致，检查下一个位置是否有效
-				if (!GetNextPos(-1, stNextPos) || !CheckPos(-1, stNextPos))
+				if (!GetNextPos(TANK_SELF, stNextPos) || !CheckPos(TANK_SELF, stNextPos))
 				{
 					return false;
 				}
@@ -1040,7 +1126,7 @@ bool CTankGame::BulletMove(float dt)
 
 		//下一个位置
 		POSITION stNextPos;
-		if (GetNextPos(refData.m_stPos, refData.m_iDirection, stNextPos, false))
+		if (GetNextPos(refData.m_stPos, refData.m_iDirection, stNextPos, TYPE_BULLET))
 		{
 			refData.m_stPos = stNextPos;
 		}

@@ -369,12 +369,22 @@ bool CSnakeGame::CheckGameOver(const POSITION& stHeaderPos)
 //改变方向
 void CSnakeGame::ChangeDirection(int iDirection)
 {
-	//如果是相反方向或相同方向，或者游戏不是运行中状态，则返回
-	if (m_iSnakeDirection == OPPSITE_DIRECTION[iDirection]
-		|| m_iSnakeDirection == iDirection 
-		|| m_enGameState != GAMESTATE_RUNNING)
+	//如果是相同方向或者游戏不是运行中状态，则返回
+	if (m_enGameState != GAMESTATE_RUNNING || m_iSnakeDirection == iDirection)
 	{
 		return;
+	}
+
+	if (m_iSnakeDirection == OPPSITE_DIRECTION[iDirection])
+	{
+		//转换
+		int iNodeCount = m_mapSnakeNodes.size();
+		for (int i = 0; i < iNodeCount / 2; ++i)
+		{
+			POSITION stTempPos = m_mapSnakeNodes[i];
+			m_mapSnakeNodes[i] = m_mapSnakeNodes[iNodeCount - 1 - i];
+			m_mapSnakeNodes[iNodeCount - 1 - i] = stTempPos;
+		}
 	}
 
 	//按钮音效
