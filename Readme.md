@@ -1,4 +1,4 @@
-﻿BrickGame
+﻿方块游戏（BrickGame）
 ===
 
 进度
