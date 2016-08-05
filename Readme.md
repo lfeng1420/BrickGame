@@ -15,9 +15,9 @@
 
 截图
 ===
-![]()
-![]()
-![]()
+![](https://github.com/lfeng1420/BrickGame/blob/master/Images/1.png)
+![](https://github.com/lfeng1420/BrickGame/blob/master/Images/2.png)
+![](https://github.com/lfeng1420/BrickGame/blob/master/Images/3.png)
 
 发布记录
 ===
