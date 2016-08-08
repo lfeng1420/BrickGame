@@ -1,7 +1,7 @@
 #include "PinballGame.h"
 
 
-CPinballGame::CPinballGame(CGameScene* pGameScene) : CSceneBase(pGameScene)
+CPinballGame::CPinballGame(CGameScene* pGameScene, bool bExtraMode) : CSceneBase(pGameScene), m_bExtraMode(bExtraMode)
 {
 }
 
@@ -40,6 +40,7 @@ void CPinballGame::Play(float dt)
 	{
 		bool bUpdateFlag = GuardMove(dt);
 		bUpdateFlag = BallMove(dt) || bUpdateFlag;
+		bUpdateFlag = BricksRoll(dt) || bUpdateFlag;
 		if (!bUpdateFlag)
 		{
 			return;
@@ -247,7 +248,7 @@ void CPinballGame::InitData()
 
 	//初始化球每次移动的距离
 	m_stBallDis.m_iRowIdx = -1;
-	m_stBallDis.m_iColIdx = (Random(0, 2) == 1 ? -1 : 1);
+	m_stBallDis.m_iColIdx = (Random(0, 10) >= 5 ? -1 : 1);
 
 	//初始化左右移状态
 	bLeftMoveFlag = false;
@@ -260,6 +261,10 @@ void CPinballGame::InitData()
 	m_bShowBoom = true;
 	m_iAddScoreCount = 0;
 	m_iShowBoomCount = 0;
+
+	//附加模式
+	m_fRollTime = 0;
+	m_bLeftRollFlag = (Random(0, 10) >= 5);
 
 	//挡板的位置
 	m_iGuardColIdx = (COLUMN_NUM - GUARD_BRICK_COUNT) / 2;
@@ -432,7 +437,7 @@ bool CPinballGame::BallMove( float dt )
 
 	//挡板是否挡住球
 	if (m_stBallPos.m_iRowIdx == ROW_NUM - 2 
-		&& m_stBallPos.m_iColIdx >= m_iGuardColIdx && m_stBallPos.m_iColIdx < m_iGuardColIdx + GUARD_BRICK_COUNT)
+		&& m_stBallPos.m_iColIdx >= m_iGuardColIdx - 1 && m_stBallPos.m_iColIdx <= m_iGuardColIdx + GUARD_BRICK_COUNT)
 	{
 		m_stBallDis.m_iRowIdx = -1;
 		
@@ -528,4 +533,53 @@ bool CPinballGame::CheckGamePass()
 void CPinballGame::SaveGameData()
 {
 	
+}
+
+
+bool CPinballGame::BricksRoll(float dt)
+{
+	if (m_bExtraMode && m_enGameState != GAMESTATE_RUNNING)
+	{
+		return false;
+	}
+
+	m_fRollTime += dt;
+	if (m_fRollTime < BRICK_BASE_MOVE_INTERVAL - 40 * m_iSpeed)
+	{
+		return false;
+	}
+
+	m_fRollTime = 0;
+
+	int iStartRowIdx = 2 + m_iLevel / 2;
+	if (m_bLeftRollFlag)
+	{
+		for (int iColIdx = COLUMN_NUM - 1; iColIdx > 0; --iColIdx)
+		{
+			for (int iRowIdx = iStartRowIdx; iRowIdx < iStartRowIdx + BRICKS_ROWCOUNT; ++iRowIdx)
+			{
+				m_arrBricks[iRowIdx][iColIdx] = m_arrBricks[iRowIdx][iColIdx - 1];
+			}
+		}
+	}
+	else
+	{
+		for (int iColIdx = 0; iColIdx < COLUMN_NUM - 1; ++iColIdx)
+		{
+			for (int iRowIdx = iStartRowIdx; iRowIdx < iStartRowIdx + BRICKS_ROWCOUNT; ++iRowIdx)
+			{
+				m_arrBricks[iRowIdx][iColIdx] = m_arrBricks[iRowIdx][iColIdx + 1];
+			}
+		}
+	}
+	
+
+	//生成新的一列
+	int iGenColIdx = (m_bLeftRollFlag ? 0 : (COLUMN_NUM - 1));
+	for (int iRowIdx = iStartRowIdx; iRowIdx < iStartRowIdx + BRICKS_ROWCOUNT; ++iRowIdx)
+	{
+		m_arrBricks[iRowIdx][iGenColIdx] = (Random(0, 10) >= 5);
+	}
+
+	return true;
 }

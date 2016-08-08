@@ -598,7 +598,7 @@ void CGameScene::CreateGameObj()
 	m_mapGameObj[SCENE_FROGGER] = pFroggerGame;
 
 	//µ¯Çò
-	CPinballGame* pPinballGame = new CPinballGame(this);
+	CPinballGame* pPinballGame = new CPinballGame(this, false);
 	m_mapGameObj[SCENE_PINBALL] = pPinballGame;
 
 	//¶íÂÞË¹·½¿é
@@ -612,6 +612,10 @@ void CGameScene::CreateGameObj()
 	//¶íÂÞË¹·½¿é2
 	CTetrisGame* pTetrisGame2 = new CTetrisGame(this, true);
 	m_mapGameObj[SCENE_TETRIS2] = pTetrisGame2;
+
+	//µ¯Çò2
+	CPinballGame* pPinballGame2 = new CPinballGame(this, true);
+	m_mapGameObj[SCENE_PINBALL2] = pPinballGame2;
 }
 
 

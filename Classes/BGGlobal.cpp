@@ -8,8 +8,8 @@ const bool BOOM_STATE[4][4] =
 	{ true, false, false, true },
 };
 
+#if CC_TARGET_PLATFORM == CC_PLATFORM_WP8 
 const char* BGM_START = "Sounds/bgm.wav";
-
 const char* EFFECT_ADD = "Sounds/add.wav";
 const char* EFFECT_BOOM = "Sounds/boom.wav";
 const char* EFFECT_CHANGE = "Sounds/change.wav";
@@ -20,6 +20,19 @@ const char* EFFECT_PAUSE = "Sounds/pause.wav";
 const char* EFFECT_SOUNDOFF = "Sounds/sndoff.wav";
 const char* EFFECT_SOUNDON = "Sounds/sndon.wav";
 const char* EFFECT_WALL = "Sounds/wall.wav";
+#else
+const char* BGM_START = "Sounds/bgm.mp3";
+const char* EFFECT_ADD = "Sounds/add.mp3";
+const char* EFFECT_BOOM = "Sounds/boom.mp3";
+const char* EFFECT_CHANGE = "Sounds/change.mp3";
+const char* EFFECT_CHANGE2 = "Sounds/change2.mp3";
+const char* EFFECT_DELETE = "Sounds/delete.mp3";
+const char* EFFECT_NEXT = "Sounds/next.mp3";
+const char* EFFECT_PAUSE = "Sounds/pause.mp3";
+const char* EFFECT_SOUNDOFF = "Sounds/sndoff.mp3";
+const char* EFFECT_SOUNDON = "Sounds/sndon.mp3";
+const char* EFFECT_WALL = "Sounds/wall.mp3";
+#endif
 
 //无效的数字列表，随机时将排除在外
 map<int, int> mapInvalidList;

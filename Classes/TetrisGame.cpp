@@ -188,21 +188,35 @@ void CTetrisGame::Init()
 
 void CTetrisGame::Play(float dt)
 {
-	if (m_enGameState == GAMESTATE_RUNNING)
+	if (m_enGameState == GAMESTATE_PAUSE)
+	{
+		//目前只有炸弹需要持续显示一段时间
+		if (UpdateSelfState(dt))
+		{
+			if (++m_iSelfFlashCount >= BOMB_BOOM_FLASH_COUNT)
+			{
+				//切换进行中状态
+				m_enGameState = GAMESTATE_RUNNING;
+
+				//产生新方块
+				RandNewShape();
+			}
+		}
+	}
+	else if (m_enGameState == GAMESTATE_RUNNING)
 	{
 		//闪烁状态更新
 		bool bUpdateFlag = UpdateSelfState(dt);
 
 		//方块移动
 		bUpdateFlag = BrickMove(dt) || bUpdateFlag;
-		
+
 		if (!bUpdateFlag)
 		{
 			return;
 		}
 	}
-
-	if (m_enGameState == GAMESTATE_OVER)
+	else if (m_enGameState == GAMESTATE_OVER)
 	{
 		//标记存档无效
 		SET_BOOLVALUE("RECORD_VALID", false);
@@ -217,6 +231,15 @@ void CTetrisGame::Play(float dt)
 
 bool CTetrisGame::GetBrickState(int iRowIndex, int iColIndex)
 {
+	//小方块特殊处理
+	if (m_iCurShape == 22)
+	{
+		if (iRowIndex == m_stCurPos.m_iRowIdx && iColIndex == m_stCurPos.m_iColIdx)
+		{
+			return m_bSelfShowFlag;
+		}
+	}
+
 	bool bBrickState = m_arrBrick[iRowIndex][iColIndex];
 
 	if (iRowIndex >= m_stCurPos.m_iRowIdx && iRowIndex < m_stCurPos.m_iRowIdx + 4
@@ -232,13 +255,10 @@ bool CTetrisGame::GetBrickState(int iRowIndex, int iColIndex)
 			if (iActRowIdx < TETRIS_ROWCOUNT[m_iCurShape] && iActColIdx < TETRIS_COLCOUNT[m_iCurShape])
 			{
 				bState = m_bSelfShowFlag && bState;
-				return bState;
 			}
 		}
-		else
-		{
-			return bState || bBrickState;
-		}
+		
+		return bState || bBrickState;
 	}
 
 	return bBrickState;
@@ -419,6 +439,9 @@ void CTetrisGame::InitData()
 	m_fBtnCheckTime = 0;
 	m_fSelfFlashTime = 0;
 
+	//炸弹闪烁次数
+	m_iSelfFlashCount = 0;
+
 	//标记
 	m_bLeftBtnPressed = false;
 	m_bRightBtnPressed = false;
@@ -431,6 +454,9 @@ void CTetrisGame::InitData()
 
 void CTetrisGame::RandNewShape()
 {
+	//重置加速下落标记
+	m_bFastMoveDown = false;
+
 	//设置当前方块类型，重新随机下一个方块类型
 	int iShape = m_iNextShape;
 	m_iNextShape = Random(0, GetShapeCount());
@@ -515,10 +541,14 @@ bool CTetrisGame::BrickMove(float dt)
 		if (!CheckBrickPos(m_iCurShape, iNextRowIdx, iNextColIdx))
 		{
 			//处理非特殊方块
-			if (m_iCurShape < 19 || 
-				(m_iCurShape == 22 && (m_stCurPos.m_iRowIdx != ROW_NUM - 1 || (m_stCurPos.m_iRowIdx == ROW_NUM - 1 && CheckUpAndDownBricks())))
-				)
+			if (m_iCurShape < 19 || m_iCurShape == 22)
 			{
+				if (m_iCurShape == 22)
+				{
+					//设置rowidx
+					m_stCurPos.m_iRowIdx = GetEmptyPosRowIdx();
+				}
+
 				//已无法再往下移动或已到达最后一行，保存当前方块
 				for (int i = 0; i < 4 && m_stCurPos.m_iRowIdx + i < ROW_NUM; ++i)
 				{
@@ -537,7 +567,7 @@ bool CTetrisGame::BrickMove(float dt)
 				if (m_iCurShape == 21)
 				{
 					int iStartRowIdx = m_stCurPos.m_iRowIdx;
-					int iEndRowIdx = iStartRowIdx + TETRIS_ROWCOUNT[m_iCurShape] + BOOM_SHAPE_DELETE_LINE_COUNT + m_iSpeed / 4;
+					int iEndRowIdx = iStartRowIdx + TETRIS_ROWCOUNT[m_iCurShape] + BOMB_DELETE_LINE_COUNT + (m_bFastMoveDown ? m_iSpeed / 4 + 1 : 0);
 					iEndRowIdx = (iEndRowIdx > ROW_NUM ? ROW_NUM : iEndRowIdx);
 					for (int i = iStartRowIdx; i < iEndRowIdx; ++i)
 					{
@@ -550,11 +580,18 @@ bool CTetrisGame::BrickMove(float dt)
 					
 					//音效
 					PLAY_EFFECT(EFFECT_BOOM);
+
+					//更新炸弹位置，需要显示在最底下消除的那一行
+					//修改：炸弹改为3行，但爆炸时需要显示四行，所以需要上移一行
+					m_stCurPos.m_iRowIdx = iEndRowIdx - TETRIS_ROWCOUNT[m_iCurShape] - 1;
+
+					//进入暂停状态
+					m_enGameState = GAMESTATE_PAUSE;
+					m_iSelfFlashCount = 0;
+
+					return true;
 				}
 			}
-
-			//重置加速下落标记
-			m_bFastMoveDown = false;
 
 			//检查消行
 			DeleteLine(true);
@@ -589,14 +626,7 @@ bool CTetrisGame::CheckBrickPos(int iShapeIdx, int iSrcRowIdx, int iSrcColIdx)
 	//特殊方块处理
 	if (iShapeIdx == 22)
 	{
-		int iCurRowIdx = m_stCurPos.m_iRowIdx;
-		int iCurColIdx = m_stCurPos.m_iColIdx;
-		if (CheckUpAndDownBricks() && !m_arrBrick[iCurRowIdx][iCurColIdx] && m_arrBrick[iSrcRowIdx][iSrcColIdx])
-		{
-			return false;
-		}
-
-		return true;
+		return iSrcRowIdx != GetEmptyPosRowIdx();
 	}
 
 	for (int i = 0; i < 4; ++i)
@@ -743,35 +773,30 @@ bool CTetrisGame::UpdateSelfState(float dt)
 }
 
 
-bool CTetrisGame::CheckUpAndDownBricks()
+int CTetrisGame::GetEmptyPosRowIdx()
 {
-	bool bValidFlag = false;
-	int iColIdx = m_stCurPos.m_iColIdx;
-	for (int i = 0; i < m_stCurPos.m_iRowIdx; ++i)
+	//先找到第一个非空白位置
+	int iRowIdx = 0;
+	for (; iRowIdx < m_stCurPos.m_iRowIdx; ++iRowIdx)
 	{
-		if (m_arrBrick[i][iColIdx])
+		if (m_arrBrick[iRowIdx][m_stCurPos.m_iColIdx])
 		{
-			bValidFlag = true;
 			break;
 		}
 	}
 
-	//如果上方都没有有效的方块，则返回false
-	if (!bValidFlag)
+	//从底下往上找空白位置
+	for (int iEmptyRowIdx = ROW_NUM - 1; iEmptyRowIdx >= iRowIdx; --iEmptyRowIdx)
 	{
-		return false;
-	}
-
-	for (int i = m_stCurPos.m_iRowIdx + 1; i < ROW_NUM; ++i)
-	{
-		if (m_arrBrick[i][iColIdx])
+		if (!m_arrBrick[iEmptyRowIdx][m_stCurPos.m_iColIdx])
 		{
-			bValidFlag = true;
-			break;
+			log("%s: %d", __FUNCTION__, iEmptyRowIdx);
+			return iEmptyRowIdx;
 		}
 	}
 
-	return bValidFlag;
+	log("%s: %d", __FUNCTION__, iRowIdx);
+	return iRowIdx;
 }
 
 

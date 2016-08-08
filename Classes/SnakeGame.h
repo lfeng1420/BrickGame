@@ -44,6 +44,9 @@ public:
 	//游戏状态
 	void SaveGameData();
 
+	//获取下一个位置
+	void GetNextPos(POSITION& stPos);
+
 	//---------------------    CSceneBase    ----------------------
 
 

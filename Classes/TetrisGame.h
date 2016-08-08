@@ -78,20 +78,22 @@ public:
 	bool UpdateSelfState(float dt);
 
 	//检查上方和下方是否有方块
-	bool CheckUpAndDownBricks();
+	int GetEmptyPosRowIdx();
 
 private:
 	enum 
 	{
-		BRICK_MOVE_INTERVAL = 500,			//方块移动等待时间
+		BRICK_MOVE_INTERVAL = 500,						//方块移动等待时间
 
-		DELETE_LINE_ADD_SCORE = 10,			//消除行加分
+		DELETE_LINE_ADD_SCORE = 10,						//消除行加分
 
-		BTN_CHECK_INTERVAL = 100,			//按钮检查时间间隔
+		BTN_CHECK_INTERVAL = 100,						//按钮检查时间间隔
 
-		BOOM_SHAPE_DELETE_LINE_COUNT = 2,	//爆炸方块消除的行数
+		BOMB_DELETE_LINE_COUNT = 2,						//炸弹默认消除的行数
 
-		SELF_FLASH_INTERVAL = 70,			//闪烁刷新时间
+		SELF_FLASH_INTERVAL = 70,						//闪烁刷新时间
+
+		BOMB_BOOM_FLASH_COUNT = 5,						//炸弹爆炸闪烁次数
 	};
 
 private:
@@ -128,5 +130,7 @@ private:
 	bool m_bFastMoveDown;						//是否加速下降
 
 	bool m_bExtraMode;							//是否开启附加模式
+
+	int m_iSelfFlashCount;						//闪烁次数
 };
 

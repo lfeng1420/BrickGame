@@ -14,6 +14,9 @@ CGameOver::~CGameOver()
 //初始化
 void CGameOver::Init()
 {
+	//避免随机数互相影响，放在这里清除排除的无效值
+	ClearInvalidNums();
+
 	m_iRowIdx = 0;
 	m_iColIdx = 0;
 	m_iDirection = DIR_RIGHT;

@@ -4,7 +4,7 @@
 class CPinballGame : public CSceneBase
 {
 public:
-	CPinballGame(CGameScene* pGameScene);
+	CPinballGame(CGameScene* pGameScene, bool bExtraMode);
 	~CPinballGame();
 
 	//---------------------    CSceneBase    ----------------------
@@ -62,6 +62,9 @@ private:
 	//游戏状态
 	void SaveGameData();
 
+	//上方方块滚动
+	bool BricksRoll(float dt);
+
 private:
 	enum 
 	{
@@ -82,6 +85,8 @@ private:
 		BOOM_REFRESH_INTERVAL = 50,			//爆炸效果刷新时间
 
 		BOOM_SHOWCOUNT = 16,				//闪烁显示爆炸效果次数
+
+		BRICK_BASE_MOVE_INTERVAL = 500,		//方块移动时间间隔
 	};
 
 private:
@@ -118,5 +123,11 @@ private:
 	int m_iShowBoomCount;									//闪烁显示爆炸效果次数
 
 	int m_iAddScoreCount;									//当前分数增加次数
+
+	bool m_bExtraMode;										//附加模式
+
+	float m_fRollTime;										//滚动等待时间
+
+	bool m_bLeftRollFlag;									//是否往左滚动，false为往右
 };
 

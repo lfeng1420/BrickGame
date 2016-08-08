@@ -278,24 +278,13 @@ void CSnakeGame::SnakeMove()
 
 	//获取头部下个位置
 	POSITION stHeaderPos = m_mapSnakeNodes[0];
-	switch (m_iSnakeDirection)
-	{
-	case DIR_RIGHT:
-		++stHeaderPos.m_iColIdx;
-		break;
-	case DIR_DOWN:
-		++stHeaderPos.m_iRowIdx;
-		break;
-	case DIR_LEFT:
-		--stHeaderPos.m_iColIdx;
-		break;
-	case DIR_UP:
-		--stHeaderPos.m_iRowIdx;
-		break;
-	}
+	GetNextPos(stHeaderPos);
 
 	if (CheckGameOver(stHeaderPos))
 	{
+		//设置结束状态
+		m_enGameState = GAMESTATE_OVER;
+
 		//设置苹果显示状态
 		m_bAppleState = true;
 
@@ -349,7 +338,6 @@ bool CSnakeGame::CheckGameOver(const POSITION& stHeaderPos)
 	if (stHeaderPos.m_iColIdx < 0 || stHeaderPos.m_iColIdx > COLUMN_NUM - 1
 		|| stHeaderPos.m_iRowIdx < 0 || stHeaderPos.m_iRowIdx > ROW_NUM - 1)
 	{
-		m_enGameState = GAMESTATE_OVER;
 		return true;
 	}
 
@@ -357,7 +345,6 @@ bool CSnakeGame::CheckGameOver(const POSITION& stHeaderPos)
 	{
 		if (stHeaderPos == m_mapSnakeNodes[i])
 		{
-			m_enGameState = GAMESTATE_OVER;
 			return true;
 		}
 	}
@@ -375,7 +362,15 @@ void CSnakeGame::ChangeDirection(int iDirection)
 		return;
 	}
 
-	if (m_iSnakeDirection == OPPSITE_DIRECTION[iDirection])
+	//按钮音效
+	PLAY_EFFECT(EFFECT_CHANGE2);
+
+	//设置方向
+	int nOldDirection = m_iSnakeDirection;
+	m_iSnakeDirection = iDirection;
+
+	//如果是反方向
+	if (iDirection == OPPSITE_DIRECTION[nOldDirection])
 	{
 		//转换
 		int iNodeCount = m_mapSnakeNodes.size();
@@ -385,13 +380,17 @@ void CSnakeGame::ChangeDirection(int iDirection)
 			m_mapSnakeNodes[i] = m_mapSnakeNodes[iNodeCount - 1 - i];
 			m_mapSnakeNodes[iNodeCount - 1 - i] = stTempPos;
 		}
+
+		//获取下一个位置
+		POSITION stHeaderPos = m_mapSnakeNodes[0];
+		GetNextPos(stHeaderPos);
+
+		//是否可以按照反方向移动，不能则恢复之前的方向
+		if (CheckGameOver(stHeaderPos))
+		{
+			m_iSnakeDirection = nOldDirection;
+		}
 	}
-
-	//按钮音效
-	PLAY_EFFECT(EFFECT_CHANGE2);
-
-	//设置方向
-	m_iSnakeDirection = iDirection;
 	
 	//移动
 	SnakeMove();
@@ -459,4 +458,24 @@ void CSnakeGame::OnFireBtnReleased()
 void CSnakeGame::SaveGameData()
 {
 	
+}
+
+
+void CSnakeGame::GetNextPos(POSITION& stPos)
+{
+	switch (m_iSnakeDirection)
+	{
+	case DIR_RIGHT:
+		++stPos.m_iColIdx;
+		break;
+	case DIR_DOWN:
+		++stPos.m_iRowIdx;
+		break;
+	case DIR_LEFT:
+		--stPos.m_iColIdx;
+		break;
+	case DIR_UP:
+		--stPos.m_iRowIdx;
+		break;
+	}
 }
