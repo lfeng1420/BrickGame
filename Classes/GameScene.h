@@ -43,6 +43,9 @@ public:
 	//重置所有小Brick
 	void ResetSmallBricks();
 
+	//显示提示
+	void ShowTips(TIPS_TYPE enTipType);
+
 
 	CREATE_FUNC(CGameScene);
 
@@ -121,18 +124,6 @@ private:
 		BTN_HEIGHT = 95,			//按钮高度
 	};
 
-	enum TipType
-	{
-		TIP_INVALID,
-		TIP_EXIT,
-		TIP_SAVEOPEN,
-		TIP_SAVECLOSE,
-	};
-
-private:
-	//显示提示
-	void ShowTips(TipType enTipType);
-
 private:
 	Sprite* m_pArrBrick[ROW_NUM][COLUMN_NUM];			//Sprite数组
 
@@ -180,6 +171,6 @@ private:
 
 	double m_lfClickResetTime;							//上一次点击重置时间
 
-	TipType m_enTipType;								//当前提示类型
+	TIPS_TYPE m_enTipType;								//当前提示类型
 };
 

@@ -14,7 +14,7 @@
 //控制按钮最大缩放倍数
 const float FLOAT_CONTROLLER_SCALE_MAX = 1.72f;
 
-CGameScene::CGameScene() : m_iSceneIndex(SCENE_GAMEOVER), m_lfClickExitTime(0), m_lfClickResetTime(0), m_enTipType(TIP_INVALID)
+CGameScene::CGameScene() : m_iSceneIndex(SCENE_GAMEOVER), m_lfClickExitTime(0), m_lfClickResetTime(0), m_enTipType(TIPS_INVALID)
 {
 }
 
@@ -524,14 +524,14 @@ void CGameScene::CreateKeyListener()
 			m_lfClickExitTime = lfCurTime;
 
 			//显示退出提示
-			ShowTips(TIP_EXIT);
+			ShowTips(TIPS_EXIT);
 		}
 
 #if CC_TARGET_PLATFORM == CC_PLATFORM_WP8
 		else if (EventKeyboard::KeyCode::KEY_PLAY == keyCode)
 		{
 			//显示退出提示
-			ShowTips(TIP_EXIT);
+			ShowTips(TIPS_EXIT);
 		}
 		else if (EventKeyboard::KeyCode::KEY_ENTER == keyCode)
 		{
@@ -857,7 +857,7 @@ void CGameScene::OnButtonClick(Ref* pSender, int iBtnIndex)
 				SET_BOOLVALUE("TETRIS_RECORD_VALID", bRecordValidFlag);
 
 				//显示退出提示
-				ShowTips(bRecordValidFlag ? TIP_SAVEOPEN : TIP_SAVECLOSE);
+				ShowTips(bRecordValidFlag ? TIPS_SAVEOPEN : TIPS_SAVECLOSE);
 				
 				//重置时间
 				m_lfClickResetTime = 0;
@@ -895,23 +895,26 @@ void CGameScene::ChangePlayState(bool bPlay)
 }
 
 
-void CGameScene::ShowTips(TipType enTipType)
+void CGameScene::ShowTips(TIPS_TYPE enTipType)
 {
 	if (m_enTipType != enTipType)
 	{
 		m_enTipType = enTipType;
 		switch (m_enTipType)
 		{
-		case CGameScene::TIP_EXIT:
+		case TIPS_EXIT:
 			m_pTipSpr->setSpriteFrame(GET_SPRITEFRAME("exit.png"));
 			break;
 
-		case CGameScene::TIP_SAVEOPEN:
+		case TIPS_SAVEOPEN:
 			m_pTipSpr->setSpriteFrame(GET_SPRITEFRAME("saveopen.png"));
 			break;
 
-		case CGameScene::TIP_SAVECLOSE:
+		case TIPS_SAVECLOSE:
 			m_pTipSpr->setSpriteFrame(GET_SPRITEFRAME("saveclose.png"));
+			break;
+		case TIPS_SAVEOK:
+			m_pTipSpr->setSpriteFrame(GET_SPRITEFRAME("saveok.png"));
 			break;
 
 		default:

@@ -437,12 +437,25 @@ bool CPinballGame::BallMove( float dt )
 
 	//挡板是否挡住球
 	if (m_stBallPos.m_iRowIdx == ROW_NUM - 2 
-		&& m_stBallPos.m_iColIdx >= m_iGuardColIdx - 1 && m_stBallPos.m_iColIdx <= m_iGuardColIdx + GUARD_BRICK_COUNT)
+		&& ((m_stBallPos.m_iColIdx > m_iGuardColIdx - 1 && m_stBallPos.m_iColIdx < m_iGuardColIdx + GUARD_BRICK_COUNT)
+		|| (m_stBallPos.m_iColIdx == m_iGuardColIdx - 1 && m_stBallDis.m_iColIdx > 0 && m_stBallDis.m_iRowIdx > 0)	//往右下方向移动
+		|| (m_stBallPos.m_iColIdx == m_iGuardColIdx + GUARD_BRICK_COUNT && m_stBallDis.m_iColIdx < 0 && m_stBallDis.m_iRowIdx > 0))	//往左下方向移动
+		)
 	{
-		m_stBallDis.m_iRowIdx = -1;
-		
 		//音效
 		PLAY_EFFECT(EFFECT_WALL);
+
+		//如果是往右下/左下方向移动，则直接反向
+		if ((m_stBallPos.m_iColIdx == m_iGuardColIdx - 1 && m_stBallDis.m_iColIdx > 0 && m_stBallDis.m_iRowIdx > 0)
+			|| (m_stBallPos.m_iColIdx == m_iGuardColIdx + GUARD_BRICK_COUNT && m_stBallDis.m_iColIdx < 0 && m_stBallDis.m_iRowIdx > 0))
+		{
+			m_stBallDis.m_iColIdx *= -1;
+			m_stBallDis.m_iRowIdx *= -1;
+		}
+		else
+		{
+			m_stBallDis.m_iRowIdx *= -1;
+		}
 
 		return true;
 	}
@@ -538,7 +551,7 @@ void CPinballGame::SaveGameData()
 
 bool CPinballGame::BricksRoll(float dt)
 {
-	if (m_bExtraMode && m_enGameState != GAMESTATE_RUNNING)
+	if (!m_bExtraMode || (m_bExtraMode && m_enGameState != GAMESTATE_RUNNING))
 	{
 		return false;
 	}

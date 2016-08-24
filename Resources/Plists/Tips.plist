@@ -7,39 +7,52 @@
             <key>exit.png</key>
             <dict>
                 <key>frame</key>
-                <string>{{786,2},{390,46}}</string>
+                <string>{{1184,2},{392,48}}</string>
                 <key>offset</key>
                 <string>{0,0}</string>
                 <key>rotated</key>
                 <false/>
                 <key>sourceColorRect</key>
-                <string>{{1,1},{390,46}}</string>
+                <string>{{0,0},{392,48}}</string>
                 <key>sourceSize</key>
                 <string>{392,48}</string>
             </dict>
             <key>saveclose.png</key>
             <dict>
                 <key>frame</key>
-                <string>{{394,2},{390,46}}</string>
+                <string>{{790,2},{392,48}}</string>
                 <key>offset</key>
                 <string>{0,0}</string>
                 <key>rotated</key>
                 <false/>
                 <key>sourceColorRect</key>
-                <string>{{1,1},{390,46}}</string>
+                <string>{{0,0},{392,48}}</string>
+                <key>sourceSize</key>
+                <string>{392,48}</string>
+            </dict>
+            <key>saveok.png</key>
+            <dict>
+                <key>frame</key>
+                <string>{{396,2},{392,48}}</string>
+                <key>offset</key>
+                <string>{0,0}</string>
+                <key>rotated</key>
+                <false/>
+                <key>sourceColorRect</key>
+                <string>{{0,0},{392,48}}</string>
                 <key>sourceSize</key>
                 <string>{392,48}</string>
             </dict>
             <key>saveopen.png</key>
             <dict>
                 <key>frame</key>
-                <string>{{2,2},{390,46}}</string>
+                <string>{{2,2},{392,48}}</string>
                 <key>offset</key>
                 <string>{0,0}</string>
                 <key>rotated</key>
                 <false/>
                 <key>sourceColorRect</key>
-                <string>{{1,1},{390,46}}</string>
+                <string>{{0,0},{392,48}}</string>
                 <key>sourceSize</key>
                 <string>{392,48}</string>
             </dict>
@@ -51,9 +64,9 @@
             <key>realTextureFileName</key>
             <string>Tips.png</string>
             <key>size</key>
-            <string>{1178,50}</string>
+            <string>{1578,52}</string>
             <key>smartupdate</key>
-            <string>$TexturePacker:SmartUpdate:c220137e45488acb83f7670a0812e3b1$</string>
+            <string>$TexturePacker:SmartUpdate:78464bffb294688737cb606bf97ddbb4$</string>
             <key>textureFileName</key>
             <string>Tips.png</string>
         </dict>

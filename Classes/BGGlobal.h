@@ -240,6 +240,16 @@ enum GAME_STATE
 	GAMESTATE_PASS,					//通过
 };
 
+//提示类型
+enum TIPS_TYPE
+{
+	TIPS_INVALID,
+	TIPS_EXIT,
+	TIPS_SAVEOPEN,
+	TIPS_SAVECLOSE,
+	TIPS_SAVEOK,
+};
+
 
 //全局常量
 extern const bool BOOM_STATE[4][4];

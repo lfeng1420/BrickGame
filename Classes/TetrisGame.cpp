@@ -277,6 +277,16 @@ SCENE_INDEX CTetrisGame::GetSceneType()
 }
 
 
+//上按下
+void CTetrisGame::OnUpBtnPressed()
+{
+	log("%s", __FUNCTION__);
+	SaveGameData();
+
+	m_pGameScene->ShowTips(TIPS_SAVEOK);
+}
+
+
 void CTetrisGame::OnLeftBtnPressed()
 {
 	//音效

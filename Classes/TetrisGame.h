@@ -22,6 +22,9 @@ public:
 	//获取游戏类型
 	SCENE_INDEX GetSceneType();
 
+	//上按下
+	void OnUpBtnPressed();
+
 	//左按下
 	void OnLeftBtnPressed();
 
