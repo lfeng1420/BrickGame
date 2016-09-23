@@ -30,7 +30,7 @@ public:
 	void OnUpBtnPressed();
 
 	//下按下
-	void OnDownPressed();
+	void OnDownBtnPressed();
 
 	//Fire按下
 	void OnFireBtnPressed();

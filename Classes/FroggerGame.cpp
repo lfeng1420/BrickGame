@@ -488,7 +488,7 @@ void CFroggerGame::OnUpBtnPressed()
 }
 
 //ÏÂ°´ÏÂ
-void CFroggerGame::OnDownPressed()
+void CFroggerGame::OnDownBtnPressed()
 {
 	if (m_enGameState != GAMESTATE_RUNNING || m_iSelfRowIdx >= ROW_NUM - 1)
 	{

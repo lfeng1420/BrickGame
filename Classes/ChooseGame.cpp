@@ -130,7 +130,7 @@ void CChooseGame::OnUpBtnPressed()
 
 
 //об
-void CChooseGame::OnDownPressed()
+void CChooseGame::OnDownBtnPressed()
 {
 	if (--m_iSpeed < 0)
 	{

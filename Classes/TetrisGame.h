@@ -38,10 +38,10 @@ public:
 	void OnRightBtnReleased();
 
 	//下按下
-	void OnDownPressed();
+	void OnDownBtnPressed();
 
 	//下释放
-	void OnDownReleased();
+	void OnDownBtnReleased();
 
 	//Fire按下
 	void OnFireBtnPressed();
@@ -66,7 +66,8 @@ public:
 	bool CheckBrickPos(int iShapeIdx, int iSrcRowIdx, int iSrcColIdx);
 
 	//消行
-	void DeleteLine(bool bEnd);
+	//return:是否消行
+	bool DeleteLine(bool bAddBrickFlag);
 
 	//消除单行
 	void DeleteSingleLine(int iRowIdx);

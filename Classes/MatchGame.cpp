@@ -260,14 +260,14 @@ void CMatchGame::OnUpBtnReleased()
 
 
 //下按下
-void CMatchGame::OnDownPressed()
+void CMatchGame::OnDownBtnPressed()
 {
 	ChangeType(DIR_DOWN, true);
 }
 
 
 //下释放
-void CMatchGame::OnDownReleased()
+void CMatchGame::OnDownBtnReleased()
 {
 	ChangeType(DIR_DOWN, false);
 }

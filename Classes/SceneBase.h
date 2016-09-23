@@ -46,10 +46,10 @@ public:
 	virtual void OnUpBtnReleased();
 
 	//下按下
-	virtual void OnDownPressed();
+	virtual void OnDownBtnPressed();
 
 	//下释放
-	virtual void OnDownReleased();
+	virtual void OnDownBtnReleased();
 
 	//Fire按下
 	virtual void OnFireBtnPressed();

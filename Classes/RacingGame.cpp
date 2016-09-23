@@ -273,7 +273,7 @@ void CRacingGame::OnUpBtnPressed()
 
 
 //об
-void CRacingGame::OnDownPressed()
+void CRacingGame::OnDownBtnPressed()
 {
 
 }

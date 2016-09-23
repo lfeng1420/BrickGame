@@ -422,7 +422,7 @@ void CSnakeGame::OnUpBtnPressed()
 
 
 //下按下
-void CSnakeGame::OnDownPressed()
+void CSnakeGame::OnDownBtnPressed()
 {
 	ChangeDirection(DIR_DOWN);
 }

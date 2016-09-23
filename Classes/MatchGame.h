@@ -41,10 +41,10 @@ public:
 	void OnUpBtnReleased();
 
 	//下按下
-	void OnDownPressed();
+	void OnDownBtnPressed();
 
 	//下释放
-	void OnDownReleased();
+	void OnDownBtnReleased();
 
 	//Fire按下
 	void OnFireBtnPressed();

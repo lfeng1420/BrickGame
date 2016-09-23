@@ -60,7 +60,7 @@ private:
 	void InitUI();
 
 	//根据指定的高度上限创建控制按钮
-	void InitCotroller();
+	void InitController();
 
 	//创建按键监听器
 	void CreateKeyListener();
@@ -73,6 +73,9 @@ private:
 
 	//按钮响应  iBtnIndex 对应BTN_INDEX索引
 	void OnButtonEvent(Ref* pSender, Widget::TouchEventType enType, int iBtnIndex);
+
+	//根据位置调整触摸索引
+	bool AdjustClickIndex(Vec2 pos, int& nIndex);
 
 	//按钮按下
 	void OnButtonPressed(int iBtnIndex);
@@ -96,11 +99,13 @@ private:
 	//按钮索引
 	enum BTN_INDEX
 	{
+		BTN_INVALID = -1,
 		BTN_UP,
 		BTN_RIGHT,
 		BTN_DOWN,
 		BTN_LEFT,
-		BTN_FIRE,
+		BTN_DIRMAX,
+		BTN_FIRE = BTN_DIRMAX,
 		BTN_START,
 		BTN_SOUND,
 		BTN_RESET,
@@ -115,7 +120,7 @@ private:
 
 		NUM_PADDING = 2,			//数字间距
 
-		BGPIC_COUNT = 2,			//背景图片数量
+		BGPIC_COUNT = 1,			//背景图片数量
 
 		CHANGEBG_INTERVAL = 1000,	//更改背景的间隔
 
@@ -157,6 +162,8 @@ private:
 
 	Sprite* m_pBgSpr;									//背景图片
 
+	LayerColor* m_pBgLayer;								//背景颜色
+
 	Sprite* m_pTipSpr;									//提示
 
 	MenuItemToggle* m_pStartBtn;						//Start Button
@@ -172,5 +179,11 @@ private:
 	double m_lfClickResetTime;							//上一次点击重置时间
 
 	TIPS_TYPE m_enTipType;								//当前提示类型
+
+	Vec2 m_oControllerCenterPos;						//控制器中心位置
+
+	Size m_oControllerCenterSize;						//控制器中心大小
+
+	int m_nRecordBtnIdx;								//记录按钮索引
 };
 

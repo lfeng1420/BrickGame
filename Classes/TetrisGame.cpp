@@ -324,14 +324,14 @@ void CTetrisGame::OnRightBtnReleased()
 	m_bRightBtnPressed = false;
 }
 
-void CTetrisGame::OnDownPressed()
+void CTetrisGame::OnDownBtnPressed()
 {
 	PLAY_EFFECT(EFFECT_CHANGE2);
 	m_bFastMoveDown = true;
 }
 
 
-void CTetrisGame::OnDownReleased()
+void CTetrisGame::OnDownBtnReleased()
 {
 	m_bFastMoveDown = false;
 }
@@ -550,7 +550,7 @@ bool CTetrisGame::BrickMove(float dt)
 		iNextColIdx = m_stCurPos.m_iColIdx;
 		if (!CheckBrickPos(m_iCurShape, iNextRowIdx, iNextColIdx))
 		{
-			//处理非特殊方块
+			//处理非特殊方块以及点特殊方块
 			if (m_iCurShape < 19 || m_iCurShape == 22)
 			{
 				if (m_iCurShape == 22)
@@ -604,7 +604,10 @@ bool CTetrisGame::BrickMove(float dt)
 			}
 
 			//检查消行
-			DeleteLine(true);
+			if (!DeleteLine(true) && m_iCurShape < 19)
+			{
+				PLAY_EFFECT(EFFECT_ADD);
+			}
 
 			//产生新的方块
 			RandNewShape();
@@ -633,7 +636,7 @@ bool CTetrisGame::CheckBrickPos(int iShapeIdx, int iSrcRowIdx, int iSrcColIdx)
 		return false;
 	}
 
-	//特殊方块处理
+	//特殊方块“点”处理
 	if (iShapeIdx == 22)
 	{
 		return iSrcRowIdx != GetEmptyPosRowIdx();
@@ -666,7 +669,7 @@ bool CTetrisGame::CheckBrickPos(int iShapeIdx, int iSrcRowIdx, int iSrcColIdx)
 }
 
 
-void CTetrisGame::DeleteLine(bool bEnd)
+bool CTetrisGame::DeleteLine(bool bEnd)
 {
 	int iDelCount = 0;
 
@@ -678,7 +681,7 @@ void CTetrisGame::DeleteLine(bool bEnd)
 		{
 			if (!m_arrBrick[iRowIdx][i])
 			{
-				return;
+				return false;
 			}
 		}
 
@@ -709,7 +712,7 @@ void CTetrisGame::DeleteLine(bool bEnd)
 
 		if (iDelCount == 0)
 		{
-			return;
+			return false;
 		}
 	}
 
@@ -717,6 +720,8 @@ void CTetrisGame::DeleteLine(bool bEnd)
 	m_iScore += iDelCount * iDelCount * DELETE_LINE_ADD_SCORE;
 	m_pGameScene->UpdateScore(m_iScore, false);
 	PLAY_EFFECT(EFFECT_DELETE);
+
+	return true;
 }
 
 

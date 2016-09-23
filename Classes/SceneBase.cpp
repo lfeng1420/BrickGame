@@ -84,12 +84,12 @@ void CSceneBase::OnUpBtnReleased()
 }
 
 //下
-void CSceneBase::OnDownPressed()
+void CSceneBase::OnDownBtnPressed()
 {
 	
 }
 
-void CSceneBase::OnDownReleased()
+void CSceneBase::OnDownBtnReleased()
 {
 
 }

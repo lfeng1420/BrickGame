@@ -750,7 +750,7 @@ void CTankGame::OnUpBtnReleased()
 }
 
 //下按下
-void CTankGame::OnDownPressed()
+void CTankGame::OnDownBtnPressed()
 {
 	if (m_enGameState != GAMESTATE_RUNNING)
 	{
@@ -764,7 +764,7 @@ void CTankGame::OnDownPressed()
 }
 
 //下释放
-void CTankGame::OnDownReleased()
+void CTankGame::OnDownBtnReleased()
 {
 	m_arrBtnState[DIR_DOWN] = false;
 }

@@ -11,10 +11,16 @@
 #include "TetrisGame.h"
 #include "FlappyBirdGame.h"
 
+#if(CC_TARGET_PLATFORM == CC_PLATFORM_ANDROID)
+#include "platform/android/jni/JniHelper.h"
+#include <jni.h>
+#endif
+
 //控制按钮最大缩放倍数
 const float FLOAT_CONTROLLER_SCALE_MAX = 1.72f;
 
-CGameScene::CGameScene() : m_iSceneIndex(SCENE_GAMEOVER), m_lfClickExitTime(0), m_lfClickResetTime(0), m_enTipType(TIPS_INVALID)
+CGameScene::CGameScene() : m_iSceneIndex(SCENE_GAMEOVER), m_lfClickExitTime(0), m_lfClickResetTime(0), 
+							m_enTipType(TIPS_INVALID), m_nRecordBtnIdx(BTN_DIRMAX)
 {
 }
 
@@ -51,7 +57,7 @@ bool CGameScene::init()
 	InitBrick();
 
 	//初始化控制器
-	InitCotroller();
+	InitController();
 
 	//按键监听
 	CreateKeyListener();
@@ -96,12 +102,12 @@ void CGameScene::InitBrick()
 		false, false, false, true, false, false, false, true, false, false, false, false, false, false,
 		false, false, true, true, true, true, true, false, false, false, false, false, false, false,
 		false, false, false, false, false, false, false, false, false, false, false, false, false, false,
-		false, false, false, false, false, true, true, true, true, false, false, false, false, false,
-		false, false, false, false, true, false, false, false, false, true, false, false, false, false,
-		false, false, false, false, true, false, false, false, false, true, false, false, false, false,
-		false, false, false, false, false, true, true, true, true, true, false, false, false, false,
-		false, false, false, false, false, false, false, false, false, true, false, false, false, false,
-		false, false, false, false, false, false, false, false, false, true, false, false, false, false,
+		false, false, false, true, true, false, false, false, true, true, true, false, false, false,
+		false, false, false, false, true, false, false, true, false, false, false, true, false, false,
+		false, false, false, false, true, false, false, true, false, false, false, true, false, false,
+		false, false, false, false, true, false, false, true, false, false, false, true, false, false,
+		false, false, false, false, true, false, false, true, false, false, false, true, false, false,
+		false, false, false, true, true, true, false, false, true, true, true, false, false, false,
 		false, false, false, false, false, false, false, false, false, false, false, false, false, false,
 		false, false, false, false, false, false, false, true, true, true, true, false, false, false,
 		false, false, false, false, false, false, true, false, false, false, false, false, false, false,
@@ -133,17 +139,17 @@ void CGameScene::InitBrick()
 //初始化UI:分数、等级等
 void CGameScene::InitUI()
 {
-	//TTFConfig ttfConfig("Fonts/DSDigital.ttf", 46.0f);
-	Size visibleSize = GET_VISIBLESIZE();
-
 	//图片缩放
 	float fSpriteScale = 0.38f;
 
 	//背景
 	m_iBgColor = GET_INTVALUE("BGCOLOR", 0);
+#if 0
 	if (m_iBgColor > 0)
 	{
-		m_pBgSpr = CREATE_SPRITEWITHNAME(StringUtils::format("bg%d.png", m_iBgColor));
+		char szName[20] = {'\0'};
+		sprintf(szName, "bg%d.png", m_iBgColor);
+		m_pBgSpr = CREATE_SPRITEWITHNAME(szName);
 	}
 	else
 	{
@@ -152,15 +158,20 @@ void CGameScene::InitUI()
 	}
 	
 	m_pBgSpr->setPosition(visibleSize.width / 2, visibleSize.height / 2);
-	m_pBgSpr->setScale(GET_CONTENTSIZE(m_pBgSpr).width / visibleSize.width);
 	this->addChild(m_pBgSpr);
+#else
+	m_pBgLayer = LayerColor::create(Color4B(128, 128, 128, 255));
+	m_pBgLayer->setContentSize(m_visibleSize);
+	this->addChild(m_pBgLayer);
+	m_pBgLayer->setVisible(m_iBgColor > 0);
+#endif
 
 	//分数
 	auto pScore = Sprite::create("score.png");
 	pScore->setScale(fSpriteScale);
 	Size scoreSize = GET_CONTENTSIZE(pScore) * fSpriteScale;
-	float fCurX = (visibleSize.width - COLUMN_NUM * BRICK_WIDTH) / 2 + COLUMN_NUM * BRICK_WIDTH;
-	float fCurY = visibleSize.height - scoreSize.height * 3 / 2;
+	float fCurX = (m_visibleSize.width - COLUMN_NUM * BRICK_WIDTH) / 2 + COLUMN_NUM * BRICK_WIDTH;
+	float fCurY = m_visibleSize.height - scoreSize.height * 3 / 2;
 	pScore->setPosition(fCurX, fCurY + scoreSize.height / 2);
 	this->addChild(pScore);
 
@@ -301,7 +312,7 @@ void CGameScene::InitUI()
 }
 
 
-void CGameScene::InitCotroller()
+void CGameScene::InitController()
 {
 	//开始
 	float fSpriteScale = 0.38f;
@@ -393,27 +404,27 @@ void CGameScene::InitCotroller()
 	float fTopPosY = fHeight - fControllerPadding;
 
 	//上
-	Button* pUpBtn = Button::create("btn_0.png", "btn_1.png");
+	Button* pUpBtn = Button::create("btn_0.png", "btn_0.png");
 	pUpBtn->setScale(fBtnScale);
 	pUpBtn->addTouchEventListener(CC_CALLBACK_2(CGameScene::OnButtonEvent, this, BTN_UP));
 	Size upBtnSize = pUpBtn->getContentSize() * fBtnScale;
 
 	//右
-	Button* pRightBtn = Button::create("btn_0.png", "btn_1.png");
+	Button* pRightBtn = Button::create("btn_0.png", "btn_0.png");
 	pRightBtn->setScale(fBtnScale);
 	pRightBtn->setRotation(90);
 	pRightBtn->addTouchEventListener(CC_CALLBACK_2(CGameScene::OnButtonEvent, this, BTN_RIGHT));
 	Size rightBtnSize = pRightBtn->getContentSize() * fBtnScale;
 
 	//下
-	Button* pDownBtn = Button::create("btn_0.png", "btn_1.png");
+	Button* pDownBtn = Button::create("btn_0.png", "btn_0.png");
 	pDownBtn->setScale(fBtnScale);
 	pDownBtn->setRotation(180);
 	pDownBtn->addTouchEventListener(CC_CALLBACK_2(CGameScene::OnButtonEvent, this, BTN_DOWN));
 	Size downBtnSize = pDownBtn->getContentSize() * fBtnScale;
 
 	//左
-	Button* pLeftBtn = Button::create("btn_0.png", "btn_1.png");
+	Button* pLeftBtn = Button::create("btn_0.png", "btn_0.png");
 	pLeftBtn->setScale(fBtnScale);
 	pLeftBtn->setRotation(-90);
 	pLeftBtn->addTouchEventListener(CC_CALLBACK_2(CGameScene::OnButtonEvent, this, BTN_LEFT));
@@ -432,6 +443,11 @@ void CGameScene::InitCotroller()
 	pDownBtn->setPosition(Vec2(upBtnSize.height * 1.1f, fTopPosY - upBtnSize.height * 1.5f + fBtnPadding));
 	pUpBtn->setPosition(Vec2(upBtnSize.height * 1.1f, fTopPosY - upBtnSize.height * 0.5f - fBtnPadding));
 	pFireBtn->setPosition(Vec2(m_visibleSize.width - fireBtnSize.width * 0.8f, fTopPosY - upBtnSize.height));
+
+	//中心位置
+	m_oControllerCenterPos = Vec2(upBtnSize.height * 1.1f, fTopPosY - upBtnSize.height);
+	m_oControllerCenterSize = Size(upBtnSize.width, upBtnSize.width);
+
 	this->addChild(pLeftBtn);
 	this->addChild(pRightBtn);
 	this->addChild(pDownBtn);
@@ -550,17 +566,27 @@ void CGameScene::CreateKeyListener()
 
 void CGameScene::update(float dt)
 {
-#if CC_TARGET_PLATFORM == CC_PLATFORM_WP8 
 	if (m_fClickTime >= 0)
- 	{
+	{
 		m_fClickTime += dt * 1000;
 		if (m_fClickTime > CHANGEBG_INTERVAL)
 		{
 			m_fClickTime = -1;
- 			GLView::sharedOpenGLView()->OnGiveScore();
- 		}
- 	}
+#if CC_TARGET_PLATFORM == CC_PLATFORM_WP8 
+			GLView::sharedOpenGLView()->OnGiveScore();
 #endif
+
+#if CC_TARGET_PLATFORM == CC_PLATFORM_ANDROID
+			JniMethodInfo minfo;
+			bool bFuncExistFlag = JniHelper::getStaticMethodInfo(minfo, "org/cocos2dx/cpp/AppActivity", "GiveScore", "()V");
+			log("bFuncExistFlag=%d", bFuncExistFlag);
+			if (bFuncExistFlag)
+			{
+				minfo.env->CallStaticVoidMethod(minfo.classID, minfo.methodID);
+			}
+#endif
+		}
+	}
 
 	m_mapGameObj[m_iSceneIndex]->Play(dt * 1000);
 }
@@ -690,23 +716,89 @@ void CGameScene::OnButtonEvent(Ref* pSender, Widget::TouchEventType enType, int 
 		return;
 	}
 
+	Button* pButton = (Button*)pSender;
+	Vec2 oPos = Vec2::ZERO;
+
 	switch (enType)
 	{
 	case Widget::TouchEventType::BEGAN:
-		OnButtonPressed(iBtnIndex);
+		{
+			log("-----------------\nORIGIN  iBtnIndex=%d", iBtnIndex);
+			oPos = pButton->getTouchBeganPosition();
+			if (!AdjustClickIndex(oPos, iBtnIndex))
+			{
+				return;
+			}
+
+			//如果上一次的按钮记录有效，且此时按下的按钮与上一次的不相同，则释放上一次的按钮
+			if (m_nRecordBtnIdx < BTN_INVALID && iBtnIndex != m_nRecordBtnIdx)
+			{
+				//Release
+				OnButtonReleased(m_nRecordBtnIdx);
+			}
+			m_nRecordBtnIdx = iBtnIndex;
+
+
+			log("BEGAN  iBtnIndex=%d", iBtnIndex);
+			OnButtonPressed(iBtnIndex);
+		}
 		break;
 
 	case Widget::TouchEventType::MOVED:
 		break;
 
 	case Widget::TouchEventType::ENDED:
-		OnButtonReleased(iBtnIndex);
-		break;
-
 	case Widget::TouchEventType::CANCELED:
-		OnButtonReleased(iBtnIndex);
+		{
+			oPos = pButton->getTouchEndPosition();
+			if (!AdjustClickIndex(oPos, iBtnIndex))
+			{
+				return;
+			}
+
+			//如果上一次的按钮记录有效，且此时释放的按钮与上一次的不相同，则释放上一次的按钮
+			if (m_nRecordBtnIdx != BTN_INVALID && iBtnIndex != m_nRecordBtnIdx)
+			{
+				//Release
+				OnButtonReleased(m_nRecordBtnIdx);
+			}
+
+			//重置
+			m_nRecordBtnIdx = BTN_INVALID;
+
+			log("RELEASE  iBtnIndex=%d", iBtnIndex);
+			OnButtonReleased(iBtnIndex);
+		}
 		break;
 	}
+}
+
+
+bool CGameScene::AdjustClickIndex(Vec2 pos, int& nIndex)
+{
+	//只处理方向键
+	if (nIndex >= BTN_DIRMAX)
+	{
+		return true;
+	}
+
+	Vec2 dis = pos - m_oControllerCenterPos;
+
+	float fFactor = dis.y / dis.x;
+	if (fFactor >= 1 || fFactor <= -1)
+	{
+		nIndex = dis.y > 1e-6 ? BTN_UP : BTN_DOWN;
+		return true;
+	}
+
+	if (fFactor < 1 && fFactor >= -1)
+	{
+		nIndex = dis.x > 1e-6 ? BTN_RIGHT : BTN_LEFT;
+		return true;
+	}
+
+	nIndex = -1;
+	return false;
 }
 
 
@@ -722,7 +814,7 @@ void CGameScene::OnButtonPressed(int iBtnIndex)
 	switch (iBtnIndex)
 	{
 	case BTN_DOWN:
-		m_mapGameObj[m_iSceneIndex]->OnDownPressed();
+		m_mapGameObj[m_iSceneIndex]->OnDownBtnPressed();
 		break;
 
 	case BTN_LEFT:
@@ -750,7 +842,7 @@ void CGameScene::OnButtonReleased(int iBtnIndex)
 	switch (iBtnIndex)
 	{
 	case BTN_DOWN:
-		m_mapGameObj[m_iSceneIndex]->OnDownReleased();
+		m_mapGameObj[m_iSceneIndex]->OnDownBtnReleased();
 		break;
 
 	case BTN_LEFT:
@@ -870,19 +962,15 @@ void CGameScene::OnButtonClick(Ref* pSender, int iBtnIndex)
 		{
 			PLAY_EFFECT(EFFECT_CHANGE2);
 
-#if CC_TARGET_PLATFORM == CC_PLATFORM_WP8 
- 			if (m_fClickTime < 0) 
- 			{ 
+			if (m_fClickTime < 0) 
+			{ 
 				m_fClickTime = 0.1f;
- 			} 
+			} 
 			else if (m_fClickTime >= 0 && m_fClickTime < CHANGEBG_INTERVAL)
- 			{ 
- 				ChangeBGPic(); 
+			{ 
+				ChangeBGPic(); 
 				m_fClickTime = -1;
- 			} 
-#else 
- 			ChangeBGPic(); 
-#endif 
+			}
 		}
 		break;
 	}
@@ -939,11 +1027,17 @@ void CGameScene::ChangeBGPic()
 		m_iBgColor = 0;
 	}
 
+#if 0 
 	if (m_iBgColor > 0)
 	{
-		m_pBgSpr->setSpriteFrame(GET_SPRITEFRAME(StringUtils::format("bg%d.png", m_iBgColor)));
+		char szName[20] = { '\0' };
+		sprintf(szName, "bg%d.png", m_iBgColor);
+		m_pBgSpr->setSpriteFrame(GET_SPRITEFRAME(szName));
 	}
 	m_pBgSpr->setVisible(m_iBgColor > 0);
+#else
+	m_pBgLayer->setVisible(m_iBgColor > 0);
+#endif
 
 	SET_INTVALUE("BGCOLOR", m_iBgColor);
 }
