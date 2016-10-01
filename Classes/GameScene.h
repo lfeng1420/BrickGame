@@ -11,6 +11,7 @@ public:
 
 	static Scene* CreateScene();
 
+	//init
 	virtual bool init();
 
 	//更新单个Brick状态，bSmallBrickFlag 是否更新小方块， bShowFlag显示或隐藏
@@ -59,8 +60,20 @@ private:
 	//初始化UI:分数、等级等
 	void InitUI();
 
+	//初始化横向UI
+	void InitLandUI();
+
 	//根据指定的高度上限创建控制按钮
 	void InitController();
+
+	//根据指定的高度上限创建控制按钮
+	void InitLandController();
+
+	//获取方块Size
+	Size GetBrickSize(bool bLandVisible);
+
+	//获取数字Size
+	Size GetNumSize();
 
 	//创建按键监听器
 	void CreateKeyListener();
@@ -92,6 +105,12 @@ private:
 	//Change the play button state when game state changed
 	void ChangePlayState(bool bPlay);
 
+	//获取方块Sprite
+	Sprite* GetBrickSprite(int nRowIdx, int nColIdx, bool bSmallFlag, bool bLandFlag);
+
+	//初始化提示
+	void InitTips();
+
 private:
 	typedef map<int, CSceneBase*> TMAP_GAMEOBJ;
 	typedef TMAP_GAMEOBJ::iterator TMAP_GAMEOBJ_ITER;
@@ -114,23 +133,25 @@ private:
 
 	enum 
 	{
-		NUM_WIDTH = 22,				//数字宽度
-
-		NUM_HEIGHT = 36,			//数字高度
-
 		NUM_PADDING = 2,			//数字间距
 
 		BGPIC_COUNT = 1,			//背景图片数量
 
 		CHANGEBG_INTERVAL = 1000,	//更改背景的间隔
 
-		CLICK_INTERVAL = 2000,		//2秒
+		CLICK_INTERVAL = 1500,		//1.5秒
 
 		BTN_HEIGHT = 95,			//按钮高度
 	};
 
 private:
+	Node* m_pLandNode;									//横向屏幕Node
+
+	Node* m_pPortNode;									//纵向屏幕Node
+
 	Sprite* m_pArrBrick[ROW_NUM][COLUMN_NUM];			//Sprite数组
+
+	Sprite* m_pArrBrickLand[ROW_NUM][COLUMN_NUM];		//横向屏幕下的方块Sprite数组
 
 	Size m_visibleSize;									//屏幕大小
 
@@ -142,39 +163,53 @@ private:
 
 	Sprite* m_pArrSmallBrick[4][4];						//小方块序列
 
-	//Label* m_pLevelLabel;								//等级文本
-
-	//Label* m_pSpeedLabel;								//速度文本
-
-	//Label* m_pScoreLabel;								//分数文本
-
-	//Label* m_pHighScoreLabel;							//最高分文本
+	Sprite* m_pArrSmallBrickLand[4][4];					//横向小方块序列
 
 	Sprite* m_pArrSpeed[2];								//速度Sprite序列
 
+	Sprite* m_pArrSpeedLand[2];							//速度Sprite序列
+
 	Sprite* m_pArrLevel[2];								//等级Sprite序列
+
+	Sprite* m_pArrLevelLand[2];							//等级Sprite序列
 
 	Sprite* m_pArrScore[6];								//分数Sprite序列
 
+	Sprite* m_pArrScoreLand[6];							//分数Sprite序列
+
 	Sprite* m_pArrHighScore[6];							//最高分Sprite序列
+
+	Sprite* m_pArrHighScoreLand[6];						//最高分Sprite序列
 
 	Sprite* m_pPauseSpr;								//暂停图标
 
-	Sprite* m_pBgSpr;									//背景图片
+	Sprite* m_pPauseSprLand;							//横屏暂停图标
 
 	LayerColor* m_pBgLayer;								//背景颜色
 
+	LayerColor* m_pBgLayerLand;							//背景颜色
+
 	Sprite* m_pTipSpr;									//提示
 
+	Sprite* m_pTipSprLand;								//提示
+
 	MenuItemToggle* m_pStartBtn;						//Start Button
+
+	MenuItemToggle* m_pStartBtnLand;					//Start Button
+
+	MenuItemToggle* m_pSoundBtn;						//Sound Button
+
+	MenuItemToggle* m_pSoundBtnLand;					//Sound Button
 
 	bool m_bGamePause;									//暂停标志
 
 	int m_iBgColor;										//当前背景颜色序号，0白色，>=1自定义
 
-	double m_fClickTime;								//Click love btn time, two:change the background with WP
+	double m_fClickLoveTime;							//点击心形按钮时间
 
 	double m_lfClickExitTime;							//上一次点击退出时间
+
+	double m_lfClickSndTime;							//上一次点击声音时间
 
 	double m_lfClickResetTime;							//上一次点击重置时间
 
@@ -184,6 +219,14 @@ private:
 
 	Size m_oControllerCenterSize;						//控制器中心大小
 
+	Vec2 m_oControllerLandCenterPos;					//控制器中心位置
+
+	Size m_oControllerLandCenterSize;					//控制器中心大小
+
 	int m_nRecordBtnIdx;								//记录按钮索引
+
+	Size m_oBrickSize;									//方块大小
+
+	Size m_oNumSize;									//方块大小
 };
 
