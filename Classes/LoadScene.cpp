@@ -32,7 +32,7 @@ bool CLoadScene::init()
 
 	ADD_SPRITEFRAME("Plists/Brick.plist");
 	ADD_SPRITEFRAME("Plists/Font.plist");
-	//ADD_SPRITEFRAME("Plists/BGPic.plist");
+	ADD_SPRITEFRAME("Plists/Images.plist");
 	ADD_SPRITEFRAME("Plists/Tips.plist");
 
 	Size visibleSize = GET_VISIBLESIZE();

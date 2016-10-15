@@ -57,14 +57,17 @@ private:
 	//初始化Brick
 	void InitBrick();
 
+	//初始化背景
+	void InitBgLayer();
+
 	//初始化UI:分数、等级等
-	void InitUI();
+	void InitPortUI();
 
 	//初始化横向UI
 	void InitLandUI();
 
 	//根据指定的高度上限创建控制按钮
-	void InitController();
+	void InitPortController();
 
 	//根据指定的高度上限创建控制按钮
 	void InitLandController();
@@ -100,7 +103,7 @@ private:
 	void OnButtonClick(Ref* pSender, int iBtnIndex);
 
 	//Change the background image
-	void ChangeBGPic();
+	void ChangeColorMode();
 
 	//Change the play button state when game state changed
 	void ChangePlayState(bool bPlay);
@@ -110,6 +113,21 @@ private:
 
 	//初始化提示
 	void InitTips();
+
+	//改变Sprite
+	void ChangeSprite(Sprite* pSprite, bool bNightMode);
+
+	//改变MenuItemSprite
+	void ChangeMenuItemSprite(MenuItemSprite* pMenuItemSpr, bool bNightMode);
+
+	//改变MenuItemToggle
+	void ChangeMenuItemToggle(MenuItemToggle* pMenuItemToggle, bool bNightMode);
+
+	//改变Button
+	void ChangeButton(Button* pButton, bool bNightMode);
+
+	//根据模式返回sprite名字
+	string GetSpriteNameByMode(const char* szName);
 
 private:
 	typedef map<int, CSceneBase*> TMAP_GAMEOBJ;
@@ -139,7 +157,7 @@ private:
 
 		CHANGEBG_INTERVAL = 1000,	//更改背景的间隔
 
-		CLICK_INTERVAL = 1500,		//1.5秒
+		CLICK_INTERVAL = 1200,		//1.2秒
 
 		BTN_HEIGHT = 95,			//按钮高度
 	};
@@ -185,10 +203,6 @@ private:
 
 	Sprite* m_pPauseSprLand;							//横屏暂停图标
 
-	LayerColor* m_pBgLayer;								//背景颜色
-
-	LayerColor* m_pBgLayerLand;							//背景颜色
-
 	Sprite* m_pTipSpr;									//提示
 
 	Sprite* m_pTipSprLand;								//提示
@@ -228,5 +242,7 @@ private:
 	Size m_oBrickSize;									//方块大小
 
 	Size m_oNumSize;									//方块大小
+
+	LayerColor* m_pBgLayer;								//背景颜色
 };
 

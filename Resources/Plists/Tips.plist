@@ -7,54 +7,106 @@
             <key>exit.png</key>
             <dict>
                 <key>frame</key>
-                <string>{{1184,2},{392,48}}</string>
+                <string>{{364,2},{360,32}}</string>
                 <key>offset</key>
-                <string>{0,0}</string>
+                <string>{-2,0}</string>
                 <key>rotated</key>
                 <false/>
                 <key>sourceColorRect</key>
-                <string>{{0,0},{392,48}}</string>
+                <string>{{18,9},{360,32}}</string>
                 <key>sourceSize</key>
-                <string>{392,48}</string>
+                <string>{400,50}</string>
+            </dict>
+            <key>exit_night.png</key>
+            <dict>
+                <key>frame</key>
+                <string>{{2,2},{360,32}}</string>
+                <key>offset</key>
+                <string>{-2,0}</string>
+                <key>rotated</key>
+                <false/>
+                <key>sourceColorRect</key>
+                <string>{{18,9},{360,32}}</string>
+                <key>sourceSize</key>
+                <string>{400,50}</string>
             </dict>
             <key>saveclose.png</key>
             <dict>
                 <key>frame</key>
-                <string>{{790,2},{392,48}}</string>
+                <string>{{358,70},{354,32}}</string>
                 <key>offset</key>
-                <string>{0,0}</string>
+                <string>{1,0}</string>
                 <key>rotated</key>
                 <false/>
                 <key>sourceColorRect</key>
-                <string>{{0,0},{392,48}}</string>
+                <string>{{24,9},{354,32}}</string>
                 <key>sourceSize</key>
-                <string>{392,48}</string>
+                <string>{400,50}</string>
+            </dict>
+            <key>saveclose_night.png</key>
+            <dict>
+                <key>frame</key>
+                <string>{{2,70},{354,32}}</string>
+                <key>offset</key>
+                <string>{1,0}</string>
+                <key>rotated</key>
+                <false/>
+                <key>sourceColorRect</key>
+                <string>{{24,9},{354,32}}</string>
+                <key>sourceSize</key>
+                <string>{400,50}</string>
             </dict>
             <key>saveok.png</key>
             <dict>
                 <key>frame</key>
-                <string>{{396,2},{392,48}}</string>
+                <string>{{714,70},{164,32}}</string>
                 <key>offset</key>
-                <string>{0,0}</string>
+                <string>{0,1}</string>
                 <key>rotated</key>
                 <false/>
                 <key>sourceColorRect</key>
-                <string>{{0,0},{392,48}}</string>
+                <string>{{118,8},{164,32}}</string>
                 <key>sourceSize</key>
-                <string>{392,48}</string>
+                <string>{400,50}</string>
+            </dict>
+            <key>saveok_night.png</key>
+            <dict>
+                <key>frame</key>
+                <string>{{714,36},{164,32}}</string>
+                <key>offset</key>
+                <string>{0,1}</string>
+                <key>rotated</key>
+                <false/>
+                <key>sourceColorRect</key>
+                <string>{{118,8},{164,32}}</string>
+                <key>sourceSize</key>
+                <string>{400,50}</string>
             </dict>
             <key>saveopen.png</key>
             <dict>
                 <key>frame</key>
-                <string>{{2,2},{392,48}}</string>
+                <string>{{358,36},{354,32}}</string>
                 <key>offset</key>
                 <string>{0,0}</string>
                 <key>rotated</key>
                 <false/>
                 <key>sourceColorRect</key>
-                <string>{{0,0},{392,48}}</string>
+                <string>{{23,9},{354,32}}</string>
                 <key>sourceSize</key>
-                <string>{392,48}</string>
+                <string>{400,50}</string>
+            </dict>
+            <key>saveopen_night.png</key>
+            <dict>
+                <key>frame</key>
+                <string>{{2,36},{354,32}}</string>
+                <key>offset</key>
+                <string>{0,0}</string>
+                <key>rotated</key>
+                <false/>
+                <key>sourceColorRect</key>
+                <string>{{23,9},{354,32}}</string>
+                <key>sourceSize</key>
+                <string>{400,50}</string>
             </dict>
         </dict>
         <key>metadata</key>
@@ -64,9 +116,9 @@
             <key>realTextureFileName</key>
             <string>Tips.png</string>
             <key>size</key>
-            <string>{1578,52}</string>
+            <string>{880,104}</string>
             <key>smartupdate</key>
-            <string>$TexturePacker:SmartUpdate:78464bffb294688737cb606bf97ddbb4$</string>
+            <string>$TexturePacker:SmartUpdate:2cb761eaae8966425850b9545ab57a06$</string>
             <key>textureFileName</key>
             <string>Tips.png</string>
         </dict>

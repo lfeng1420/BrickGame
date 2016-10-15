@@ -47,13 +47,16 @@ Scene* CGameScene::CreateScene()
 
 bool CGameScene::init()
 {
-	CC_RETURN_FALSE_IF(!LayerColor::initWithColor(Color4B::WHITE));
+	CC_RETURN_FALSE_IF(!LayerColor::initWithColor(Color4B::BLACK));
 
 	//初始化变量，获取数据等
 	InitData();
 
+	//初始化背景
+	InitBgLayer();
+
 	//UI初始化
-	InitUI();
+	InitPortUI();
 
 	//横向UI初始化
 	InitLandUI();
@@ -62,7 +65,7 @@ bool CGameScene::init()
 	InitBrick();
 
 	//初始化控制器
-	InitController();
+	InitPortController();
 
 	//横向控制器
 	InitLandController();
@@ -128,8 +131,7 @@ void CGameScene::InitBrick()
 		false, false, false, false, false, false, false, false, false, false, false, false, false, false,
 	};
 
-	Sprite* pBrick = Sprite::createWithSpriteFrameName("black.png");
-	Size brickSize = GET_CONTENTSIZE(pBrick);
+	Size brickSize = GetBrickSize(false);
 
 	float fCurY = m_visibleSize.height;
 	for (int i = 0; i < ROW_NUM; ++i)
@@ -137,9 +139,11 @@ void CGameScene::InitBrick()
 		float fCurX = 0;
 		for (int j = 0; j < COLUMN_NUM; ++j)
 		{
-			m_arrBrickState[i][j] = arrBrick[i][j];
-			Sprite* pSpr = Sprite::createWithSpriteFrameName(arrBrick[i][j] ? "black.png" : "empty.png");
+			bool bFlag = arrBrick[i][j];
+			m_arrBrickState[i][j] = bFlag;
+			Sprite* pSpr = CREATE_SPRITEWITHNAME(GetSpriteNameByMode(bFlag ? "black.png" : "empty.png"));
 			pSpr->setPosition(fCurX + brickSize.width * 1.0f / 2, fCurY - brickSize.height * 1.0f / 2);
+			pSpr->setTag(i * ROW_NUM + j);
 			m_pPortNode->addChild(pSpr);
 
 			m_pArrBrick[i][j] = pSpr;
@@ -151,26 +155,29 @@ void CGameScene::InitBrick()
 
 	float fScale = m_visibleSize.width / ROW_NUM * 1.0f / brickSize.width;
 	float fCurX = m_visibleSize.width;
+	brickSize = GetBrickSize(true);
 	for (int i = 0; i < ROW_NUM; ++i)
 	{
-		fCurY = m_visibleSize.height / 2 + COLUMN_NUM * fScale * brickSize.height / 2.0f;
+		fCurY = m_visibleSize.height / 2 + COLUMN_NUM * brickSize.height / 2.0f;
 		for (int j = 0; j < COLUMN_NUM; ++j)
 		{
-			Sprite* pSpr = Sprite::createWithSpriteFrameName(m_arrBrickState[i][j] ? "black.png" : "empty.png");
+			bool bFlag = arrBrick[i][j];
+			Sprite* pSpr = CREATE_SPRITEWITHNAME(GetSpriteNameByMode(bFlag ? "black.png" : "empty.png"));
 			pSpr->setScale(fScale);
-			pSpr->setPosition(fCurX - brickSize.width * fScale * 0.5f, fCurY - brickSize.height * fScale * 0.5f);
+			pSpr->setPosition(fCurX - brickSize.width * 0.5f, fCurY - brickSize.height * 0.5f);
+			pSpr->setTag(i * ROW_NUM + j);
 			m_pLandNode->addChild(pSpr);
 
 			m_pArrBrickLand[i][j] = pSpr;
-			fCurY -= brickSize.height * fScale;
+			fCurY -= brickSize.height;
 		}
-		fCurX -= brickSize.width * fScale;
+		fCurX -= brickSize.width;
 	}
 }
 
 
 //初始化UI:分数、等级等
-void CGameScene::InitUI()
+void CGameScene::InitPortUI()
 {
 	//图片缩放
 	float fSpriteScale = 0.38f;
@@ -181,15 +188,9 @@ void CGameScene::InitUI()
 	bool bVisible = GET_BOOLVALUE("PORTRAIT", true);
 	m_pPortNode->setVisible(bVisible);
 
-	//背景
-	m_pBgLayer = LayerColor::create(Color4B(128, 128, 128, 255));
-	m_pBgLayer->setContentSize(m_visibleSize);
-	m_pPortNode->addChild(m_pBgLayer);
-	m_pBgLayer->setVisible(m_iBgColor > 0);
-
 	//分数
 	Size brickSize = GetBrickSize(false);
-	auto pScore = Sprite::create("score.png");
+	auto pScore = CREATE_SPRITEWITHNAME(GetSpriteNameByMode("score.png"));
 	pScore->setScale(fSpriteScale);
 	Size scoreSize = GET_CONTENTSIZE(pScore) * fSpriteScale;
 	float fCurX = (m_visibleSize.width - COLUMN_NUM * brickSize.width) / 2 + COLUMN_NUM * brickSize.width;
@@ -203,7 +204,7 @@ void CGameScene::InitUI()
 	fCurY -= numSize.height * 1.3f;
 	for (int i = 0; i < 6; ++i)
 	{
-		m_pArrScore[i] = CREATE_SPRITEWITHNAME("0.png");
+		m_pArrScore[i] = CREATE_SPRITEWITHNAME(GetSpriteNameByMode("0.png"));
 		m_pArrScore[i]->setPosition(fTempX + numSize.width * 0.5f, fCurY + numSize.height * 0.5f);
 		m_pPortNode->addChild(m_pArrScore[i]);
 
@@ -211,7 +212,7 @@ void CGameScene::InitUI()
 	}
 
 	//最高分
-	auto pHighScore = Sprite::create("hiscore.png");
+	auto pHighScore = CREATE_SPRITEWITHNAME(GetSpriteNameByMode("hiscore.png"));
 	pHighScore->setScale(fSpriteScale);
 	Size highScoreSize = GET_CONTENTSIZE(pHighScore) * fSpriteScale;
 	fCurY -= highScoreSize.height * 1.5f;
@@ -223,7 +224,7 @@ void CGameScene::InitUI()
 	fTempX = fCurX - NUM_PADDING * 2.5f - numSize.width * 3;
 	for (int i = 0; i < 6; ++i)
 	{
-		m_pArrHighScore[i] = CREATE_SPRITEWITHNAME("0.png");
+		m_pArrHighScore[i] = CREATE_SPRITEWITHNAME(GetSpriteNameByMode("0.png"));
 		m_pArrHighScore[i]->setPosition(fTempX + numSize.width * 0.5f, fCurY + numSize.height * 0.5f);
 		m_pPortNode->addChild(m_pArrHighScore[i]);
 
@@ -239,7 +240,7 @@ void CGameScene::InitUI()
 		for (int j = 0; j < 4; ++j)
 		{
 			float fX = fCurX + (brickSize.height * fBrickScale + fPadding) * (j - 1.5f);
-			m_pArrSmallBrick[i][j] = Sprite::createWithSpriteFrameName("empty.png");
+			m_pArrSmallBrick[i][j] = CREATE_SPRITEWITHNAME(GetSpriteNameByMode("empty.png"));
 			m_pArrSmallBrick[i][j]->setScale(fBrickScale);
 			m_pArrSmallBrick[i][j]->setPosition(fX, fCurY - brickSize.height * fBrickScale / 2);
 			m_pPortNode->addChild(m_pArrSmallBrick[i][j]);
@@ -249,7 +250,7 @@ void CGameScene::InitUI()
 	}
 
 	//速度
-	auto pSpeed = Sprite::create("speed.png");
+	auto pSpeed = CREATE_SPRITEWITHNAME(GetSpriteNameByMode("speed.png"));
 	pSpeed->setScale(fSpriteScale);
 	Size speedSize = GET_CONTENTSIZE(pSpeed);
 	fCurY -= speedSize.height;
@@ -257,27 +258,27 @@ void CGameScene::InitUI()
 	m_pPortNode->addChild(pSpeed);
 
 	fCurY -= numSize.height;
-	m_pArrSpeed[0] = CREATE_SPRITEWITHNAME("0.png");
+	m_pArrSpeed[0] = CREATE_SPRITEWITHNAME(GetSpriteNameByMode("0.png"));
 	m_pArrSpeed[0]->setPosition(fCurX, fCurY + numSize.height / 2);
 	m_pPortNode->addChild(m_pArrSpeed[0]);
 
-	m_pArrSpeed[1] = CREATE_SPRITEWITHNAME("0.png");
+	m_pArrSpeed[1] = CREATE_SPRITEWITHNAME(GetSpriteNameByMode("0.png"));
 	m_pArrSpeed[1]->setPosition(fCurX, fCurY + numSize.height / 2);
 	m_pPortNode->addChild(m_pArrSpeed[1]);
 	m_pArrSpeed[1]->setVisible(false);
 
 	fCurY -= numSize.height + NUM_PADDING * 10;
-	m_pArrLevel[0] = CREATE_SPRITEWITHNAME("0.png");
+	m_pArrLevel[0] = CREATE_SPRITEWITHNAME(GetSpriteNameByMode("0.png"));
 	m_pArrLevel[0]->setPosition(fCurX, fCurY + numSize.height / 2);
 	m_pPortNode->addChild(m_pArrLevel[0]);
 
-	m_pArrLevel[1] = CREATE_SPRITEWITHNAME("0.png");
+	m_pArrLevel[1] = CREATE_SPRITEWITHNAME(GetSpriteNameByMode("0.png"));
 	m_pArrLevel[1]->setPosition(fCurX, fCurY + numSize.height / 2);
 	m_pPortNode->addChild(m_pArrLevel[1]);
 	m_pArrLevel[1]->setVisible(false);
 
 	//等级
-	auto pLevel = Sprite::create("level.png");
+	auto pLevel = CREATE_SPRITEWITHNAME(GetSpriteNameByMode("level.png"));
 	pLevel->setScale(fSpriteScale);
 	Size levelSize = GET_CONTENTSIZE(pLevel);
 	fCurY -= levelSize.height;
@@ -286,7 +287,7 @@ void CGameScene::InitUI()
 
 	//暂停图标
 	//float fPauseScale = fSpriteScale - 0.04f;
-	m_pPauseSpr = Sprite::create("tea.png");
+	m_pPauseSpr = CREATE_SPRITEWITHNAME(GetSpriteNameByMode("tea.png"));
 	m_pPauseSpr->setScale(fSpriteScale);
 	Size pauseSize = GET_CONTENTSIZE(m_pPauseSpr) * fSpriteScale;
 	fCurY -= pauseSize.height;
@@ -306,12 +307,6 @@ void CGameScene::InitLandUI()
 	bool bVisible = GET_BOOLVALUE("PORTRAIT", true);
 	m_pLandNode->setVisible(!bVisible);
 
-	//背景
-	m_pBgLayerLand = LayerColor::create(Color4B(128, 128, 128, 255));
-	m_pBgLayerLand->setContentSize(m_visibleSize);
-	m_pLandNode->addChild(m_pBgLayerLand);
-	m_pBgLayerLand->setVisible(m_iBgColor > 0);
-
 	//图片缩放
 	float fSpriteScale = 0.35f;
 
@@ -321,7 +316,7 @@ void CGameScene::InitLandUI()
 	float fCurY = fUIPadding + brickSize.width * COLUMN_NUM;
 
 	//分数
-	auto pScore = Sprite::create("score.png");
+	auto pScore = CREATE_SPRITEWITHNAME(GetSpriteNameByMode("score.png"));
 	pScore->setRotation(90);
 	pScore->setScale(fSpriteScale);
 	Size scoreSize = GET_CONTENTSIZE(pScore) * fSpriteScale;
@@ -334,7 +329,7 @@ void CGameScene::InitLandUI()
 	fCurX -= numSize.height + 5;
 	for (int i = 0; i < 6; ++i)
 	{
-		Sprite* pSpr = CREATE_SPRITEWITHNAME("0.png");
+		Sprite* pSpr = CREATE_SPRITEWITHNAME(GetSpriteNameByMode("0.png"));
 		pSpr->setRotation(90);
 		pSpr->setPosition(fCurX + numSize.height * 0.5f, fCurY + fUIPadding * 0.5f - (numSize.width + NUM_PADDING) * (i - 2.5f));
 		m_pLandNode->addChild(pSpr);
@@ -342,7 +337,7 @@ void CGameScene::InitLandUI()
 	}
 
 	//最高分
-	auto pHighScore = Sprite::create("hiscore.png");
+	auto pHighScore = CREATE_SPRITEWITHNAME(GetSpriteNameByMode("hiscore.png"));
 	pHighScore->setScale(fSpriteScale);
 	pHighScore->setRotation(90);
 	Size highScoreSize = GET_CONTENTSIZE(pHighScore) * fSpriteScale;
@@ -354,7 +349,7 @@ void CGameScene::InitLandUI()
 	fCurX -= numSize.height + 5;
 	for (int i = 0; i < 6; ++i)
 	{
-		Sprite* pSpr = CREATE_SPRITEWITHNAME("0.png");
+		Sprite* pSpr = CREATE_SPRITEWITHNAME(GetSpriteNameByMode("0.png"));
 		pSpr->setRotation(90);
 		pSpr->setPosition(fCurX + numSize.height * 0.5f, fCurY + fUIPadding * 0.5f - (numSize.width + NUM_PADDING) * (i - 2.5f));
 		m_pLandNode->addChild(pSpr);
@@ -371,7 +366,7 @@ void CGameScene::InitLandUI()
 	{
 		for (int j = 0; j < 4; ++j)
 		{
-			Sprite* pSpr = Sprite::createWithSpriteFrameName("empty.png");
+			Sprite* pSpr = CREATE_SPRITEWITHNAME(GetSpriteNameByMode("empty.png"));
 			pSpr->setScale(fBrickScale);
 			pSpr->setPosition(fCurX - fSmallBrickWidth * 0.5f, fUIPadding * 0.5f - (fSmallBrickHeight + fBrickPadding) * (j - 1.5f));
 			m_pLandNode->addChild(pSpr);
@@ -385,31 +380,31 @@ void CGameScene::InitLandUI()
 
 	//速度
 	fCurX -= brickSize.width + 20;
-	m_pArrSpeedLand[0] = CREATE_SPRITEWITHNAME("0.png");
+	m_pArrSpeedLand[0] = CREATE_SPRITEWITHNAME(GetSpriteNameByMode("0.png"));
 	m_pArrSpeedLand[0]->setPosition(fCurX + numSize.height * 0.5f, fUIPadding * 0.5f + numSize.width * 2.2f);
 	m_pArrSpeedLand[0]->setRotation(90);
 	m_pLandNode->addChild(m_pArrSpeedLand[0]);
 
-	m_pArrSpeedLand[1] = CREATE_SPRITEWITHNAME("0.png");
+	m_pArrSpeedLand[1] = CREATE_SPRITEWITHNAME(GetSpriteNameByMode("0.png"));
 	m_pArrSpeedLand[1]->setPosition(fCurX + numSize.height * 0.5f, fUIPadding * 0.5f + numSize.width * 2.2f);
 	m_pArrSpeedLand[1]->setRotation(90);
 	m_pLandNode->addChild(m_pArrSpeedLand[1]);
 	m_pArrSpeedLand[1]->setVisible(false);
 
 	//关卡
-	m_pArrLevelLand[0] = CREATE_SPRITEWITHNAME("0.png");
+	m_pArrLevelLand[0] = CREATE_SPRITEWITHNAME(GetSpriteNameByMode("0.png"));
 	m_pArrLevelLand[0]->setPosition(fCurX + numSize.height * 0.5f, fUIPadding * 0.5f - numSize.width * 2.2f);
 	m_pArrLevelLand[0]->setRotation(90);
 	m_pLandNode->addChild(m_pArrLevelLand[0]);
 
-	m_pArrLevelLand[1] = CREATE_SPRITEWITHNAME("0.png");
+	m_pArrLevelLand[1] = CREATE_SPRITEWITHNAME(GetSpriteNameByMode("0.png"));
 	m_pArrLevelLand[1]->setPosition(fCurX + numSize.height * 0.5f, fUIPadding * 0.5f - numSize.width * 2.2f);
 	m_pArrLevelLand[1]->setRotation(90);
 	m_pLandNode->addChild(m_pArrLevelLand[1]);
 	m_pArrLevelLand[1]->setVisible(false);
 
 	//暂停图标
-	m_pPauseSprLand = Sprite::create("tea.png");
+	m_pPauseSprLand = CREATE_SPRITEWITHNAME(GetSpriteNameByMode("0.png"));
 	m_pPauseSprLand->setScale(fSpriteScale);
 	m_pPauseSprLand->setRotation(90);
 	Size pauseSize = GET_CONTENTSIZE(m_pPauseSprLand) * fSpriteScale;
@@ -420,14 +415,14 @@ void CGameScene::InitLandUI()
 	m_pPauseSprLand->setVisible(m_bGamePause);
 }
 
-void CGameScene::InitController()
+void CGameScene::InitPortController()
 {
 	//开始
 	float fSpriteScale = 0.4f;
 	m_pStartBtn = MenuItemToggle::createWithCallback(
 		CC_CALLBACK_1(CGameScene::OnButtonClick, this, BTN_START),
-		MenuItemSprite::create(Sprite::create("play.png"), Sprite::create("play.png"), nullptr),
-		MenuItemSprite::create(Sprite::create("pause.png"), Sprite::create("pause.png"), nullptr),
+		MenuItemSprite::create(CREATE_SPRITEWITHNAME(GetSpriteNameByMode("play.png")), CREATE_SPRITEWITHNAME(GetSpriteNameByMode("play.png")), nullptr),
+		MenuItemSprite::create(CREATE_SPRITEWITHNAME(GetSpriteNameByMode("pause.png")), CREATE_SPRITEWITHNAME(GetSpriteNameByMode("pause.png")), nullptr),
 		nullptr
 		);
 	m_pStartBtn->setScale(fSpriteScale);
@@ -436,13 +431,13 @@ void CGameScene::InitController()
 	//获取声音状态
 	bool bSoundState = GET_SOUNDSTATE();
 	auto pSoundOnMenu = MenuItemSprite::create(
-		Sprite::create("sound_on.png"),
-		Sprite::create("sound_on.png"),
+		CREATE_SPRITEWITHNAME(GetSpriteNameByMode("sound_on.png")),
+		CREATE_SPRITEWITHNAME(GetSpriteNameByMode("sound_on.png")),
 		nullptr
 		);
 	auto pSoundOffMenu = MenuItemSprite::create(
-		Sprite::create("sound_off.png"),
-		Sprite::create("sound_off.png"),
+		CREATE_SPRITEWITHNAME(GetSpriteNameByMode("sound_off.png")),
+		CREATE_SPRITEWITHNAME(GetSpriteNameByMode("sound_off.png")),
 		nullptr
 		);
 
@@ -458,8 +453,8 @@ void CGameScene::InitController()
 
 	//重置
 	auto resetBtn = MenuItemSprite::create(
-		Sprite::create("reset.png"),
-		Sprite::create("reset.png"),
+		CREATE_SPRITEWITHNAME(GetSpriteNameByMode("reset.png")),
+		CREATE_SPRITEWITHNAME(GetSpriteNameByMode("reset.png")),
 		CC_CALLBACK_1(CGameScene::OnButtonClick, this, BTN_RESET)
 		);
 	resetBtn->setScale(fSpriteScale);
@@ -467,8 +462,8 @@ void CGameScene::InitController()
 
 	//额外功能
 	auto extremeBtn = MenuItemSprite::create(
-		Sprite::create("star.png"),
-		Sprite::create("star.png"),
+		CREATE_SPRITEWITHNAME(GetSpriteNameByMode("star.png")),
+		CREATE_SPRITEWITHNAME(GetSpriteNameByMode("star.png")),
 		CC_CALLBACK_1(CGameScene::OnButtonClick, this, BTN_GIVESCORE)
 		);
 	extremeBtn->setScale(fSpriteScale);
@@ -512,35 +507,35 @@ void CGameScene::InitController()
 	float fTopPosY = fHeight - fControllerPadding;
 
 	//上
-	Button* pUpBtn = Button::create("btn_0.png", "btn_0.png");
+	Button* pUpBtn = Button::create(GetSpriteNameByMode("btn_0.png"), GetSpriteNameByMode("btn_0.png"), "", Widget::TextureResType::PLIST);
 	pUpBtn->setScale(fBtnScale);
 	pUpBtn->addTouchEventListener(CC_CALLBACK_2(CGameScene::OnButtonEvent, this, BTN_UP));
 	Size upBtnSize = pUpBtn->getContentSize() * fBtnScale;
 
 	//右
-	Button* pRightBtn = Button::create("btn_0.png", "btn_0.png");
+	Button* pRightBtn = Button::create(GetSpriteNameByMode("btn_0.png"), GetSpriteNameByMode("btn_0.png"), "", Widget::TextureResType::PLIST);
 	pRightBtn->setScale(fBtnScale);
 	pRightBtn->setRotation(90);
 	pRightBtn->addTouchEventListener(CC_CALLBACK_2(CGameScene::OnButtonEvent, this, BTN_RIGHT));
 	Size rightBtnSize = pRightBtn->getContentSize() * fBtnScale;
 
 	//下
-	Button* pDownBtn = Button::create("btn_0.png", "btn_0.png");
+	Button* pDownBtn = Button::create(GetSpriteNameByMode("btn_0.png"), GetSpriteNameByMode("btn_0.png"), "", Widget::TextureResType::PLIST);
 	pDownBtn->setScale(fBtnScale);
 	pDownBtn->setRotation(180);
 	pDownBtn->addTouchEventListener(CC_CALLBACK_2(CGameScene::OnButtonEvent, this, BTN_DOWN));
 	Size downBtnSize = pDownBtn->getContentSize() * fBtnScale;
 
 	//左
-	Button* pLeftBtn = Button::create("btn_0.png", "btn_0.png");
+	Button* pLeftBtn = Button::create(GetSpriteNameByMode("btn_0.png"), GetSpriteNameByMode("btn_0.png"), "", Widget::TextureResType::PLIST);
 	pLeftBtn->setScale(fBtnScale);
 	pLeftBtn->setRotation(-90);
 	pLeftBtn->addTouchEventListener(CC_CALLBACK_2(CGameScene::OnButtonEvent, this, BTN_LEFT));
 	Size leftBtnSize = pLeftBtn->getContentSize() * fBtnScale;
 
 	//Fire
-	float fFireScale = 1.37f;
-	Button* pFireBtn = Button::create("fire_0.png", "fire_1.png");
+	float fFireScale = 1.4f;
+	Button* pFireBtn = Button::create(GetSpriteNameByMode("fire_0.png"), GetSpriteNameByMode("fire_1.png"), "", Widget::TextureResType::PLIST);
 	pFireBtn->setScale(fFireScale);
 	pFireBtn->addTouchEventListener(CC_CALLBACK_2(CGameScene::OnButtonEvent, this, BTN_FIRE));
 	Size fireBtnSize = pFireBtn->getContentSize() * fFireScale;
@@ -570,8 +565,8 @@ void CGameScene::InitLandController()
 	float fSpriteScale = 0.4f;
 	m_pStartBtnLand = MenuItemToggle::createWithCallback(
 		CC_CALLBACK_1(CGameScene::OnButtonClick, this, BTN_START),
-		MenuItemSprite::create(Sprite::create("play.png"), Sprite::create("play.png"), nullptr),
-		MenuItemSprite::create(Sprite::create("pause.png"), Sprite::create("pause.png"), nullptr),
+		MenuItemSprite::create(CREATE_SPRITEWITHNAME(GetSpriteNameByMode("play.png")), CREATE_SPRITEWITHNAME(GetSpriteNameByMode("play.png")), nullptr),
+		MenuItemSprite::create(CREATE_SPRITEWITHNAME(GetSpriteNameByMode("pause.png")), CREATE_SPRITEWITHNAME(GetSpriteNameByMode("pause.png")), nullptr),
 		nullptr
 		);
 	m_pStartBtnLand->setScale(fSpriteScale);
@@ -581,13 +576,13 @@ void CGameScene::InitLandController()
 	//获取声音状态
 	bool bSoundState = GET_SOUNDSTATE();
 	auto pSoundOnMenu = MenuItemSprite::create(
-		Sprite::create("sound_on.png"),
-		Sprite::create("sound_on.png"),
+		CREATE_SPRITEWITHNAME(GetSpriteNameByMode("sound_on.png")),
+		CREATE_SPRITEWITHNAME(GetSpriteNameByMode("sound_on.png")),
 		nullptr
 		);
 	auto pSoundOffMenu = MenuItemSprite::create(
-		Sprite::create("sound_off.png"),
-		Sprite::create("sound_off.png"),
+		CREATE_SPRITEWITHNAME(GetSpriteNameByMode("sound_off.png")),
+		CREATE_SPRITEWITHNAME(GetSpriteNameByMode("sound_off.png")),
 		nullptr
 		);
 
@@ -604,8 +599,8 @@ void CGameScene::InitLandController()
 
 	//重置
 	auto resetBtn = MenuItemSprite::create(
-		Sprite::create("reset.png"),
-		Sprite::create("reset.png"),
+		CREATE_SPRITEWITHNAME(GetSpriteNameByMode("reset.png")),
+		CREATE_SPRITEWITHNAME(GetSpriteNameByMode("reset.png")),
 		CC_CALLBACK_1(CGameScene::OnButtonClick, this, BTN_RESET)
 		);
 	resetBtn->setScale(fSpriteScale);
@@ -614,8 +609,8 @@ void CGameScene::InitLandController()
 
 	//额外功能
 	auto extremeBtn = MenuItemSprite::create(
-		Sprite::create("star.png"),
-		Sprite::create("star.png"),
+		CREATE_SPRITEWITHNAME(GetSpriteNameByMode("star.png")),
+		CREATE_SPRITEWITHNAME(GetSpriteNameByMode("star.png")),
 		CC_CALLBACK_1(CGameScene::OnButtonClick, this, BTN_GIVESCORE)
 		);
 	extremeBtn->setScale(fSpriteScale);
@@ -639,7 +634,7 @@ void CGameScene::InitLandController()
 	m_pLandNode->addChild(menu);
 
 	//重新调整间距
-	Sprite* pSampleBtn = CREATE_SPRITE("btn_0.png");
+	Sprite* pSampleBtn = CREATE_SPRITEWITHNAME(GetSpriteNameByMode("btn_0.png"));
 	Size sampleBtnSize = GET_CONTENTSIZE(pSampleBtn);
 	float fBtnScale = (fBrickBottomHeight - 40) / sampleBtnSize.height / 2.0f;
 	if (fBtnScale > FLOAT_CONTROLLER_SCALE_MAX)
@@ -653,31 +648,31 @@ void CGameScene::InitLandController()
 	float fHeightPadding = (fBrickBottomHeight - sampleBtnSize.height * 2 - fBtnPadding * 2) * 0.5f;
 
 	//左
-	Button* pLeftBtn = Button::create("btn_0.png", "btn_0.png");
+	Button* pLeftBtn = Button::create(GetSpriteNameByMode("btn_0.png"), GetSpriteNameByMode("btn_0.png"), "", Widget::TextureResType::PLIST);
 	pLeftBtn->setScale(fBtnScale);
 	pLeftBtn->addTouchEventListener(CC_CALLBACK_2(CGameScene::OnButtonEvent, this, BTN_LEFT));
 
 	//上
-	Button* pUpBtn = Button::create("btn_0.png", "btn_0.png");
+	Button* pUpBtn = Button::create(GetSpriteNameByMode("btn_0.png"), GetSpriteNameByMode("btn_0.png"), "", Widget::TextureResType::PLIST);
 	pUpBtn->setRotation(90);
 	pUpBtn->setScale(fBtnScale);
 	pUpBtn->addTouchEventListener(CC_CALLBACK_2(CGameScene::OnButtonEvent, this, BTN_UP));
 
 	//右
-	Button* pRightBtn = Button::create("btn_0.png", "btn_0.png");
+	Button* pRightBtn = Button::create(GetSpriteNameByMode("btn_0.png"), GetSpriteNameByMode("btn_0.png"), "", Widget::TextureResType::PLIST);
 	pRightBtn->setScale(fBtnScale);
 	pRightBtn->setRotation(180);
 	pRightBtn->addTouchEventListener(CC_CALLBACK_2(CGameScene::OnButtonEvent, this, BTN_RIGHT));
 
 	//下
-	Button* pDownBtn = Button::create("btn_0.png", "btn_0.png");
+	Button* pDownBtn = Button::create(GetSpriteNameByMode("btn_0.png"), GetSpriteNameByMode("btn_0.png"), "", Widget::TextureResType::PLIST);
 	pDownBtn->setScale(fBtnScale);
 	pDownBtn->setRotation(270);
 	pDownBtn->addTouchEventListener(CC_CALLBACK_2(CGameScene::OnButtonEvent, this, BTN_DOWN));
 
 	//Fire
 	float fFireScale = 1.5f;
-	Button* pFireBtn = Button::create("fire_0.png", "fire_1.png");
+	Button* pFireBtn = Button::create(GetSpriteNameByMode("fire_0.png"), GetSpriteNameByMode("fire_1.png"), "", Widget::TextureResType::PLIST);
 	pFireBtn->setScale(fFireScale);
 	pFireBtn->setRotation(90);
 	Size fireBtnSize = GET_CONTENTSIZE(pFireBtn) * fFireScale;
@@ -707,7 +702,7 @@ Size CGameScene::GetBrickSize(bool bLandVisible)
 {
 	if (m_oBrickSize.equals(Size::ZERO))
 	{
-		Sprite* pSpr = Sprite::createWithSpriteFrameName("empty.png");
+		Sprite* pSpr = CREATE_SPRITEWITHNAME("empty.png");
 		m_oBrickSize = GET_CONTENTSIZE(pSpr);
 	}
 
@@ -724,7 +719,7 @@ Size CGameScene::GetNumSize()
 {
 	if (m_oNumSize.equals(Size::ZERO))
 	{
-		Sprite* pSpr = Sprite::createWithSpriteFrameName("0.png");
+		Sprite* pSpr = CREATE_SPRITEWITHNAME("0.png");
 		m_oNumSize = GET_CONTENTSIZE(pSpr);
 	}
 
@@ -940,19 +935,19 @@ void CGameScene::UpdateBrick(int iRowIndex, int iColIndex, bool bSmallBrickFlag,
 	//设置显示或隐藏状态
 	if (bShowFlag)
 	{
-		pBrick->setSpriteFrame(SpriteFrameCache::getInstance()->getSpriteFrameByName("black.png"));
-		pLandBrick->setSpriteFrame(SpriteFrameCache::getInstance()->getSpriteFrameByName("black.png"));
+		pBrick->setSpriteFrame(GetSpriteNameByMode("black.png"));
+		pLandBrick->setSpriteFrame(GetSpriteNameByMode("black.png"));
 	}
 	else
 	{
-		pBrick->setSpriteFrame(SpriteFrameCache::getInstance()->getSpriteFrameByName("empty.png"));
-		pLandBrick->setSpriteFrame(SpriteFrameCache::getInstance()->getSpriteFrameByName("empty.png"));
+		pBrick->setSpriteFrame(GetSpriteNameByMode("empty.png"));
+		pLandBrick->setSpriteFrame(GetSpriteNameByMode("empty.png"));
 	}
 }
 
 
 //更新所有Brick状态
-void CGameScene::UpdateBricks( int iStartRowIdx, int iStartColIdx, int iEndRowIdx, int iEndColIdx )
+void CGameScene::UpdateBricks( int iStartRowIdx /*= -1*/, int iStartColIdx /*= -1*/, int iEndRowIdx /*= -1*/, int iEndColIdx /*= -1*/ )
 {
 	//边界检查
 	iEndRowIdx = (iEndRowIdx > ROW_NUM ? ROW_NUM : iEndRowIdx);
@@ -1203,6 +1198,7 @@ void CGameScene::OnButtonClick(Ref* pSender, int iBtnIndex)
 			if (m_pPortNode->isVisible())
 			{
 				int nIndex = m_pSoundBtn->getSelectedIndex();
+				log("nIndex=%d", nIndex);
 				m_pSoundBtnLand->setSelectedIndex(nIndex);
 			}
 			else
@@ -1293,7 +1289,7 @@ void CGameScene::OnButtonClick(Ref* pSender, int iBtnIndex)
 			} 
 			else if (m_fClickLoveTime >= 0 && m_fClickLoveTime < CHANGEBG_INTERVAL)
 			{ 
-				ChangeBGPic(); 
+				ChangeColorMode();
 				m_fClickLoveTime = -1;
 			}
 		}
@@ -1345,13 +1341,13 @@ Sprite* CGameScene::GetBrickSprite(int nRowIdx, int nColIdx, bool bSmallFlag, bo
 void CGameScene::InitTips()
 {
 	//提示
-	m_pTipSpr = CREATE_SPRITEWITHNAME("exit.png");
+	m_pTipSpr = CREATE_SPRITEWITHNAME(GetSpriteNameByMode("exit.png"));
 	m_pTipSpr->setPosition(m_visibleSize.width / 2, m_visibleSize.height / 2);
 	m_pPortNode->addChild(m_pTipSpr, 999);
 	m_pTipSpr->setVisible(false);
 
 	//横屏提示
-	m_pTipSprLand = CREATE_SPRITEWITHNAME("exit.png");
+	m_pTipSprLand = CREATE_SPRITEWITHNAME(GetSpriteNameByMode("exit.png"));
 	m_pTipSprLand->setRotation(90);
 	m_pTipSprLand->setPosition(m_visibleSize.width / 2, m_visibleSize.height / 2);
 	m_pLandNode->addChild(m_pTipSprLand, 999);
@@ -1361,28 +1357,30 @@ void CGameScene::InitTips()
 
 void CGameScene::ShowTips(TIPS_TYPE enTipType)
 {
+	bool bNightMode = GET_BOOLVALUE("NIGHTMODE", false);
+
 	if (m_enTipType != enTipType)
 	{
 		m_enTipType = enTipType;
 		switch (m_enTipType)
 		{
 		case TIPS_EXIT:
-			m_pTipSpr->setSpriteFrame(GET_SPRITEFRAME("exit.png"));
-			m_pTipSprLand->setSpriteFrame(GET_SPRITEFRAME("exit.png"));
+			m_pTipSpr->setSpriteFrame(GetSpriteNameByMode("exit.png"));
+			m_pTipSprLand->setSpriteFrame(GetSpriteNameByMode("exit.png"));
 			break;
 
 		case TIPS_SAVEOPEN:
-			m_pTipSpr->setSpriteFrame(GET_SPRITEFRAME("saveopen.png"));
-			m_pTipSprLand->setSpriteFrame(GET_SPRITEFRAME("saveopen.png"));
+			m_pTipSpr->setSpriteFrame(GetSpriteNameByMode("saveopen.png"));
+			m_pTipSprLand->setSpriteFrame(GetSpriteNameByMode("saveopen.png"));
 			break;
 
 		case TIPS_SAVECLOSE:
-			m_pTipSpr->setSpriteFrame(GET_SPRITEFRAME("saveclose.png"));
-			m_pTipSprLand->setSpriteFrame(GET_SPRITEFRAME("saveclose.png"));
+			m_pTipSpr->setSpriteFrame(GetSpriteNameByMode("saveclose.png"));
+			m_pTipSprLand->setSpriteFrame(GetSpriteNameByMode("saveclose.png"));
 			break;
 		case TIPS_SAVEOK:
-			m_pTipSpr->setSpriteFrame(GET_SPRITEFRAME("saveok.png"));
-			m_pTipSprLand->setSpriteFrame(GET_SPRITEFRAME("saveok.png"));
+			m_pTipSpr->setSpriteFrame(GetSpriteNameByMode("saveok.png"));
+			m_pTipSprLand->setSpriteFrame(GetSpriteNameByMode("saveok.png"));
 			break;
 
 		default:
@@ -1410,27 +1408,105 @@ void CGameScene::ShowTips(TIPS_TYPE enTipType)
 }
 
 
-void CGameScene::ChangeBGPic()
+void CGameScene::ChangeColorMode()
 {
-	if (++m_iBgColor > BGPIC_COUNT)
+	bool bNightMode = GET_BOOLVALUE("NIGHTMODE", false);
+	bNightMode = !bNightMode;
+	SET_BOOLVALUE("NIGHTMODE", bNightMode);
+
+	//背景
+	m_pBgLayer->setVisible(!bNightMode);
+
+	//所有方块更新
+	for (int nRowIdx = 0; nRowIdx < ROW_NUM; ++nRowIdx)
 	{
-		m_iBgColor = 0;
+		for (int nColIdx = 0; nColIdx < COLUMN_NUM; ++nColIdx)
+		{
+			UpdateBrick(nRowIdx, nColIdx, false, m_arrBrickState[nRowIdx][nColIdx]);
+		}
 	}
 
-#if 0 
-	if (m_iBgColor > 0)
-	{
-		char szName[20] = { '\0' };
-		sprintf(szName, "bg%d.png", m_iBgColor);
-		m_pBgSpr->setSpriteFrame(GET_SPRITEFRAME(szName));
-	}
-	m_pBgSpr->setVisible(m_iBgColor > 0);
-#else
-	m_pBgLayer->setVisible(m_iBgColor > 0);
-	m_pBgLayerLand->setVisible(m_iBgColor > 0);
-#endif
 
-	SET_INTVALUE("BGCOLOR", m_iBgColor);
+	Vector<Node*> vecNode = m_pLandNode->getChildren();
+	for (int nIdx = 0; nIdx < vecNode.size(); ++nIdx)
+	{
+		Node* pNode = vecNode.at(nIdx);
+		Sprite* pSprite = dynamic_cast<Sprite *>(pNode);
+		if (pSprite != nullptr && pSprite->getTag() < 0)
+		{
+			ChangeSprite(pSprite, bNightMode);
+			continue;
+		}
+
+		//菜单
+		Menu* pMenu = dynamic_cast<Menu *>(pNode);
+		if (pMenu != nullptr)
+		{
+			Vector<Node*> vecMenu = pMenu->getChildren();
+			for (int i = 0; i < vecMenu.size(); ++i)
+			{
+				MenuItemSprite* pMenuItemSpr = dynamic_cast<MenuItemSprite*>(vecMenu.at(i));
+				if (pMenuItemSpr != nullptr)
+				{
+					ChangeMenuItemSprite(pMenuItemSpr, bNightMode);
+				}
+
+				MenuItemToggle* pMenuItemToggle = dynamic_cast<MenuItemToggle*>(vecMenu.at(i));
+				if (pMenuItemToggle != nullptr)
+				{
+					ChangeMenuItemToggle(pMenuItemToggle, bNightMode);
+				}
+			}
+		}
+
+		//按钮
+		Button* pButton = dynamic_cast<Button*>(pNode);
+		if (pButton != nullptr)
+		{
+			ChangeButton(pButton, bNightMode);
+		}
+	}
+
+	vecNode.clear();
+	vecNode = m_pPortNode->getChildren();
+	for (int nIdx = 0; nIdx < vecNode.size(); ++nIdx)
+	{
+		Node* pNode = vecNode.at(nIdx);
+		Sprite* pSprite = dynamic_cast<Sprite *>(pNode);
+		if (pSprite != nullptr && pSprite->getTag() < 0)
+		{
+			ChangeSprite(pSprite, bNightMode);
+			continue;
+		}
+
+		//菜单
+		Menu* pMenu = dynamic_cast<Menu *>(pNode);
+		if (pMenu != nullptr)
+		{
+			Vector<Node*> vecMenu = pMenu->getChildren();
+			for (int i = 0; i < vecMenu.size(); ++i)
+			{
+				MenuItemSprite* pMenuItemSpr = dynamic_cast<MenuItemSprite*>(vecMenu.at(i));
+				if (pMenuItemSpr != nullptr)
+				{
+					ChangeMenuItemSprite(pMenuItemSpr, bNightMode);
+				}
+
+				MenuItemToggle* pMenuItemToggle = dynamic_cast<MenuItemToggle*>(vecMenu.at(i));
+				if (pMenuItemToggle != nullptr)
+				{
+					ChangeMenuItemToggle(pMenuItemToggle, bNightMode);
+				}
+			}
+		}
+
+		//按钮
+		Button* pButton = dynamic_cast<Button*>(pNode);
+		if (pButton != nullptr)
+		{
+			ChangeButton(pButton, bNightMode);
+		}
+	}
 }
 
 
@@ -1458,9 +1534,12 @@ void CGameScene::UpdateScore(int iScore, bool bPlayEffect)
 
 	char arrNum[7] = {'\0'};
 	sprintf(arrNum, "%06d", iScore);
+
+	char szSprName[20] = {'\0'};
 	for (int i = 0; i < 6; ++i)
 	{
-		m_pArrScore[i]->setSpriteFrame(StringUtils::format("%c.png", arrNum[i]));
+		sprintf(szSprName, "%c.png", arrNum[i]);
+		m_pArrScore[i]->setSpriteFrame(GetSpriteNameByMode(szSprName));
 	}
 
 	UpdateHighScore(m_iSceneIndex - 2, iScore);
@@ -1491,8 +1570,8 @@ void CGameScene::UpdateHighScore(int iGameIdx, int iHighScore)
 	for (int i = 0; i < 6; ++i)
 	{
 		sprintf(szName, "%c.png", arrNum[i]);
-		m_pArrHighScore[i]->setSpriteFrame(szName);
-		m_pArrHighScoreLand[i]->setSpriteFrame(szName);
+		m_pArrHighScore[i]->setSpriteFrame(GetSpriteNameByMode(szName));
+		m_pArrHighScoreLand[i]->setSpriteFrame(GetSpriteNameByMode(szName));
 	}
 }
 
@@ -1509,12 +1588,12 @@ void CGameScene::UpdateLevel(int iLevel)
 	float fCenterPosY = (m_visibleSize.height - brickSize.width * COLUMN_NUM) * 0.5f * 0.5f - numSize.width * 2.2f;
 	if (iLevel == 10)
 	{
-		m_pArrLevel[0]->setSpriteFrame("1.png");
+		m_pArrLevel[0]->setSpriteFrame(GetSpriteNameByMode("1.png"));
 		m_pArrLevel[0]->setPositionX(fCenterPosX - numSize.width * 0.5f);
 		m_pArrLevel[1]->setPositionX(fCenterPosX + numSize.width * 0.5f);
 		m_pArrLevel[1]->setVisible(true);
 
-		m_pArrLevelLand[0]->setSpriteFrame("1.png");
+		m_pArrLevelLand[0]->setSpriteFrame(GetSpriteNameByMode("1.png"));
 		m_pArrLevelLand[0]->setPositionY(fCenterPosY + numSize.width * 0.5f);
 		m_pArrLevelLand[1]->setPositionY(fCenterPosY - numSize.width * 0.5f);
 		m_pArrLevelLand[1]->setVisible(true);
@@ -1532,8 +1611,8 @@ void CGameScene::UpdateLevel(int iLevel)
 		
 		char szName[20] = { '\0' };
 		sprintf(szName, "%d.png", iLevel);
-		m_pArrLevel[0]->setSpriteFrame(szName);
-		m_pArrLevelLand[0]->setSpriteFrame(szName);
+		m_pArrLevel[0]->setSpriteFrame(GetSpriteNameByMode(szName));
+		m_pArrLevelLand[0]->setSpriteFrame(GetSpriteNameByMode(szName));
 	}
 }
 
@@ -1550,12 +1629,12 @@ void CGameScene::UpdateSpeed(int iSpeed)
 	float fCenterPosY = (m_visibleSize.height - brickSize.width * COLUMN_NUM) * 0.5f * 0.5f + numSize.width * 2.2f;
 	if (iSpeed == 10)
 	{
-		m_pArrSpeed[0]->setSpriteFrame("1.png");
+		m_pArrSpeed[0]->setSpriteFrame(GetSpriteNameByMode("1.png"));
 		m_pArrSpeed[0]->setPositionX(fCenterPosX - numSize.width * 0.5f);
 		m_pArrSpeed[1]->setPositionX(fCenterPosX + numSize.width * 0.5f);
 		m_pArrSpeed[1]->setVisible(true);
 
-		m_pArrSpeedLand[0]->setSpriteFrame("1.png");
+		m_pArrSpeedLand[0]->setSpriteFrame(GetSpriteNameByMode("1.png"));
 		m_pArrSpeedLand[0]->setPositionY(fCenterPosY + numSize.width * 0.5f);
 		m_pArrSpeedLand[1]->setPositionY(fCenterPosY - numSize.width * 0.5f);
 		m_pArrSpeedLand[1]->setVisible(true);
@@ -1573,8 +1652,8 @@ void CGameScene::UpdateSpeed(int iSpeed)
 
 		char szName[20] = {'\0'};
 		sprintf(szName, "%d.png", iSpeed);
-		m_pArrSpeed[0]->setSpriteFrame(szName);
-		m_pArrSpeedLand[0]->setSpriteFrame(szName);
+		m_pArrSpeed[0]->setSpriteFrame(GetSpriteNameByMode(szName));
+		m_pArrSpeedLand[0]->setSpriteFrame(GetSpriteNameByMode(szName));
 	}
 }
 
@@ -1603,4 +1682,109 @@ void CGameScene::ResetSmallBricks()
 			UpdateBrick(i, j, true, false);
 		}
 	}
+}
+
+
+void CGameScene::ChangeSprite(Sprite* pSprite, bool bNightMode)
+{
+	string strName = pSprite->getSpriteFrameName();
+	int nIndex = strName.find(bNightMode ? ".png" : "_night");
+	if (nIndex != string::npos)
+	{
+		string strNew = strName.substr(0, nIndex) + (bNightMode ? "_night.png" : ".png");
+		int nTag = pSprite->getTag();
+		pSprite->setSpriteFrame(strNew);
+	}
+}
+
+
+void CGameScene::ChangeMenuItemSprite(MenuItemSprite* pMenuItemSpr, bool bNightMode)
+{
+	Sprite* pSprite = dynamic_cast<Sprite*>(pMenuItemSpr->getNormalImage());
+	if (pSprite != nullptr)
+	{
+		ChangeSprite(pSprite, bNightMode);
+	}
+
+	pSprite = dynamic_cast<Sprite*>(pMenuItemSpr->getSelectedImage());
+	if (pSprite != nullptr)
+	{
+		ChangeSprite(pSprite, bNightMode);
+	}
+
+	pSprite = dynamic_cast<Sprite*>(pMenuItemSpr->getDisabledImage());
+	if (pSprite != nullptr)
+	{
+		ChangeSprite(pSprite, bNightMode);
+	}
+}
+
+
+void CGameScene::ChangeMenuItemToggle(MenuItemToggle* pMenuItemToggle, bool bNightMode)
+{
+	Vector<MenuItem*> vecMenuItem = pMenuItemToggle->getSubItems();
+	for (int i = 0; i < vecMenuItem.size(); ++i)
+	{
+		MenuItemSprite* pMenuItemSpr = dynamic_cast<MenuItemSprite*>(vecMenuItem.at(i));
+		if (pMenuItemSpr != nullptr)
+		{
+			ChangeMenuItemSprite(pMenuItemSpr, bNightMode);
+		}
+	}
+}
+
+
+void CGameScene::ChangeButton(Button* pButton, bool bNightMode)
+{
+	string strName = pButton->getNormalName();
+	int nIndex = strName.find(bNightMode ? ".png" : "_night");
+	if (nIndex != string::npos)
+	{
+		string strNew = strName.substr(0, nIndex) + (bNightMode ? "_night.png" : ".png");
+		log("Normal  %s->%s", strName.c_str(), strNew.c_str());
+		pButton->loadTextureNormal(strNew, TextureResType::PLIST);
+	}
+
+	strName = pButton->getClickedName();
+	nIndex = strName.find(bNightMode ? ".png" : "_night");
+	if (nIndex != string::npos)
+	{
+		string strNew = strName.substr(0, nIndex) + (bNightMode ? "_night.png" : ".png");
+		log("Clicked  %s->%s", strName.c_str(), strNew.c_str());
+		pButton->loadTexturePressed(strNew, TextureResType::PLIST);
+	}
+
+	strName = pButton->getDisabledName();
+	nIndex = strName.find(bNightMode ? ".png" : "_night");
+	if (nIndex != string::npos)
+	{
+		string strNew = strName.substr(0, nIndex) + (bNightMode ? "_night.png" : ".png");
+		log("Disabled  %s->%s", strName.c_str(), strNew.c_str());
+		pButton->loadTextureDisabled(strNew, TextureResType::PLIST);
+	}
+}
+
+
+std::string CGameScene::GetSpriteNameByMode(const char* szName)
+{
+	string strTemp(szName);
+	bool bNightMode = GET_BOOLVALUE("NIGHTMODE", false);
+	if (bNightMode)
+	{
+		int nIndex = strTemp.find(".png");
+		assert(nIndex != string::npos);
+
+		strTemp = strTemp.substr(0, nIndex) + "_night.png";
+	}
+
+	return strTemp;
+}
+
+void CGameScene::InitBgLayer()
+{
+	m_pBgLayer = LayerColor::create(Color4B::WHITE);
+	m_pBgLayer->setContentSize(m_visibleSize);
+	this->addChild(m_pBgLayer);
+
+	m_pBgLayer->setVisible(!GET_BOOLVALUE("NIGHTMODE", false));
 }

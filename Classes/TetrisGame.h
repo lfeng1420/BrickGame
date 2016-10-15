@@ -91,7 +91,7 @@ private:
 
 		DELETE_LINE_ADD_SCORE = 10,						//消除行加分
 
-		BTN_CHECK_INTERVAL = 100,						//按钮检查时间间隔
+		BTN_CHECK_INTERVAL = 85,						//按钮检查时间间隔
 
 		BOMB_DELETE_LINE_COUNT = 2,						//炸弹默认消除的行数
 
