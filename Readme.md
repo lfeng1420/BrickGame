@@ -19,14 +19,20 @@
 ![](https://github.com/lfeng1420/BrickGame/blob/master/Images/1.png)
 ![](https://github.com/lfeng1420/BrickGame/blob/master/Images/2.png)
 ![](https://github.com/lfeng1420/BrickGame/blob/master/Images/3.png)
+![](https://github.com/lfeng1420/BrickGame/blob/master/Images/4.png)
 
 发布记录
 ===
 Windows Phone & Android
 ---
+### 	  2016/10/23	  V1.7.0.0
+1、新增两个游戏：打方块/加方块（我也不知道该叫什么= =）；<br>
+2、修复横屏下分数不会更新一直为0的bug；<br>
+3、微调了俄罗斯方块左右移动时间间隔。 <br>
+
 ### 	  2016/10/11	  V1.6.0.0
 1、新增夜间模式，按两次心形按钮即可切换；<br>
- 2、微调了俄罗斯方块按钮持续检查时间，按住方向键时方块将比之前移动得快一些。 <br>
+2、微调了俄罗斯方块按钮持续检查时间，按住方向键时方块将比之前移动得快一些。 <br>
 
 ### 	  2016/10/01	  V1.5.0.0
 1、新增横屏模式，点两次声音按钮可切换。<br>
