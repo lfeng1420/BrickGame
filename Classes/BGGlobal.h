@@ -28,6 +28,10 @@ using namespace ui;
 
 #define CC_RETURN_FALSE_IF(exp) if (exp){return false;}
 
+#define FOR_EACH_CONTAINER(type, container, it) for (type::iterator it = container.begin(); it != container.end(); ++it)
+
+#define TRACE(x)
+
 
 // ---- cocos 常用函数宏定义 ----
 #define DIRECTOR_INSTANCE Director::getInstance
@@ -199,6 +203,10 @@ enum SCENE_INDEX
 
 	SCENE_PINBALL2,				//游戏界面 - 弹球2
 
+	SCENE_HITBRICK,				//游戏界面 - 打砖块
+
+	SCENE_ADDBRICK,				//游戏界面 - 加砖块
+
 	SCENE_MAX,					//最大值
 };
 
@@ -225,6 +233,10 @@ enum GAME_LIST
 	GAME_TETRIS2,				//俄罗斯方块2
 
 	GAME_PINBALL2,				//弹球2
+
+	GAME_HITBRICK,				//打砖块
+
+	GAME_ADDBRICK,				//加砖块
 
 	GAME_MAX,					//最大值
 };

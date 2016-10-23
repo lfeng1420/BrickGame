@@ -85,7 +85,7 @@ bool CGeneralManager::LoadHighScore()
 	oDoc.Parse<0>(strContent.c_str());
 	if (oDoc.HasParseError() || oDoc.IsNull())
 	{
-		log("CGeneralManager::LoadUserData Load 'oDoc' Error.");
+		TRACE("CGeneralManager::LoadUserData Load 'oDoc' Error.");
 		return false;
 	}
 
@@ -93,7 +93,7 @@ bool CGeneralManager::LoadHighScore()
 	{
 		if (oDoc["HighScore"][i].IsNull())
 		{
-			log("CGeneralManager::LoadUserData Load 'oDoc[HighScore][%d]' Error.", i);
+			TRACE("CGeneralManager::LoadUserData Load 'oDoc[HighScore][%d]' Error.", i);
 			return false;
 		}
 
@@ -144,7 +144,7 @@ bool CGeneralManager::SaveHighScoreToFile()
 	FILE* pFile = fopen(strPath.c_str(), "wb+");
 	if (pFile == NULL)
 	{
-		log("Open File '%s' Failed.", strPath.c_str());
+		TRACE("Open File '%s' Failed.", strPath.c_str());
 		return false;
 	}
 
@@ -244,7 +244,7 @@ void CGeneralManager::SaveTetrisData(const bool(&arrState)[ROW_NUM][COLUMN_NUM])
 	fstream oFile(strPath.c_str(), ios::out | ios::binary);
 	if (!oFile.is_open())
 	{
-		log("Open %s Error.", strPath.c_str());
+		TRACE("Open %s Error.", strPath.c_str());
 		return;
 	}
 
@@ -263,12 +263,12 @@ void CGeneralManager::SaveTetrisData(const bool(&arrState)[ROW_NUM][COLUMN_NUM])
 void CGeneralManager::LoadTetrisData(bool(&arrState)[ROW_NUM][COLUMN_NUM])
 {
 	string strPath = FileUtils::getInstance()->getWritablePath() + "/record.txt";
-	log("%s", strPath.c_str());
+	TRACE("%s", strPath.c_str());
 
 	fstream oFile(strPath.c_str(), ios::in | ios::binary);
 	if (!oFile.is_open())
 	{
-		log("Open %s Error.", strPath.c_str());
+		TRACE("Open %s Error.", strPath.c_str());
 		return;
 	}
 

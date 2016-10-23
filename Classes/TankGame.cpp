@@ -253,7 +253,7 @@ bool CTankGame::GetBrickState(int iRowIndex, int iColIndex)
 	GetFlagPos(stFlagPos);
 	if (stTargetPos == stFlagPos)
 	{
-		//log("[Show] m_bSelfFlagVisible=%d", m_bSelfFlagVisible);
+		//TRACE("[Show] m_bSelfFlagVisible=%d", m_bSelfFlagVisible);
 		return m_bSelfFlagVisible;
 	}
 
@@ -570,7 +570,7 @@ bool CTankGame::TankMove(float dt)
 			//重新获取一次下一个位置，理论上不会失败
 			if (!GetNextPos(TANK_BOSS, stNextPos))
 			{
-				log("%s GetNextPos return false!");
+				TRACE("%s GetNextPos return false!");
 				return false;
 			}
 		}
@@ -662,7 +662,7 @@ bool CTankGame::GetNextPos(const POSITION& stCurPos, int iDirection, POSITION& s
 		++stOutPos.m_iColIdx;
 		break;
 	default:
-		log("%s  Wrong Dirction Type. refData.m_iDirection=%d", __FUNCTION__, iDirection);
+		TRACE("%s  Wrong Dirction Type. refData.m_iDirection=%d", __FUNCTION__, iDirection);
 		break;
 	}
 
@@ -865,7 +865,7 @@ void CTankGame::SelfFlagFlash(float dt)
 
 	m_lfSelfFlashTime = 0;
 	m_bSelfFlagVisible = !m_bSelfFlagVisible;
-	//log("[Change] m_bSelfFlagVisible=%d", m_bSelfFlagVisible);
+	//TRACE("[Change] m_bSelfFlagVisible=%d", m_bSelfFlagVisible);
 
 	POSITION stFlagPos;
 	GetFlagPos(stFlagPos);
@@ -899,7 +899,7 @@ bool CTankGame::GetFlagPos(POSITION& stPos)
 		--stPos.m_iColIdx;
 		break;
 	default:
-		log("%s  Wrong Dirction Type. m_stSelfTank.m_iDirection=%d", __FUNCTION__, m_stSelfTank.m_iDirection);
+		TRACE("%s  Wrong Dirction Type. m_stSelfTank.m_iDirection=%d", __FUNCTION__, m_stSelfTank.m_iDirection);
 		return false;
 		break;
 	}
@@ -1251,7 +1251,7 @@ void CTankGame::BulletShoot()
 							m_enGameState = GAMESTATE_PASS;
 						}
 
-						log("m_iCurStep=%d  m_iMaxStep=%d", m_stBoss.m_iCurStep, m_stBoss.m_iMaxStep);
+						TRACE("m_iCurStep=%d  m_iMaxStep=%d", m_stBoss.m_iCurStep, m_stBoss.m_iMaxStep);
 					}
 					else
 					{
@@ -1289,7 +1289,7 @@ void CTankGame::BulletShoot()
 			int iBulletIdx = GetBulletFireBulletIndex(refData.m_stPos, refData.m_iCamp);
 			if (iBulletIdx >= 0)
 			{
-				log("iBulletIdx=%d", iBulletIdx);
+				TRACE("iBulletIdx=%d", iBulletIdx);
 				//隐藏这两个子弹
 				refData.m_bValid = false;
 				m_pGameScene->UpdateBrick(refData.m_stPos.m_iRowIdx, refData.m_stPos.m_iColIdx, false, false);

@@ -46,6 +46,12 @@
     <Filter Include="Classes\Scene\Game\FlappyBird">
       <UniqueIdentifier>{4a15d1a1-065f-4fff-ac96-0ef24a8728c0}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Classes\Scene\Game\HitBrick">
+      <UniqueIdentifier>{bb0dd8cb-1156-4e03-bcbc-9ae6972e9280}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Classes\Scene\Game\AddBrick">
+      <UniqueIdentifier>{ffb983b3-4d19-4906-9cc0-8aba47e37dc8}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -98,6 +104,12 @@
     </ClCompile>
     <ClCompile Include="..\Classes\FlappyBirdGame.cpp">
       <Filter>Classes\Scene\Game\FlappyBird</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\HitBrickGame.cpp">
+      <Filter>Classes\Scene\Game\HitBrick</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\AddBrickGame.cpp">
+      <Filter>Classes\Scene\Game\AddBrick</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -152,10 +164,19 @@
     <ClInclude Include="..\Classes\FlappyBirdGame.h">
       <Filter>Classes\Scene\Game\FlappyBird</Filter>
     </ClInclude>
+    <ClInclude Include="..\Classes\HitBrickGame.h">
+      <Filter>Classes\Scene\Game\HitBrick</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\AddBrickGame.h">
+      <Filter>Classes\Scene\Game\AddBrick</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="game.rc">
       <Filter>resource</Filter>
     </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="res\game.ico" />
   </ItemGroup>
 </Project>

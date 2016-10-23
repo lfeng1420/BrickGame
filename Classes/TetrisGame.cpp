@@ -280,7 +280,7 @@ SCENE_INDEX CTetrisGame::GetSceneType()
 //上按下
 void CTetrisGame::OnUpBtnPressed()
 {
-	log("%s", __FUNCTION__);
+	TRACE("%s", __FUNCTION__);
 	SaveGameData();
 
 	m_pGameScene->ShowTips(TIPS_SAVEOK);
@@ -805,12 +805,12 @@ int CTetrisGame::GetEmptyPosRowIdx()
 	{
 		if (!m_arrBrick[iEmptyRowIdx][m_stCurPos.m_iColIdx])
 		{
-			log("%s: %d", __FUNCTION__, iEmptyRowIdx);
+			TRACE("%s: %d", __FUNCTION__, iEmptyRowIdx);
 			return iEmptyRowIdx;
 		}
 	}
 
-	log("%s: %d", __FUNCTION__, iRowIdx);
+	TRACE("%s: %d", __FUNCTION__, iRowIdx);
 	return iRowIdx;
 }
 
@@ -823,7 +823,7 @@ void CTetrisGame::SaveGameData()
 		return;
 	}
 
-	log("%s", __FUNCTION__);
+	TRACE("%s", __FUNCTION__);
 
 	//保存
 	CGeneralManager::getInstance()->SaveTetrisData(m_arrBrick);
