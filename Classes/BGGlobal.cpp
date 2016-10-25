@@ -97,7 +97,7 @@ double GetMillSecond()
 	struct timeval tv;
 	gettimeofday(&tv, nullptr);
 
-	TRACE("CurrentTime MillSecond %f", (double)tv.tv_sec * 1000 + (double)tv.tv_usec / 1000);
+	//log("CurrentTime MillSecond %f", (double)tv.tv_sec * 1000 + (double)tv.tv_usec / 1000);
 	return (double)tv.tv_sec * 1000 + (double)tv.tv_usec / 1000;
 
 }

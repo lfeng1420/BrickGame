@@ -227,6 +227,8 @@ private:
 
 	double m_lfClickResetTime;							//上一次点击重置时间
 
+	double m_lfClickStartTime;							//上一次点击开始时间
+
 	TIPS_TYPE m_enTipType;								//当前提示类型
 
 	Vec2 m_oControllerCenterPos;						//控制器中心位置

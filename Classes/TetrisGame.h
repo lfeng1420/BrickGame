@@ -84,6 +84,9 @@ public:
 	//检查上方和下方是否有方块
 	int GetEmptyPosRowIdx();
 
+	//移动结束处理
+	void OnBrickDoneMove();
+
 private:
 	enum 
 	{

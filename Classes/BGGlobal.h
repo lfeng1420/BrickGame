@@ -30,8 +30,6 @@ using namespace ui;
 
 #define FOR_EACH_CONTAINER(type, container, it) for (type::iterator it = container.begin(); it != container.end(); ++it)
 
-#define TRACE(x)
-
 
 // ---- cocos 常用函数宏定义 ----
 #define DIRECTOR_INSTANCE Director::getInstance

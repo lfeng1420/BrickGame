@@ -19,13 +19,13 @@ void CSceneBase::Play(float dt)
 
 void CSceneBase::GetCurPos(int& iRowIndex, int& iColIndex)
 {
-	TRACE("Error: %s Current function is not implemented in CSceneBase class.", __FUNCTION__);
+	//log("Error: %s Current function is not implemented in CSceneBase class.", __FUNCTION__);
 }
 
 
 SCENE_INDEX CSceneBase::GetSceneType()
 {
-	TRACE("Error: %s Current function is not implemented in CSceneBase class.", __FUNCTION__);
+	//log("Error: %s Current function is not implemented in CSceneBase class.", __FUNCTION__);
 	return SCENE_INVALID;
 }
 

@@ -280,10 +280,25 @@ SCENE_INDEX CTetrisGame::GetSceneType()
 //上按下
 void CTetrisGame::OnUpBtnPressed()
 {
-	TRACE("%s", __FUNCTION__);
-	SaveGameData();
+	//log("%s", __FUNCTION__);
 
-	m_pGameScene->ShowTips(TIPS_SAVEOK);
+	//直接下落
+	//int iNextRowIdx = m_stCurPos.m_iRowIdx + 1;
+	//while (CheckBrickPos(m_iCurShape, iNextRowIdx, m_stCurPos.m_iColIdx))
+	//{
+	//	m_stCurPos.m_iRowIdx = iNextRowIdx;
+	//	iNextRowIdx += 1;
+	//}
+
+	////重置移动等待时间
+	//m_fMoveDownTime = 0;
+
+	//OnBrickDoneMove();
+
+	////刷新界面
+	//m_pGameScene->UpdateBricks();
+
+	OnFireBtnPressed();
 }
 
 
@@ -523,7 +538,7 @@ bool CTetrisGame::BrickMove(float dt)
 
 	//下移
 	m_fMoveDownTime += dt;
-	if (m_fMoveDownTime >= (m_bFastMoveDown ? 30 : (BRICK_MOVE_INTERVAL - 40 * m_iSpeed)))
+	if (m_fMoveDownTime >= (m_bFastMoveDown ? 10 : (BRICK_MOVE_INTERVAL - 40 * m_iSpeed)))
 	{
 		m_fMoveDownTime = 0;
 		++iNextRowIdx;
@@ -550,68 +565,7 @@ bool CTetrisGame::BrickMove(float dt)
 		iNextColIdx = m_stCurPos.m_iColIdx;
 		if (!CheckBrickPos(m_iCurShape, iNextRowIdx, iNextColIdx))
 		{
-			//处理非特殊方块以及点特殊方块
-			if (m_iCurShape < 19 || m_iCurShape == 22)
-			{
-				if (m_iCurShape == 22)
-				{
-					//设置rowidx
-					m_stCurPos.m_iRowIdx = GetEmptyPosRowIdx();
-				}
-
-				//已无法再往下移动或已到达最后一行，保存当前方块
-				for (int i = 0; i < 4 && m_stCurPos.m_iRowIdx + i < ROW_NUM; ++i)
-				{
-					for (int j = 0; j < 4 && m_stCurPos.m_iColIdx + j < COLUMN_NUM; ++j)
-					{
-						if (TETRIS_SHAPE[m_iCurShape][i][j])
-						{
-							m_arrBrick[m_stCurPos.m_iRowIdx + i][m_stCurPos.m_iColIdx + j] = true;
-						}
-					}
-				}
-			}
-			else
-			{
-				//如果是爆炸方块，消除底下的指定行数
-				if (m_iCurShape == 21)
-				{
-					int iStartRowIdx = m_stCurPos.m_iRowIdx;
-					int iEndRowIdx = iStartRowIdx + TETRIS_ROWCOUNT[m_iCurShape] + BOMB_DELETE_LINE_COUNT + (m_bFastMoveDown ? m_iSpeed / 4 + 1 : 0);
-					iEndRowIdx = (iEndRowIdx > ROW_NUM ? ROW_NUM : iEndRowIdx);
-					for (int i = iStartRowIdx; i < iEndRowIdx; ++i)
-					{
-						for (int j = m_stCurPos.m_iColIdx; j < m_stCurPos.m_iColIdx + TETRIS_COLCOUNT[m_iCurShape]; ++j)
-						{
-							m_arrBrick[i][j] = false;
-							m_pGameScene->UpdateBrick(i, j, false, false);
-						}
-					}
-					
-					//音效
-					PLAY_EFFECT(EFFECT_BOOM);
-
-					//更新炸弹位置，需要显示在最底下消除的那一行
-					//修改：炸弹改为3行，但爆炸时需要显示四行，所以需要上移一行
-					m_stCurPos.m_iRowIdx = iEndRowIdx - TETRIS_ROWCOUNT[m_iCurShape] - 1;
-
-					//进入暂停状态
-					m_enGameState = GAMESTATE_PAUSE;
-					m_iSelfFlashCount = 0;
-
-					return true;
-				}
-			}
-
-			//检查消行
-			if (!DeleteLine(true) && m_iCurShape < 19)
-			{
-				PLAY_EFFECT(EFFECT_ADD);
-			}
-
-			//产生新的方块
-			RandNewShape();
-
+			OnBrickDoneMove();
 			return true;
 		}
 	}
@@ -805,15 +759,79 @@ int CTetrisGame::GetEmptyPosRowIdx()
 	{
 		if (!m_arrBrick[iEmptyRowIdx][m_stCurPos.m_iColIdx])
 		{
-			TRACE("%s: %d", __FUNCTION__, iEmptyRowIdx);
+			//log("%s: %d", __FUNCTION__, iEmptyRowIdx);
 			return iEmptyRowIdx;
 		}
 	}
 
-	TRACE("%s: %d", __FUNCTION__, iRowIdx);
+	//log("%s: %d", __FUNCTION__, iRowIdx);
 	return iRowIdx;
 }
 
+
+void CTetrisGame::OnBrickDoneMove()
+{
+	//处理非特殊方块以及点特殊方块
+	if (m_iCurShape < 19 || m_iCurShape == 22)
+	{
+		if (m_iCurShape == 22)
+		{
+			//设置行索引
+			m_stCurPos.m_iRowIdx = GetEmptyPosRowIdx();
+		}
+
+		//已无法再往下移动或已到达最后一行，保存当前方块
+		for (int i = 0; i < 4 && m_stCurPos.m_iRowIdx + i < ROW_NUM; ++i)
+		{
+			for (int j = 0; j < 4 && m_stCurPos.m_iColIdx + j < COLUMN_NUM; ++j)
+			{
+				if (TETRIS_SHAPE[m_iCurShape][i][j])
+				{
+					m_arrBrick[m_stCurPos.m_iRowIdx + i][m_stCurPos.m_iColIdx + j] = true;
+				}
+			}
+		}
+	}
+	else
+	{
+		//如果是爆炸方块，消除底下的指定行数
+		if (m_iCurShape == 21)
+		{
+			int iStartRowIdx = m_stCurPos.m_iRowIdx;
+			int iEndRowIdx = iStartRowIdx + TETRIS_ROWCOUNT[m_iCurShape] + BOMB_DELETE_LINE_COUNT + (m_bFastMoveDown ? m_iSpeed / 4 + 1 : 0);
+			iEndRowIdx = (iEndRowIdx > ROW_NUM ? ROW_NUM : iEndRowIdx);
+			for (int i = iStartRowIdx; i < iEndRowIdx; ++i)
+			{
+				for (int j = m_stCurPos.m_iColIdx; j < m_stCurPos.m_iColIdx + TETRIS_COLCOUNT[m_iCurShape]; ++j)
+				{
+					m_arrBrick[i][j] = false;
+					m_pGameScene->UpdateBrick(i, j, false, false);
+				}
+			}
+
+			//音效
+			PLAY_EFFECT(EFFECT_BOOM);
+
+			//更新炸弹位置，需要显示在最底下消除的那一行
+			//修改：炸弹改为3行，但爆炸时需要显示四行，所以需要上移一行
+			m_stCurPos.m_iRowIdx = iEndRowIdx - TETRIS_ROWCOUNT[m_iCurShape] - 1;
+
+			//进入暂停状态
+			m_enGameState = GAMESTATE_PAUSE;
+			m_iSelfFlashCount = 0;
+			return;
+		}
+	}
+
+	//检查消行
+	if (!DeleteLine(true) && m_iCurShape < 19)
+	{
+		PLAY_EFFECT(EFFECT_ADD);
+	}
+
+	//产生新的方块
+	RandNewShape();
+}
 
 void CTetrisGame::SaveGameData()
 {
@@ -823,7 +841,7 @@ void CTetrisGame::SaveGameData()
 		return;
 	}
 
-	TRACE("%s", __FUNCTION__);
+	//log("%s", __FUNCTION__);
 
 	//保存
 	CGeneralManager::getInstance()->SaveTetrisData(m_arrBrick);

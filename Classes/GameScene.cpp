@@ -22,8 +22,8 @@
 const float FLOAT_CONTROLLER_SCALE_MAX = 1.72f;
 const float FLOAT_CONTROLLER_LAND_SCALE_MAX = 1.5f;
 
-CGameScene::CGameScene() : m_iSceneIndex(SCENE_GAMEOVER), m_lfClickExitTime(0), m_lfClickSndTime(0), m_lfClickResetTime(0),
-							m_enTipType(TIPS_INVALID), m_nRecordBtnIdx(BTN_DIRMAX), m_iBgColor(0),
+CGameScene::CGameScene() : m_iSceneIndex(SCENE_GAMEOVER), m_enTipType(TIPS_INVALID), m_nRecordBtnIdx(BTN_DIRMAX), m_iBgColor(0), 
+							m_lfClickExitTime(0), m_lfClickSndTime(0), m_lfClickResetTime(0), m_lfClickStartTime(0),
 							m_oBrickSize(Size::ZERO), m_oNumSize(Size::ZERO)
 {
 }
@@ -504,14 +504,14 @@ void CGameScene::InitPortController()
 	fBtnPadding = 2.0f;
 	float fControllerPadding = 10;
 	float fBtnScale = (fHeight - fSmallBtnTopHeight - fControllerPadding * 2) * 1.0f / 2 / BTN_HEIGHT;
-	TRACE("fBtnScale=%f  fRemainHeight=%f", fBtnScale, fHeight - fSmallBtnTopHeight);
+	//log("fBtnScale=%f  fRemainHeight=%f", fBtnScale, fHeight - fSmallBtnTopHeight);
 	
 	//重新调整间距
 	if (fBtnScale > FLOAT_CONTROLLER_SCALE_MAX)
 	{
 		fBtnScale = FLOAT_CONTROLLER_SCALE_MAX;
 		fControllerPadding = (fHeight - fSmallBtnTopHeight - FLOAT_CONTROLLER_SCALE_MAX * BTN_HEIGHT * 2) / 2;
-		TRACE("fControllerPadding=%f", fControllerPadding);
+		//log("fControllerPadding=%f", fControllerPadding);
 	}
 
 	float fTopPosY = fHeight - fControllerPadding;
@@ -753,27 +753,27 @@ void CGameScene::CreateKeyListener()
 	{
 		if (EventKeyboard::KeyCode::KEY_A == keyCode)
 		{
-			TRACE("A Pressed");
+			//log("A Pressed");
 			OnButtonPressed(BTN_LEFT);
 		}
 		else if (EventKeyboard::KeyCode::KEY_D == keyCode)
 		{
-			TRACE("D Pressed");
+			//log("D Pressed");
 			OnButtonPressed(BTN_RIGHT);
 		}
 		else if (EventKeyboard::KeyCode::KEY_S == keyCode)
 		{
-			TRACE("S Pressed");
+			//log("S Pressed");
 			OnButtonPressed(BTN_DOWN);
 		}
 		else if (EventKeyboard::KeyCode::KEY_W == keyCode)
 		{
-			TRACE("W Pressed");
+			//log("W Pressed");
 			OnButtonPressed(BTN_UP);
 		}
 		else if (EventKeyboard::KeyCode::KEY_K == keyCode)
 		{
-			TRACE("K Pressed");
+			//log("K Pressed");
 			OnButtonPressed(BTN_FIRE);
 		}
 		else if (EventKeyboard::KeyCode::KEY_SPACE == keyCode)
@@ -786,27 +786,27 @@ void CGameScene::CreateKeyListener()
 	{
 		if (EventKeyboard::KeyCode::KEY_A == keyCode)
 		{
-			TRACE("A Released");
+			//log("A Released");
 			OnButtonReleased(BTN_LEFT);
 		}
 		else if (EventKeyboard::KeyCode::KEY_D == keyCode)
 		{
-			TRACE("D Released");
+			//log("D Released");
 			OnButtonReleased(BTN_RIGHT);
 		}
 		else if (EventKeyboard::KeyCode::KEY_S == keyCode)
 		{
-			TRACE("S Released");
+			//log("S Released");
 			OnButtonReleased(BTN_DOWN);
 		}
 		else if (EventKeyboard::KeyCode::KEY_W == keyCode)
 		{
-			TRACE("W Released");
+			//log("W Released");
 			OnButtonReleased(BTN_UP);
 		}
 		else if (EventKeyboard::KeyCode::KEY_K == keyCode)
 		{
-			TRACE("K Released");
+			//log("K Released");
 			OnButtonReleased(BTN_FIRE);
 		}
 		else if (EventKeyboard::KeyCode::KEY_RETURN == keyCode ||
@@ -868,7 +868,7 @@ void CGameScene::update(float dt)
 #if CC_TARGET_PLATFORM == CC_PLATFORM_ANDROID
 			JniMethodInfo minfo;
 			bool bFuncExistFlag = JniHelper::getStaticMethodInfo(minfo, "org/cocos2dx/cpp/AppActivity", "GiveScore", "()V");
-			TRACE("bFuncExistFlag=%d", bFuncExistFlag);
+			//log("bFuncExistFlag=%d", bFuncExistFlag);
 			if (bFuncExistFlag)
 			{
 				minfo.env->CallStaticVoidMethod(minfo.classID, minfo.methodID);
@@ -1024,7 +1024,7 @@ void CGameScene::OnButtonEvent(Ref* pSender, Widget::TouchEventType enType, int 
 	{
 	case Widget::TouchEventType::BEGAN:
 		{
-			TRACE("-----------------\nORIGIN  iBtnIndex=%d", iBtnIndex);
+			//log("-----------------\nORIGIN  iBtnIndex=%d", iBtnIndex);
 			oPos = pButton->getTouchBeganPosition();
 			if (!AdjustClickIndex(oPos, iBtnIndex))
 			{
@@ -1040,7 +1040,7 @@ void CGameScene::OnButtonEvent(Ref* pSender, Widget::TouchEventType enType, int 
 			m_nRecordBtnIdx = iBtnIndex;
 
 
-			TRACE("BEGAN  iBtnIndex=%d", iBtnIndex);
+			//log("BEGAN  iBtnIndex=%d", iBtnIndex);
 			OnButtonPressed(iBtnIndex);
 		}
 		break;
@@ -1067,7 +1067,7 @@ void CGameScene::OnButtonEvent(Ref* pSender, Widget::TouchEventType enType, int 
 			//重置
 			m_nRecordBtnIdx = BTN_INVALID;
 
-			TRACE("RELEASE  iBtnIndex=%d", iBtnIndex);
+			//log("RELEASE  iBtnIndex=%d", iBtnIndex);
 			OnButtonReleased(iBtnIndex);
 		}
 		break;
@@ -1186,6 +1186,8 @@ void CGameScene::OnButtonReleased(int iBtnIndex)
 //按钮按下 iBtnIndex 对应BTN_INDEX索引
 void CGameScene::OnButtonClick(Ref* pSender, int iBtnIndex)
 {
+	double lfCurTime = GetMillSecond();
+
 	switch (iBtnIndex)
 	{
 		case BTN_START:
@@ -1214,6 +1216,23 @@ void CGameScene::OnButtonClick(Ref* pSender, int iBtnIndex)
 					this->scheduleUpdate();
 				}
 			}
+
+			if (m_iSceneIndex == SCENE_TETRIS || m_iSceneIndex == SCENE_TETRIS2)
+			{
+				if (lfCurTime - m_lfClickStartTime <= CLICK_INTERVAL)
+				{
+					//保存
+					m_mapGameObj[m_iSceneIndex]->SaveGameData();
+
+					//提示
+					ShowTips(TIPS_SAVEOK);
+
+					//重置时间
+					m_lfClickStartTime = 0;
+					return;
+				}
+				m_lfClickStartTime = lfCurTime;
+			}
 		}
 		break;
 
@@ -1226,7 +1245,7 @@ void CGameScene::OnButtonClick(Ref* pSender, int iBtnIndex)
 			if (m_pPortNode->isVisible())
 			{
 				int nIndex = m_pSoundBtn->getSelectedIndex();
-				TRACE("nIndex=%d", nIndex);
+				//log("nIndex=%d", nIndex);
 				m_pSoundBtnLand->setSelectedIndex(nIndex);
 			}
 			else
@@ -1249,7 +1268,6 @@ void CGameScene::OnButtonClick(Ref* pSender, int iBtnIndex)
 				PAUSE_BGMUSIC();
 			}
 
-			double lfCurTime = GetMillSecond();
 			if (lfCurTime - m_lfClickResetTime <= CLICK_INTERVAL)
 			{
 				bool bPortVisible = m_pPortNode->isVisible();
@@ -1290,7 +1308,6 @@ void CGameScene::OnButtonClick(Ref* pSender, int iBtnIndex)
 				RunScene(SCENE_GAMEOVER);
 			}
 
-			double lfCurTime = GetMillSecond();
 			if (lfCurTime - m_lfClickSndTime <= CLICK_INTERVAL)
 			{
 				bool bRecordValidFlag = GET_BOOLVALUE("TETRIS_RECORD_VALID", false);
@@ -1555,7 +1572,7 @@ void CGameScene::ChangeColorMode()
 //显示新场景
 void CGameScene::RunScene(int iSceneIndex)
 {
-	TRACE("Old Scene: %d   Current Scene: %d", m_iSceneIndex, iSceneIndex);
+	//log("Old Scene: %d   Current Scene: %d", m_iSceneIndex, iSceneIndex);
 	m_iSceneIndex = iSceneIndex;
 	m_mapGameObj[m_iSceneIndex]->Init();
 
@@ -1572,7 +1589,7 @@ void CGameScene::UpdateScore(int iScore, bool bPlayEffect)
 		PLAY_EFFECT(EFFECT_ADD);
 	}
 
-	TRACE("Current Score: %d", iScore);
+	//log("Current Score: %d", iScore);
 
 	char arrNum[7] = {'\0'};
 	sprintf(arrNum, "%06d", iScore);
@@ -1624,7 +1641,7 @@ void CGameScene::UpdateHighScore(int iGameIdx, int iHighScore)
 //更新等级显示
 void CGameScene::UpdateLevel(int iLevel)
 {
-	TRACE("Current Level: %d", iLevel);
+	//log("Current Level: %d", iLevel);
 	
 	//获取中心位置
 	Size brickSize = GetBrickSize(true);
@@ -1667,7 +1684,7 @@ void CGameScene::UpdateLevel(int iLevel)
 //更新速度显示
 void CGameScene::UpdateSpeed(int iSpeed)
 {
-	TRACE("Current Speed: %d", iSpeed);
+	//log("Current Speed: %d", iSpeed);
 	
 	//获取中心位置
 	Size brickSize = GetBrickSize(true);
@@ -1790,7 +1807,7 @@ void CGameScene::ChangeButton(Button* pButton, bool bNightMode)
 	if (nIndex != string::npos)
 	{
 		string strNew = strName.substr(0, nIndex) + (bNightMode ? "_night.png" : ".png");
-		TRACE("Normal  %s->%s", strName.c_str(), strNew.c_str());
+		//log("Normal  %s->%s", strName.c_str(), strNew.c_str());
 		pButton->loadTextureNormal(strNew, TextureResType::PLIST);
 	}
 
@@ -1799,7 +1816,7 @@ void CGameScene::ChangeButton(Button* pButton, bool bNightMode)
 	if (nIndex != string::npos)
 	{
 		string strNew = strName.substr(0, nIndex) + (bNightMode ? "_night.png" : ".png");
-		TRACE("Clicked  %s->%s", strName.c_str(), strNew.c_str());
+		//log("Clicked  %s->%s", strName.c_str(), strNew.c_str());
 		pButton->loadTexturePressed(strNew, TextureResType::PLIST);
 	}
 
@@ -1808,7 +1825,7 @@ void CGameScene::ChangeButton(Button* pButton, bool bNightMode)
 	if (nIndex != string::npos)
 	{
 		string strNew = strName.substr(0, nIndex) + (bNightMode ? "_night.png" : ".png");
-		TRACE("Disabled  %s->%s", strName.c_str(), strNew.c_str());
+		//log("Disabled  %s->%s", strName.c_str(), strNew.c_str());
 		pButton->loadTextureDisabled(strNew, TextureResType::PLIST);
 	}
 }
