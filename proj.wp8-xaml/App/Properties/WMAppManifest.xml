@@ -3,8 +3,9 @@
   <DefaultLanguage xmlns="" code="zh" />
   <Languages xmlns="">
     <Language code="zh" />
+    <Language code="en" />
   </Languages>
-  <App xmlns="" ProductID="{83cc88fe-7e79-4e1e-a129-742987130b5c}" Title="方块游戏" RuntimeType="Silverlight" Version="1.3.0.0" Genre="apps.normal" Author="lfeng" Description="A brick game." Publisher="lfeng" PublisherID="{ebf6c0e1-80a3-41f1-8553-4aaab70da912}">
+  <App xmlns="" ProductID="{83cc88fe-7e79-4e1e-a129-742987130b5c}" Title="方块游戏" RuntimeType="Silverlight" Version="1.8.0.0" Genre="apps.normal" Author="lfeng" Description="A brick game." Publisher="lfeng" PublisherID="{ebf6c0e1-80a3-41f1-8553-4aaab70da912}">
     <IconPath IsRelative="true" IsResource="false">Assets\ApplicationIcon.png</IconPath>
     <Capabilities>
       <Capability Name="ID_CAP_MEDIALIB_AUDIO" />

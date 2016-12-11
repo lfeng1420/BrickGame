@@ -177,7 +177,10 @@ namespace PhoneDirect3DXamlAppInterop
                         m_textBox = null;
                         break;
                     case Cocos2dEvent.GiveScore:
-                        GiveScore();
+                        OnGiveScore();
+                        break;
+                    case Cocos2dEvent.ShowMyApps:
+                        OnShowMyApps();
                         break;
                 }
             });
@@ -226,9 +229,14 @@ namespace PhoneDirect3DXamlAppInterop
             }
         }
 
-        async public void GiveScore()
+        async public void OnGiveScore()
         {
-            await Windows.System.Launcher.LaunchUriAsync(new Uri("ms-windows-store:reviewapp?appid=179f10e2-cb26-4795-8452-1e850e6c01c0"/* + Windows.ApplicationModel.Store.CurrentApp.AppId*/));//179f10e2-cb26-4795-8452-1e850e6c01c0
+            await Windows.System.Launcher.LaunchUriAsync(new Uri("ms-windows-store:reviewapp?appid=" + Windows.ApplicationModel.Store.CurrentApp.AppId));//179f10e2-cb26-4795-8452-1e850e6c01c0
+        }
+
+        async public void OnShowMyApps()
+        {
+            await Windows.System.Launcher.LaunchUriAsync(new Uri("ms-windows-store://publisher/?name=lfeng"));
         }
     }
 }

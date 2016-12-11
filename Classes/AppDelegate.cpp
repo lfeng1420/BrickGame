@@ -17,7 +17,7 @@ bool AppDelegate::applicationDidFinishLaunching() {
     auto glview = director->getOpenGLView();
     if(!glview) {
         glview = GLView::create("BrickGame");
-		glview->setFrameSize(480, 852);
+		glview->setFrameSize(540, 990);
         director->setOpenGLView(glview);
     }
 

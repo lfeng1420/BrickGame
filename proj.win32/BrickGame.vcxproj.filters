@@ -87,12 +87,6 @@
     <ClCompile Include="..\Classes\MatchGame.cpp">
       <Filter>Classes\Scene\Game\Match</Filter>
     </ClCompile>
-    <ClCompile Include="..\Classes\GameScene.cpp">
-      <Filter>Classes</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Classes\LoadScene.cpp">
-      <Filter>Classes</Filter>
-    </ClCompile>
     <ClCompile Include="..\Classes\GeneralManager.cpp">
       <Filter>Classes\Manager</Filter>
     </ClCompile>
@@ -110,6 +104,15 @@
     </ClCompile>
     <ClCompile Include="..\Classes\AddBrickGame.cpp">
       <Filter>Classes\Scene\Game\AddBrick</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\GameScene.cpp">
+      <Filter>Classes\Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\LoadScene.cpp">
+      <Filter>Classes\Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\SetupLayer.cpp">
+      <Filter>Classes\Scene</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -146,12 +149,6 @@
     <ClInclude Include="..\Classes\MatchGame.h">
       <Filter>Classes\Scene\Game\Match</Filter>
     </ClInclude>
-    <ClInclude Include="..\Classes\LoadScene.h">
-      <Filter>Classes</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Classes\GameScene.h">
-      <Filter>Classes</Filter>
-    </ClInclude>
     <ClInclude Include="..\Classes\GeneralManager.h">
       <Filter>Classes\Manager</Filter>
     </ClInclude>
@@ -169,6 +166,15 @@
     </ClInclude>
     <ClInclude Include="..\Classes\AddBrickGame.h">
       <Filter>Classes\Scene\Game\AddBrick</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\GameScene.h">
+      <Filter>Classes\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\LoadScene.h">
+      <Filter>Classes\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\SetupLayer.h">
+      <Filter>Classes\Scene</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -62,6 +62,9 @@ private:
 	//获取等待时长
 	int GetWaitInterval();
 
+	//检查游戏是否结束
+	bool CheckGameOver();
+
 private:
 	enum 
 	{

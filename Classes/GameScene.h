@@ -2,6 +2,7 @@
 #include "BGGlobal.h"
 
 class CSceneBase;
+class CSetupLayer;
 
 class CGameScene : public LayerColor
 {
@@ -44,8 +45,29 @@ public:
 	//重置所有小Brick
 	void ResetSmallBricks();
 
+	//按钮按下 iBtnIndex 对应BTN_INDEX索引
+	void OnButtonClick(Ref* pSender, int iBtnIndex);
+
 	//显示提示
-	void ShowTips(TIPS_TYPE enTipType);
+	void ShowTips(int nTipType);
+
+	//Change the background image
+	void ChangeColorMode();
+
+	//俄罗斯方块立即存档
+	void SaveTetrisRecord();
+
+	//评分
+	void GiveRate();
+
+	//查看我的应用
+	void ShowMyApps();
+
+	//检查设置页是否显示
+	bool CheckSetupLayerVisible();
+
+	//退出设置页
+	void QuitSetupLayer();
 
 
 	CREATE_FUNC(CGameScene);
@@ -98,21 +120,12 @@ private:
 
 	//按钮释放
 	void OnButtonReleased(int iBtnIndex);
-	
-	//按钮按下 iBtnIndex 对应BTN_INDEX索引
-	void OnButtonClick(Ref* pSender, int iBtnIndex);
-
-	//Change the background image
-	void ChangeColorMode();
 
 	//Change the play button state when game state changed
 	void ChangePlayState(bool bPlay);
 
 	//获取方块Sprite
 	Sprite* GetBrickSprite(int nRowIdx, int nColIdx, bool bSmallFlag, bool bLandFlag);
-
-	//初始化提示
-	void InitTips();
 
 	//改变Sprite
 	void ChangeSprite(Sprite* pSprite, bool bNightMode);
@@ -129,10 +142,13 @@ private:
 	//根据模式返回sprite名字
 	string GetSpriteNameByMode(const char* szName);
 
-private:
-	typedef map<int, CSceneBase*> TMAP_GAMEOBJ;
-	typedef TMAP_GAMEOBJ::iterator TMAP_GAMEOBJ_ITER;
+	//清除提示记录
+	void ClearTipsRecord();
 
+	//退出流程
+	void LaunchQuitRoutine();
+
+public:
 	//按钮索引
 	enum BTN_INDEX
 	{
@@ -148,6 +164,20 @@ private:
 		BTN_RESET,
 		BTN_GIVESCORE,
 	};
+
+	//提示类型
+	enum TIPS_TYPE
+	{
+		TIPS_INVALID,
+		TIPS_EXIT,
+		TIPS_SAVEOPEN,
+		TIPS_SAVECLOSE,
+		TIPS_SAVEOK,
+	};
+
+private:
+	typedef map<int, CSceneBase*> TMAP_GAMEOBJ;
+	typedef TMAP_GAMEOBJ::iterator TMAP_GAMEOBJ_ITER;
 
 	enum 
 	{
@@ -203,9 +233,7 @@ private:
 
 	Sprite* m_pPauseSprLand;							//横屏暂停图标
 
-	Sprite* m_pTipSpr;									//提示
-
-	Sprite* m_pTipSprLand;								//提示
+	Label* m_pTipsLabel;								//提示
 
 	MenuItemToggle* m_pStartBtn;						//Start Button
 
@@ -215,21 +243,21 @@ private:
 
 	MenuItemToggle* m_pSoundBtnLand;					//Sound Button
 
-	bool m_bGamePause;									//暂停标志
+	bool m_bPauseFlag;									//暂停标志
 
 	int m_iBgColor;										//当前背景颜色序号，0白色，>=1自定义
 
-	double m_fClickLoveTime;							//点击心形按钮时间
-
 	double m_lfClickExitTime;							//上一次点击退出时间
 
-	double m_lfClickSndTime;							//上一次点击声音时间
+	//double m_fClickLoveTime;							//点击心形按钮时间
 
-	double m_lfClickResetTime;							//上一次点击重置时间
+	//double m_lfClickSndTime;							//上一次点击声音时间
 
-	double m_lfClickStartTime;							//上一次点击开始时间
+	//double m_lfClickResetTime;						//上一次点击重置时间
 
-	TIPS_TYPE m_enTipType;								//当前提示类型
+	//double m_lfClickStartTime;						//上一次点击开始时间
+
+	int m_nTipType;										//当前提示类型
 
 	Vec2 m_oControllerCenterPos;						//控制器中心位置
 
@@ -246,5 +274,9 @@ private:
 	Size m_oNumSize;									//方块大小
 
 	LayerColor* m_pBgLayer;								//背景颜色
+
+	CSetupLayer* m_pSetupLayer;							//设置层
+
+	bool	m_bOldSoundState;							//声音状态记录
 };
 

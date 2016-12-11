@@ -282,23 +282,28 @@ void CTetrisGame::OnUpBtnPressed()
 {
 	//log("%s", __FUNCTION__);
 
+	int nValue = GET_INTVALUE("UPBUTTON", 0);
+	if (nValue == 0)
+	{
+		OnFireBtnPressed();
+		return;
+	}
+	
 	//直接下落
-	//int iNextRowIdx = m_stCurPos.m_iRowIdx + 1;
-	//while (CheckBrickPos(m_iCurShape, iNextRowIdx, m_stCurPos.m_iColIdx))
-	//{
-	//	m_stCurPos.m_iRowIdx = iNextRowIdx;
-	//	iNextRowIdx += 1;
-	//}
+	int iNextRowIdx = m_stCurPos.m_iRowIdx + 1;
+	while (CheckBrickPos(m_iCurShape, iNextRowIdx, m_stCurPos.m_iColIdx))
+	{
+		m_stCurPos.m_iRowIdx = iNextRowIdx;
+		iNextRowIdx += 1;
+	}
 
-	////重置移动等待时间
-	//m_fMoveDownTime = 0;
+	//重置移动等待时间
+	m_fMoveDownTime = 0;
 
-	//OnBrickDoneMove();
+	OnBrickDoneMove();
 
-	////刷新界面
-	//m_pGameScene->UpdateBricks();
-
-	OnFireBtnPressed();
+	//刷新界面
+	m_pGameScene->UpdateBricks();
 }
 
 

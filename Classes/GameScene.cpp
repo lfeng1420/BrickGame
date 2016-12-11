@@ -11,6 +11,7 @@
 #include "TetrisGame.h"
 #include "FlappyBirdGame.h"
 #include "HitBrickGame.h"
+#include "SetupLayer.h"
 
 #if(CC_TARGET_PLATFORM == CC_PLATFORM_ANDROID)
 #include "platform/android/jni/JniHelper.h"
@@ -22,10 +23,48 @@
 const float FLOAT_CONTROLLER_SCALE_MAX = 1.72f;
 const float FLOAT_CONTROLLER_LAND_SCALE_MAX = 1.5f;
 
-CGameScene::CGameScene() : m_iSceneIndex(SCENE_GAMEOVER), m_enTipType(TIPS_INVALID), m_nRecordBtnIdx(BTN_DIRMAX), m_iBgColor(0), 
-							m_lfClickExitTime(0), m_lfClickSndTime(0), m_lfClickResetTime(0), m_lfClickStartTime(0),
-							m_oBrickSize(Size::ZERO), m_oNumSize(Size::ZERO)
+CGameScene::CGameScene() : m_iSceneIndex(SCENE_GAMEOVER), m_nTipType(TIPS_INVALID), m_nRecordBtnIdx(BTN_DIRMAX), m_iBgColor(0), 
+							m_lfClickExitTime(0), //m_lfClickSndTime(0), m_lfClickResetTime(0), m_lfClickStartTime(0),
+							m_oBrickSize(Size::ZERO), m_oNumSize(Size::ZERO), m_pSetupLayer(nullptr), m_pTipsLabel(nullptr), 
+							m_pPortNode(nullptr), m_pPauseSpr(nullptr), m_pPauseSprLand(nullptr), m_pLandNode(nullptr), 
+							m_visibleSize(Size::ZERO), m_bPauseFlag(false), m_pStartBtn(nullptr), m_pStartBtnLand(nullptr), 
+							m_pSoundBtn(nullptr), m_pSoundBtnLand(nullptr), m_pBgLayer(nullptr), m_bOldSoundState(false),
+							m_oControllerCenterPos(Vec2::ZERO), m_oControllerLandCenterPos(Vec2::ZERO), 
+							m_oControllerCenterSize(Size::ZERO), m_oControllerLandCenterSize(Size::ZERO)
 {
+	for (int nRowIdx = 0; nRowIdx < ROW_NUM; ++nRowIdx)
+	{
+		for (int nColIdx = 0; nColIdx < COLUMN_NUM; ++nColIdx)
+		{
+			m_pArrBrick[nRowIdx][nColIdx] = nullptr;
+			m_pArrBrickLand[nRowIdx][nColIdx] = nullptr;
+		}
+	}
+
+	for (int nRowIdx = 0; nRowIdx < 4; ++nRowIdx)
+	{
+		for (int nColIdx = 0; nColIdx < 4; ++nColIdx)
+		{
+			m_pArrSmallBrick[nRowIdx][nColIdx] = nullptr;
+			m_pArrSmallBrickLand[nRowIdx][nColIdx] = nullptr;
+		}
+	}
+
+	for (int nIdx = 0; nIdx < 2; ++nIdx)
+	{
+		m_pArrSpeed[nIdx] = nullptr;
+		m_pArrSpeedLand[nIdx] = nullptr;
+		m_pArrLevel[nIdx] = nullptr;
+		m_pArrLevelLand[nIdx] = nullptr;
+	}
+
+	for (int nIdx = 0; nIdx < 6; ++nIdx)
+	{
+		m_pArrScore[nIdx] = nullptr;
+		m_pArrScoreLand[nIdx] = nullptr;
+		m_pArrHighScore[nIdx] = nullptr;
+		m_pArrHighScoreLand[nIdx] = nullptr;
+	}
 }
 
 
@@ -72,9 +111,6 @@ bool CGameScene::init()
 	//横向控制器
 	InitLandController();
 
-	//初始化提示
-	InitTips();
-
 	//按键监听
 	CreateKeyListener();
 
@@ -97,12 +133,6 @@ bool CGameScene::init()
 void CGameScene::InitData()
 {
 	m_visibleSize = Director::getInstance()->getVisibleSize();
-
-	//初始化暂停标记
-	m_bGamePause = false;
-
-	//初始化点击时间
-	m_fClickLoveTime = -1;
 }
 
 
@@ -298,7 +328,7 @@ void CGameScene::InitPortUI()
 	m_pPortNode->addChild(m_pPauseSpr);
 
 	//默认非暂停状态
-	m_pPauseSpr->setVisible(m_bGamePause);
+	m_pPauseSpr->setVisible(m_bPauseFlag);
 }
 
 
@@ -416,7 +446,7 @@ void CGameScene::InitLandUI()
 	m_pLandNode->addChild(m_pPauseSprLand);
 
 	//默认非暂停状态
-	m_pPauseSprLand->setVisible(m_bGamePause);
+	m_pPauseSprLand->setVisible(m_bPauseFlag);
 }
 
 void CGameScene::InitPortController()
@@ -437,7 +467,7 @@ void CGameScene::InitPortController()
 	//获取声音状态
 	Sprite* pSndOnSpr = CREATE_SPRITEWITHNAME(GetSpriteNameByMode("sound_on.png"));
 	Sprite* pSndOffSpr = CREATE_SPRITEWITHNAME(GetSpriteNameByMode("sound_off.png"));
-	bool bSoundState = GET_SOUNDSTATE();
+	bool bSoundState = GET_BOOLVALUE("SOUND", true);
 	auto pSoundOnMenu = MenuItemSprite::create(
 		pSndOnSpr,
 		pSndOnSpr,
@@ -470,7 +500,7 @@ void CGameScene::InitPortController()
 	Size resetBtnSize = resetBtn->getContentSize() * fSpriteScale;
 
 	//额外功能
-	Sprite* pStarSpr = CREATE_SPRITEWITHNAME(GetSpriteNameByMode("star.png"));
+	Sprite* pStarSpr = CREATE_SPRITEWITHNAME(GetSpriteNameByMode("setup.png"));
 	auto extremeBtn = MenuItemSprite::create(
 		pStarSpr,
 		pStarSpr,
@@ -589,7 +619,7 @@ void CGameScene::InitLandController()
 	//获取声音状态
 	Sprite* pSndOnSpr = CREATE_SPRITEWITHNAME(GetSpriteNameByMode("sound_on.png"));
 	Sprite* pSndOffSpr = CREATE_SPRITEWITHNAME(GetSpriteNameByMode("sound_off.png"));
-	bool bSoundState = GET_SOUNDSTATE();
+	bool bSoundState = GET_BOOLVALUE("SOUND", true);
 	auto pSoundOnMenu = MenuItemSprite::create(
 		pSndOnSpr,
 		pSndOnSpr,
@@ -624,7 +654,7 @@ void CGameScene::InitLandController()
 	Size resetBtnSize = resetBtn->getContentSize() * fSpriteScale;
 
 	//额外功能
-	Sprite* pStarSpr = CREATE_SPRITEWITHNAME(GetSpriteNameByMode("star.png"));
+	Sprite* pStarSpr = CREATE_SPRITEWITHNAME(GetSpriteNameByMode("setup.png"));
 	auto extremeBtn = MenuItemSprite::create(
 		pStarSpr,
 		pStarSpr,
@@ -813,30 +843,13 @@ void CGameScene::CreateKeyListener()
 			EventKeyboard::KeyCode::KEY_ESCAPE == keyCode ||
 			EventKeyboard::KeyCode::KEY_BACKSPACE == keyCode)
 		{
-			double lfCurTime = GetMillSecond();
-			if (lfCurTime - m_lfClickExitTime <= CLICK_INTERVAL)
-			{
-				if (m_iSceneIndex == SCENE_TETRIS || m_iSceneIndex == SCENE_TETRIS2)
-				{
-					//保存数据
-					m_mapGameObj[m_iSceneIndex]->SaveGameData();
-				}
-
-				DIRECTOR_INSTANCE()->end();
-				return;
-			}
-
-			m_lfClickExitTime = lfCurTime;
-
-			//显示退出提示
-			ShowTips(TIPS_EXIT);
+			LaunchQuitRoutine();
 		}
 
 #if CC_TARGET_PLATFORM == CC_PLATFORM_WP8
 		else if (EventKeyboard::KeyCode::KEY_PLAY == keyCode)
 		{
-			//显示退出提示
-			ShowTips(TIPS_EXIT);
+			LaunchQuitRoutine();
 		}
 		else if (EventKeyboard::KeyCode::KEY_ENTER == keyCode)
 		{
@@ -855,27 +868,27 @@ void CGameScene::CreateKeyListener()
 
 void CGameScene::update(float dt)
 {
-	if (m_fClickLoveTime >= 0)
-	{
-		m_fClickLoveTime += dt * 1000;
-		if (m_fClickLoveTime > CHANGEBG_INTERVAL)
-		{
-			m_fClickLoveTime = -1;
-#if CC_TARGET_PLATFORM == CC_PLATFORM_WP8 
-			GLView::sharedOpenGLView()->OnGiveScore();
-#endif
-
-#if CC_TARGET_PLATFORM == CC_PLATFORM_ANDROID
-			JniMethodInfo minfo;
-			bool bFuncExistFlag = JniHelper::getStaticMethodInfo(minfo, "org/cocos2dx/cpp/AppActivity", "GiveScore", "()V");
-			//log("bFuncExistFlag=%d", bFuncExistFlag);
-			if (bFuncExistFlag)
-			{
-				minfo.env->CallStaticVoidMethod(minfo.classID, minfo.methodID);
-			}
-#endif
-		}
-	}
+//	if (m_fClickLoveTime >= 0)
+//	{
+//		m_fClickLoveTime += dt * 1000;
+//		if (m_fClickLoveTime > CHANGEBG_INTERVAL)
+//		{
+//			m_fClickLoveTime = -1;
+//#if CC_TARGET_PLATFORM == CC_PLATFORM_WP8 
+//			GLView::sharedOpenGLView()->OnGiveScore();
+//#endif
+//
+//#if CC_TARGET_PLATFORM == CC_PLATFORM_ANDROID
+//			JniMethodInfo minfo;
+//			bool bFuncExistFlag = JniHelper::getStaticMethodInfo(minfo, "org/cocos2dx/cpp/AppActivity", "GiveScore", "()V");
+//			//log("bFuncExistFlag=%d", bFuncExistFlag);
+//			if (bFuncExistFlag)
+//			{
+//				minfo.env->CallStaticVoidMethod(minfo.classID, minfo.methodID);
+//			}
+//#endif
+//		}
+//	}
 
 	m_mapGameObj[m_iSceneIndex]->Play(dt * 1000);
 }
@@ -1012,7 +1025,7 @@ void CGameScene::ResetBricks()
 void CGameScene::OnButtonEvent(Ref* pSender, Widget::TouchEventType enType, int iBtnIndex)
 {
 	//如果暂停，则不响应按钮事件
-	if (m_bGamePause)
+	if (m_bPauseFlag)
 	{
 		return;
 	}
@@ -1201,13 +1214,13 @@ void CGameScene::OnButtonClick(Ref* pSender, int iBtnIndex)
 			}
 			else
 			{
-				m_bGamePause = !m_bGamePause;
-				m_pPauseSpr->setVisible(m_bGamePause);
-				m_pPauseSprLand->setVisible(m_bGamePause);
-				ChangePlayState(!m_bGamePause);
+				m_bPauseFlag = !m_bPauseFlag;
+				m_pPauseSpr->setVisible(m_bPauseFlag);
+				m_pPauseSprLand->setVisible(m_bPauseFlag);
+				ChangePlayState(!m_bPauseFlag);
 
 				//如果暂停，则停止更新
-				if (m_bGamePause)
+				if (m_bPauseFlag)
 				{
 					this->unscheduleUpdate();
 				}
@@ -1216,36 +1229,22 @@ void CGameScene::OnButtonClick(Ref* pSender, int iBtnIndex)
 					this->scheduleUpdate();
 				}
 			}
-
-			if (m_iSceneIndex == SCENE_TETRIS || m_iSceneIndex == SCENE_TETRIS2)
-			{
-				if (lfCurTime - m_lfClickStartTime <= CLICK_INTERVAL)
-				{
-					//保存
-					m_mapGameObj[m_iSceneIndex]->SaveGameData();
-
-					//提示
-					ShowTips(TIPS_SAVEOK);
-
-					//重置时间
-					m_lfClickStartTime = 0;
-					return;
-				}
-				m_lfClickStartTime = lfCurTime;
-			}
 		}
 		break;
 
 		case BTN_SOUND:
 		{
-			bool bState = !GET_SOUNDSTATE();
-			SET_SOUNDSTATE(bState);
+			bool bState = !GET_BOOLVALUE("SOUND", true);
+			SET_BOOLVALUE("SOUND", bState);
 			
+			//更新声音设置
+			m_pSetupLayer->UpdateSingleMenuAndLabel(MENU_SOUND);
+
 			//设置声音按钮状态
-			if (m_pPortNode->isVisible())
+			bool bPortVisible = GET_BOOLVALUE("PORTRAIT", true);
+			if (bPortVisible)
 			{
 				int nIndex = m_pSoundBtn->getSelectedIndex();
-				//log("nIndex=%d", nIndex);
 				m_pSoundBtnLand->setSelectedIndex(nIndex);
 			}
 			else
@@ -1267,21 +1266,6 @@ void CGameScene::OnButtonClick(Ref* pSender, int iBtnIndex)
 				//PLAY_EFFECT(EFFECT_SOUNDOFF);
 				PAUSE_BGMUSIC();
 			}
-
-			if (lfCurTime - m_lfClickResetTime <= CLICK_INTERVAL)
-			{
-				bool bPortVisible = m_pPortNode->isVisible();
-				bPortVisible = !bPortVisible;
-				m_pPortNode->setVisible(bPortVisible);
-				m_pLandNode->setVisible(!bPortVisible);
-
-				SET_BOOLVALUE("PORTRAIT", bPortVisible);
-
-				//重置时间
-				m_lfClickResetTime = 0;
-				return;
-			}
-			m_lfClickResetTime = lfCurTime;
 		}
 		break;
 
@@ -1290,9 +1274,9 @@ void CGameScene::OnButtonClick(Ref* pSender, int iBtnIndex)
 			PLAY_EFFECT(EFFECT_CHANGE2);
 
 			//如果暂停了，则恢复更新
-			if (m_bGamePause)
+			if (m_bPauseFlag)
 			{
-				m_bGamePause = false;
+				m_bPauseFlag = false;
 				m_pPauseSpr->setVisible(false);
 				this->scheduleUpdate();
 			}
@@ -1307,36 +1291,23 @@ void CGameScene::OnButtonClick(Ref* pSender, int iBtnIndex)
 
 				RunScene(SCENE_GAMEOVER);
 			}
-
-			if (lfCurTime - m_lfClickSndTime <= CLICK_INTERVAL)
-			{
-				bool bRecordValidFlag = GET_BOOLVALUE("TETRIS_RECORD_VALID", false);
-				bRecordValidFlag = !bRecordValidFlag;
-				SET_BOOLVALUE("TETRIS_RECORD_VALID", bRecordValidFlag);
-
-				//显示退出提示
-				ShowTips(bRecordValidFlag ? TIPS_SAVEOPEN : TIPS_SAVECLOSE);
-
-				//重置时间
-				m_lfClickSndTime = 0;
-				return;
-			}
-			m_lfClickSndTime = lfCurTime;
 		}
 		break;
 		case BTN_GIVESCORE:
 		{
 			PLAY_EFFECT(EFFECT_CHANGE2);
 
-			if (m_fClickLoveTime < 0) 
-			{ 
-				m_fClickLoveTime = 0.1f;
-			} 
-			else if (m_fClickLoveTime >= 0 && m_fClickLoveTime < CHANGEBG_INTERVAL)
-			{ 
-				ChangeColorMode();
-				m_fClickLoveTime = -1;
-			}
+			//隐藏横竖屏界面
+			m_pLandNode->setVisible(false);
+			m_pPortNode->setVisible(false);
+			//显示设置界面
+			m_pSetupLayer->setVisible(true);
+
+			//记录声音状态
+			m_bOldSoundState = GET_BOOLVALUE("SOUND", true);
+
+			//暂停
+			this->unscheduleUpdate();
 		}
 		break;
 	}
@@ -1383,87 +1354,74 @@ Sprite* CGameScene::GetBrickSprite(int nRowIdx, int nColIdx, bool bSmallFlag, bo
 }
 
 
-void CGameScene::InitTips()
+void CGameScene::ShowTips(int nTipType)
 {
-	string strName = GetSpriteNameByMode("exit.png");
-
-	//提示
-	m_pTipSpr = CREATE_SPRITEWITHNAME(strName);
-	m_pTipSpr->setPosition(m_visibleSize.width / 2, m_visibleSize.height / 2);
-	m_pPortNode->addChild(m_pTipSpr, 999);
-	m_pTipSpr->setVisible(false);
-
-	//横屏提示
-	m_pTipSprLand = CREATE_SPRITEWITHNAME(strName);
-	m_pTipSprLand->setRotation(90);
-	m_pTipSprLand->setPosition(m_visibleSize.width / 2, m_visibleSize.height / 2);
-	m_pLandNode->addChild(m_pTipSprLand, 999);
-	m_pTipSprLand->setVisible(false);
-}
-
-
-void CGameScene::ShowTips(TIPS_TYPE enTipType)
-{
-	bool bNightMode = GET_BOOLVALUE("NIGHTMODE", false);
-
-	if (m_enTipType != enTipType)
+	//如果相同则不显示
+	if (m_nTipType == nTipType)
 	{
-		m_enTipType = enTipType;
-		switch (m_enTipType)
-		{
-		case TIPS_EXIT:
-			{
-				string strName = GetSpriteNameByMode("exit.png");
-				m_pTipSpr->setSpriteFrame(strName);
-				m_pTipSprLand->setSpriteFrame(strName);
-			}
-			break;
-
-		case TIPS_SAVEOPEN:
-			{
-				string strName = GetSpriteNameByMode("saveopen.png");
-				m_pTipSpr->setSpriteFrame(strName);
-				m_pTipSprLand->setSpriteFrame(strName);
-			}
-			break;
-
-		case TIPS_SAVECLOSE:
-			{
-				string strName = GetSpriteNameByMode("saveclose.png");
-				m_pTipSpr->setSpriteFrame(strName);
-				m_pTipSprLand->setSpriteFrame(strName);
-			}
-			break;
-		case TIPS_SAVEOK:
-			{
-				string strName = GetSpriteNameByMode("saveok.png");
-				m_pTipSpr->setSpriteFrame(strName);
-				m_pTipSprLand->setSpriteFrame(strName);
-			}
-			break;
-
-		default:
-			break;
-		}
+		return;
 	}
 
-	//先停止所有动作
-	if (m_pPortNode->isVisible())
+	m_nTipType = nTipType;
+	int nStrID = STRNAME_MAX;
+	switch (m_nTipType)
 	{
-		m_pTipSpr->stopAllActions();
-		m_pTipSpr->setVisible(true);
-		m_pTipSpr->runAction(
-			Sequence::create(FadeIn::create(0.5f), DelayTime::create(1.5f), FadeOut::create(0.5f), nullptr)
-			);
+	case TIPS_EXIT:
+	{
+		nStrID = STRNAME_QUIT;
+	}
+	break;
+
+	case TIPS_SAVEOPEN:
+	{
+		nStrID = STRNAME_RECOVERON;
+	}
+	break;
+
+	case TIPS_SAVECLOSE:
+	{
+		nStrID = STRNAME_RECOVEROFF;
+	}
+	break;
+	case TIPS_SAVEOK:
+	{
+		nStrID = STRNAME_SAVEOK;
+	}
+	break;
+	default:
+		return;
+		break;
+	}
+
+	int nLangID = GET_INTVALUE("LANGUAGE", LANG_CH);
+	string strName = CGeneralManager::getInstance()->GetStringByID(nLangID, nStrID);
+	if (m_pTipsLabel == nullptr)
+	{
+		m_pTipsLabel = Label::createWithSystemFont(strName, FONT_NAME, 36);
+		m_pTipsLabel->setPosition(m_visibleSize.width / 2, m_visibleSize.height / 2);
+		m_pTipsLabel->setRotation(90);
+		this->addChild(m_pTipsLabel, 999);
 	}
 	else
 	{
-		m_pTipSprLand->stopAllActions();
-		m_pTipSprLand->setVisible(true);
-		m_pTipSprLand->runAction(
-			Sequence::create(FadeIn::create(0.5f), DelayTime::create(1.5f), FadeOut::create(0.5f), nullptr)
-			);
+		m_pTipsLabel->setString(strName);
 	}
+
+	//设置颜色
+	bool bNightMode = GET_BOOLVALUE("NIGHTMODE", false);
+	m_pTipsLabel->setColor(bNightMode ? Color3B::WHITE : Color3B::BLACK);
+
+	//横竖屏
+	bool bPortraitFlag = GET_BOOLVALUE("PORTRAIT", true);
+	float fRotation = bPortraitFlag ? 0 : 90;
+	m_pTipsLabel->setRotation(fRotation);
+
+	//先停止所有动作
+	m_pTipsLabel->stopAllActions();
+	//m_pTipSpr->setVisible(true);
+	m_pTipsLabel->runAction(
+		Sequence::create(FadeIn::create(0.5f), DelayTime::create(1.5f), FadeOut::create(0.5f), CallFunc::create(CC_CALLBACK_0(CGameScene::ClearTipsRecord, this)), nullptr)
+		);
 }
 
 
@@ -1566,6 +1524,84 @@ void CGameScene::ChangeColorMode()
 			ChangeButton(pButton, bNightMode);
 		}
 	}
+}
+
+
+void CGameScene::SaveTetrisRecord()
+{
+	if (m_iSceneIndex != SCENE_TETRIS && m_iSceneIndex != SCENE_TETRIS2)
+	{
+		return;
+	}
+
+	//保存
+	m_mapGameObj[m_iSceneIndex]->SaveGameData();
+
+	//提示
+	ShowTips(CGameScene::TIPS_SAVEOK);
+}
+
+
+void CGameScene::GiveRate()
+{
+#if CC_TARGET_PLATFORM == CC_PLATFORM_WP8 
+	GLView::sharedOpenGLView()->OnGiveScore();
+#endif
+
+#if CC_TARGET_PLATFORM == CC_PLATFORM_ANDROID
+	JniMethodInfo minfo;
+	bool bFuncExistFlag = JniHelper::getStaticMethodInfo(minfo, "org/cocos2dx/cpp/AppActivity", "OnGiveScore", "()V");
+	if (bFuncExistFlag)
+	{
+		minfo.env->CallStaticVoidMethod(minfo.classID, minfo.methodID);
+	}
+#endif
+}
+
+
+void CGameScene::ShowMyApps()
+{
+#if CC_TARGET_PLATFORM == CC_PLATFORM_WP8 
+	GLView::sharedOpenGLView()->OnShowMyApps();
+#endif
+
+#if CC_TARGET_PLATFORM == CC_PLATFORM_ANDROID
+	JniMethodInfo minfo;
+	bool bFuncExistFlag = JniHelper::getStaticMethodInfo(minfo, "org/cocos2dx/cpp/AppActivity", "OnShowMyApps", "()V");
+	if (bFuncExistFlag)
+	{
+		minfo.env->CallStaticVoidMethod(minfo.classID, minfo.methodID);
+	}
+#endif
+}
+
+
+bool CGameScene::CheckSetupLayerVisible()
+{
+	return m_pSetupLayer->isVisible();
+}
+
+
+void CGameScene::QuitSetupLayer()
+{
+	m_pSetupLayer->setVisible(false);
+
+	bool bPortVisible = GET_BOOLVALUE("PORTRAIT", true);
+	m_pPortNode->setVisible(bPortVisible);
+	m_pLandNode->setVisible(!bPortVisible);
+
+	//声音按钮状态处理
+	bool bSoundState = GET_BOOLVALUE("SOUND", true);
+	int nIndex = m_pSoundBtn->getSelectedIndex();
+	if (m_bOldSoundState != bSoundState)
+	{
+		nIndex = ((nIndex == 1) ? 0 : 1);
+		m_pSoundBtn->setSelectedIndex(nIndex);
+		m_pSoundBtnLand->setSelectedIndex(nIndex);
+	}
+
+	//恢复
+	this->scheduleUpdate();
 }
 
 
@@ -1846,6 +1882,46 @@ std::string CGameScene::GetSpriteNameByMode(const char* szName)
 	return strTemp;
 }
 
+
+void CGameScene::ClearTipsRecord()
+{
+	m_nTipType = TIPS_INVALID;
+}
+
+
+void CGameScene::LaunchQuitRoutine()
+{
+	//如果显示了设置界面，则返回
+	if (CheckSetupLayerVisible())
+	{
+		QuitSetupLayer();
+		return;
+	}
+
+	double lfCurTime = GetMillSecond();
+	if (lfCurTime - m_lfClickExitTime <= CLICK_INTERVAL)
+	{
+		if (m_iSceneIndex == SCENE_TETRIS || m_iSceneIndex == SCENE_TETRIS2)
+		{
+			//保存数据
+			m_mapGameObj[m_iSceneIndex]->SaveGameData();
+		}
+
+#if CC_TARGET_PLATFORM == CC_PLATFORM_WP8
+		Director::getInstance()->getOpenGLView()->QuitGame();
+#else
+		DIRECTOR_INSTANCE()->end();
+#endif
+
+		return;
+	}
+
+	m_lfClickExitTime = lfCurTime;
+
+	//显示退出提示
+	ShowTips(TIPS_EXIT);
+}
+
 void CGameScene::InitBgLayer()
 {
 	m_pBgLayer = LayerColor::create(Color4B::WHITE);
@@ -1853,4 +1929,11 @@ void CGameScene::InitBgLayer()
 	this->addChild(m_pBgLayer);
 
 	m_pBgLayer->setVisible(!GET_BOOLVALUE("NIGHTMODE", false));
+
+	//初始化SetupLayer
+	m_pSetupLayer = CSetupLayer::create();
+	m_pSetupLayer->setPosition(Vec2::ZERO);
+	m_pSetupLayer->Init(this);
+	this->addChild(m_pSetupLayer);
+	m_pSetupLayer->setVisible(false);
 }

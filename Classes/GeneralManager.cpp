@@ -4,6 +4,37 @@ CGeneralManager* _dataManager = nullptr;
 
 
 const string HIGHSCORE_FILEPATH = "./HighScore.json";
+const char* STRINGS_FILEPATH = "Strings/strings.json";
+
+const std::string MENU_ITEM_NAME[STRNAME_MAX] = 
+{
+	"off",
+	"on",
+	"globalsetting",
+	"language",
+	"chinese",
+	"english",
+	"sound",
+	"nightmode",
+	"orientation",
+	"portrait",
+	"landscape",
+	"tetrissetting",
+	"autorecover",
+	"savenow",
+	"upbtn",
+	"rotate",
+	"quickland",
+	"other",
+	"author",
+	"lfeng",
+	"rate",
+	"rightarrow",
+	"quit",
+	"recoveron",
+	"recoveroff",
+	"saveok",
+};
 
 CGeneralManager::CGeneralManager()
 {
@@ -35,8 +66,7 @@ void CGeneralManager::Init()
 
 	LoadSound();
 
-	//获取上一次的声音设置
-	m_bSoundOn = GET_BOOLVALUE("SOUND", true);
+	LoadStrings();
 
 	//清除之前记录的一些数据
 	SET_INTVALUE("GAME", 0);
@@ -50,13 +80,13 @@ bool CGeneralManager::LoadGameAnim()
 	//加载动画文件
 	for (int i = 0; i < GAME_MAX; ++i)
 	{
-		for (int j = 0; j < ANIM_NUM; ++j)
+		for (int j = 0; j < GAME_ANIM_NUM; ++j)
 		{
 			string strFilePath = StringUtils::format("Anims/%c1_%d.txt", i + 'a', j + 1);
 			string strFullPath = FileUtils::getInstance()->fullPathForFilename(strFilePath);
 			string strContent = FileUtils::getInstance()->getStringFromFile(strFullPath);
 
-			TVECTOR_ANIMDATA& vecAnimData = m_mapGameAnim[i * ANIM_NUM + j];
+			TVECTOR_ANIMDATA& vecAnimData = m_mapGameAnim[i * GAME_ANIM_NUM + j];
 			for (unsigned int k = 0; k < strContent.size(); ++k)
 			{
 				if (strContent[k] == '0')
@@ -155,6 +185,25 @@ bool CGeneralManager::SaveHighScoreToFile()
 }
 
 
+const char* CGeneralManager::GetStringByID(int nLangID, int nStrID)
+{
+	TMAP_LANGUAGESTRING::iterator itLangString = m_mapStrings.find(nLangID);
+	if (itLangString == m_mapStrings.end())
+	{
+		return "";
+	}
+
+	TMAP_STRING& mapString = itLangString->second;
+	TMAP_STRING::iterator itString = mapString.find(nStrID);
+	if (itString == mapString.end())
+	{
+		return "";
+	}
+
+	return itString->second.c_str();
+}
+
+
 //加载声效
 void CGeneralManager::LoadSound()
 {
@@ -181,9 +230,29 @@ void CGeneralManager::LoadSound()
 }
 
 
+void CGeneralManager::LoadStrings()
+{
+	std::string strContent = FileUtils::getInstance()->getStringFromFile(STRINGS_FILEPATH);
+	rapidjson::Document oDoc;
+	oDoc.Parse<0>(strContent.c_str());
+	if (oDoc.HasParseError() || oDoc.IsNull())
+	{
+		return;
+	}
+
+	for (int nIdx = STRNAME_MIN; nIdx < STRNAME_MAX; ++nIdx)
+	{
+		std::string strChName("ch_" + MENU_ITEM_NAME[nIdx]);
+		std::string strEnName("en_" + MENU_ITEM_NAME[nIdx]);
+		m_mapStrings[LANG_CH][nIdx] = oDoc[strChName.c_str()].GetString();
+		m_mapStrings[LANG_ENG][nIdx] = oDoc[strEnName.c_str()].GetString();
+	}
+}
+
+
 vector<int>* CGeneralManager::GetAnimData(int iGameIndex, int iAnimIndex)
 {
-	int iIndex = iGameIndex * ANIM_NUM + iAnimIndex;
+	int iIndex = iGameIndex * GAME_ANIM_NUM + iAnimIndex;
 	return &m_mapGameAnim[iIndex];
 }
 
@@ -191,7 +260,7 @@ vector<int>* CGeneralManager::GetAnimData(int iGameIndex, int iAnimIndex)
 //播放背景音乐
 void CGeneralManager::PlayMusic(const char* strName, bool bLoop)
 {
-	if (m_bSoundOn)
+	if (GET_BOOLVALUE("SOUND", true))
 	{
 		CocosDenshion::SimpleAudioEngine::getInstance()->playBackgroundMusic(strName, bLoop);
 	}
@@ -200,25 +269,10 @@ void CGeneralManager::PlayMusic(const char* strName, bool bLoop)
 //播放音效
 void CGeneralManager::PlayEffect(const char* strName)
 {
-	if (m_bSoundOn)
+	if (GET_BOOLVALUE("SOUND", true))
 	{
 		CocosDenshion::SimpleAudioEngine::getInstance()->playEffect(strName);
 	}
-}
-
-
-//设置声音状态
-void CGeneralManager::SetSoundState(bool bState)
-{
-	m_bSoundOn = bState;
-	SET_BOOLVALUE("SOUND", m_bSoundOn);
-}
-
-
-//获取声音状态
-bool CGeneralManager::GetSoundState()
-{
-	return m_bSoundOn;
 }
 
 
@@ -286,4 +340,3 @@ void CGeneralManager::LoadTetrisData(bool(&arrState)[ROW_NUM][COLUMN_NUM])
 
 	oFile.close();
 }
-

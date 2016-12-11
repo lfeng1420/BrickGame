@@ -48,8 +48,6 @@ private:
 
 	enum 
 	{
-		ANIM_NUM = 4,
-
 		REFRESH_INTERVAL = 1000,		//Ë¢ÐÂ¼ä¸ô
 	};
 

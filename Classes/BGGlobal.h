@@ -1,6 +1,6 @@
 #pragma once
 
-// ---- Í·ÎÄ¼þ ----
+// ---- å¤´æ–‡ä»¶ ----
 #include "cocos2d.h"
 #include "cocos-ext.h"
 #include "../cocos/ui/CocosGUI.h"
@@ -30,11 +30,16 @@ using namespace ui;
 
 #define FOR_EACH_CONTAINER(type, container, it) for (type::iterator it = container.begin(); it != container.end(); ++it)
 
+#if CC_TARGET_PLATFORM == CC_PLATFORM_ANDROID
+#define _countof(array) (sizeof(array) / sizeof(array[0]))
+#endif
 
-// ---- cocos ³£ÓÃº¯Êýºê¶¨Òå ----
+// ---- cocos å¸¸ç”¨å‡½æ•°å®å®šä¹‰ ----
 #define DIRECTOR_INSTANCE Director::getInstance
 
 #define GET_VISIBLESIZE Director::getInstance()->getVisibleSize
+
+#define GET_VISIBLEORIGIN Director::getInstance()->getVisibleOrigin
 
 #define REPLACE_SCENE Director::getInstance()->replaceScene
 
@@ -89,12 +94,12 @@ using namespace ui;
 #define SET_BOOLVALUE(key, value) UserDefault::getInstance()->setBoolForKey(key, value)
 
 
-//Í¨ÓÃ½á¹¹Ìå
+//é€šç”¨ç»“æž„ä½“
 struct POSITION
 {
-	int m_iRowIdx;			//ÐÐÎ»ÖÃ
+	int m_iRowIdx;			//è¡Œä½ç½®
 
-	int m_iColIdx;			//ÁÐÎ»ÖÃ
+	int m_iColIdx;			//åˆ—ä½ç½®
 
 	POSITION() : m_iRowIdx(0), m_iColIdx(0)
 	{
@@ -144,23 +149,29 @@ struct POSITION
 };
 
 
-//³£Á¿Ã¶¾Ù
+//å¸¸é‡æžšä¸¾
 enum
 {
-	//ÐÐÁÐ
+	//è¡Œåˆ—
 	ROW_NUM = 20,
 	COLUMN_NUM = 14,
 
-	//·½¿é¿í¸ß
+	//æ–¹å—å®½é«˜
 	BRICK_WIDTH = 32,
 	BRICK_HEIGHT = 32,
 
-	//ËÙ¶ÈºÍµÈ¼¶×î´óÖµ
+	//é€Ÿåº¦å’Œç­‰çº§æœ€å¤§å€¼
 	SPEED_MAX = 10,
 	LEVEL_MAX = 10,
+
+	//æ¸¸æˆåŠ¨ç”»æ•°é‡
+	GAME_ANIM_NUM = 4,
+
+	//èœå•æ•°é‡
+	SETTING_MENU_COUNT = 13,
 };
 
-//·½ÏòÃ¶¾Ù
+//æ–¹å‘æžšä¸¾
 enum DIRECTION
 {
 	DIR_MIN = 0,
@@ -172,100 +183,153 @@ enum DIRECTION
 };
 
 
-//ÓÎÏ·Ë÷ÒýÃ¶¾Ù
+//è¯­è¨€æžšä¸¾
+enum LANGUAGE
+{
+	LANG_CH = 0,
+	LANG_ENG,
+};
+
+
+//æ¸¸æˆç´¢å¼•æžšä¸¾
 enum SCENE_INDEX
 {
 	SCENE_INVALID = -1,
 
-	SCENE_GAMEOVER,				//ÓÎÏ·½áÊø½çÃæ
+	SCENE_GAMEOVER,				//æ¸¸æˆç»“æŸç•Œé¢
 
-	SCENE_CHOOSEGAME,			//Ñ¡Ôñ½çÃæ
+	SCENE_CHOOSEGAME,			//é€‰æ‹©ç•Œé¢
 
-	SCENE_TANK,					//ÓÎÏ·½çÃæ - Ì¹¿Ë´óÕ½
+	SCENE_TANK,					//æ¸¸æˆç•Œé¢ - å¦å…‹å¤§æˆ˜
 
-	SCENE_RACING,				//ÓÎÏ·½çÃæ - Èü³µ
+	SCENE_RACING,				//æ¸¸æˆç•Œé¢ - èµ›è½¦
 
-	SCENE_SNAKE,				//ÓÎÏ·½çÃæ - Ì°³ÔÉß
+	SCENE_SNAKE,				//æ¸¸æˆç•Œé¢ - è´ªåƒè›‡
 
-	SCENE_MATCH,				//ÓÎÏ·½çÃæ - Æ¥Åä
+	SCENE_MATCH,				//æ¸¸æˆç•Œé¢ - åŒ¹é…
 
-	SCENE_FROGGER,				//ÓÎÏ·½çÃæ - ÇàÍÜ¹ýºÓ
+	SCENE_FROGGER,				//æ¸¸æˆç•Œé¢ - é’è›™è¿‡æ²³
 
-	SCENE_PINBALL,				//ÓÎÏ·½çÃæ - µ¯Çò
+	SCENE_PINBALL,				//æ¸¸æˆç•Œé¢ - å¼¹çƒ
 
-	SCENE_TETRIS,				//ÓÎÏ·½çÃæ - ¶íÂÞË¹·½¿é
+	SCENE_TETRIS,				//æ¸¸æˆç•Œé¢ - ä¿„ç½—æ–¯æ–¹å—
 
-	SCENE_FLAPPYBIRD,			//ÓÎÏ·½çÃæ - flappybird
+	SCENE_FLAPPYBIRD,			//æ¸¸æˆç•Œé¢ - flappybird
 
-	SCENE_TETRIS2,				//ÓÎÏ·½çÃæ - ¶íÂÞË¹·½¿é2
+	SCENE_TETRIS2,				//æ¸¸æˆç•Œé¢ - ä¿„ç½—æ–¯æ–¹å—2
 
-	SCENE_PINBALL2,				//ÓÎÏ·½çÃæ - µ¯Çò2
+	SCENE_PINBALL2,				//æ¸¸æˆç•Œé¢ - å¼¹çƒ2
 
-	SCENE_HITBRICK,				//ÓÎÏ·½çÃæ - ´ò×©¿é
+	SCENE_HITBRICK,				//æ¸¸æˆç•Œé¢ - æ‰“ç –å—
 
-	SCENE_ADDBRICK,				//ÓÎÏ·½çÃæ - ¼Ó×©¿é
+	SCENE_ADDBRICK,				//æ¸¸æˆç•Œé¢ - åŠ ç –å—
 
-	SCENE_MAX,					//×î´óÖµ
+	SCENE_MAX,					//æœ€å¤§å€¼
 };
 
 enum GAME_LIST
 {
-	GAME_INVALID = -1,			//ÎÞÐ§
+	GAME_INVALID = -1,			//æ— æ•ˆ
 
-	GAME_TANK,					//Ì¹¿Ë´óÕ½
+	GAME_TANK,					//å¦å…‹å¤§æˆ˜
 	
-	GAME_RACING,				//Èü³µ
+	GAME_RACING,				//èµ›è½¦
 
-	GAME_SNAKE,					//Ì°³ÔÉß
+	GAME_SNAKE,					//è´ªåƒè›‡
 
-	GAME_MATCH,					//Æ¥Åä
+	GAME_MATCH,					//åŒ¹é…
 
-	GAME_FROGGER,				//ÇàÍÜ¹ýºÓ
+	GAME_FROGGER,				//é’è›™è¿‡æ²³
 
-	GAME_PINBALL,				//µ¯Çò
+	GAME_PINBALL,				//å¼¹çƒ
 
-	GAME_TETRIS,				//¶íÂÞË¹·½¿é
+	GAME_TETRIS,				//ä¿„ç½—æ–¯æ–¹å—
 
 	GAME_FLAPPYBIRD,			//FlappyBird
 
-	GAME_TETRIS2,				//¶íÂÞË¹·½¿é2
+	GAME_TETRIS2,				//ä¿„ç½—æ–¯æ–¹å—2
 
-	GAME_PINBALL2,				//µ¯Çò2
+	GAME_PINBALL2,				//å¼¹çƒ2
 
-	GAME_HITBRICK,				//´ò×©¿é
+	GAME_HITBRICK,				//æ‰“ç –å—
 
-	GAME_ADDBRICK,				//¼Ó×©¿é
+	GAME_ADDBRICK,				//åŠ ç –å—
 
-	GAME_MAX,					//×î´óÖµ
+	GAME_MAX,					//æœ€å¤§å€¼
 };
 
 enum GAME_STATE
 {
-	GAMESTATE_RUNNING,				//½øÐÐÖÐ
+	GAMESTATE_RUNNING,				//è¿›è¡Œä¸­
 
-	GAMESTATE_PAUSE,				//ÔÝÍ£
+	GAMESTATE_PAUSE,				//æš‚åœ
 
-	GAMESTATE_OVER,					//½áÊø
+	GAMESTATE_OVER,					//ç»“æŸ
 
-	GAMESTATE_PASS,					//Í¨¹ý
+	GAMESTATE_PASS,					//é€šè¿‡
 };
 
-//ÌáÊ¾ÀàÐÍ
-enum TIPS_TYPE
+
+//å­—ç¬¦ä¸²æžšä¸¾
+enum STRING_NAME
 {
-	TIPS_INVALID,
-	TIPS_EXIT,
-	TIPS_SAVEOPEN,
-	TIPS_SAVECLOSE,
-	TIPS_SAVEOK,
+	STRNAME_MIN = 0,
+	STRNAME_OFF = STRNAME_MIN,
+	STRNAME_ON,
+	STRNAME_GLOBALSETTING,
+	STRNAME_LANGUAGE,
+	STRNAME_CHINESE,
+	STRNAME_ENGLISH,
+	STRNAME_SOUND,
+	STRNAME_NIGHTMODE,
+	STRNAME_ORIENTATION,
+	STRNAME_LANDSCAPE,
+	STRNAME_PORTRAIT,
+	STRNAME_TETRISSETTING,
+	STRNAME_AUTORECOVER,
+	STRNAME_SAVENOW,
+	STRNAME_UPBTN,
+	STRNAME_ROTATE,
+	STRNAME_QUICKLAND,
+	STRNAME_OTHER,
+	STRNAME_AUTHOR,
+	STRNAME_LFENG,
+	STRNAME_RATE,
+	STRNAME_RIGHTARROW,
+	STRNAME_QUIT,
+	STRNAME_RECOVERON,
+	STRNAME_RECOVEROFF,
+	STRNAME_SAVEOK,
+	STRNAME_MAX,
+};
+
+//èœå•é¡¹æžšä¸¾
+enum MENU_ITEM
+{
+	MENU_MIN = 0,
+	MENU_GLOBALSET = MENU_MIN,
+	MENU_LANGUAGE,
+	MENU_SOUND,
+	MENU_NIGHTMODE,
+	MENU_ORIENTATION,
+	MENU_TETRISSET,
+	MENU_AUTORECOVER,
+	MENU_SAVENOW,
+	MENU_UPBTN,
+	MENU_OTHERSET,
+	MENU_AUTHOR,
+	MENU_RATE,
+	MENU_MAX,
 };
 
 
-//È«¾Ö³£Á¿
+//////////////////////////////////////////////////////////////////////////
+//å…¨å±€å¸¸é‡
 extern const bool BOOM_STATE[4][4];
 
-//×Ö·û´®³£Á¿
+//å­—ç¬¦ä¸²å¸¸é‡
 extern const char* BGM_START;
+extern const char* FONT_NAME;
 
 extern const char* EFFECT_ADD;
 extern const char* EFFECT_BOOM;
@@ -278,14 +342,15 @@ extern const char* EFFECT_SOUNDOFF;
 extern const char* EFFECT_SOUNDON;
 extern const char* EFFECT_WALL;
 
-// ---- Í¨ÓÃº¯Êý ---- 
+
+// ---- é€šç”¨å‡½æ•° ----
 int Random(int iStart, int iEnd, int iStep = 1);
 
-//Çå¿ÕÎÞÐ§µÄÊý×Ö
+//æ¸…ç©ºæ— æ•ˆçš„æ•°å­—
 void ClearInvalidNums();
 
-//Ìí¼ÓÎÞÐ§µÄÊý×Ö
+//æ·»åŠ æ— æ•ˆçš„æ•°å­—
 void AddInvalidNum(int iNum);
 
-//»ñÈ¡ºÁÃë
+//èŽ·å–æ¯«ç§’
 double GetMillSecond();

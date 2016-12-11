@@ -229,15 +229,14 @@ void CRacingGame::OnLeftBtnPressed()
 	PLAY_EFFECT(EFFECT_CHANGE2);
 
 	--m_iCarPos;
+	m_pGameScene->UpdateBricks(ROW_NUM - CAR_HEIGHT, -1, ROW_NUM, -1);
 
 	//检查目标车道是否被占用
-	if (m_arrCurBrick[ROW_NUM - 2][m_iCarPos * 3 + 2] == 1)
+	if (CheckGameOver())
 	{
 		m_enGameState = GAMESTATE_OVER;
 		PLAY_EFFECT(EFFECT_BOOM);
 	}
-
-	m_pGameScene->UpdateBricks(ROW_NUM - 4, m_iCarPos * 3 + 1, ROW_NUM, (m_iCarPos + 1) * 3 + 4);
 }
 
 
@@ -253,15 +252,14 @@ void CRacingGame::OnRightBtnPressed()
 	PLAY_EFFECT(EFFECT_CHANGE2);
 
 	++m_iCarPos;
+	m_pGameScene->UpdateBricks(ROW_NUM - CAR_HEIGHT, -1, ROW_NUM, -1);
 
 	//检查目标车道是否被占用
-	if (m_arrCurBrick[ROW_NUM - 2][m_iCarPos * 3 + 2] == 1)
+	if (CheckGameOver())
 	{
 		m_enGameState = GAMESTATE_OVER;
 		PLAY_EFFECT(EFFECT_BOOM);
 	}
-
-	m_pGameScene->UpdateBricks(ROW_NUM - 4, (m_iCarPos - 1) * 3 + 1, ROW_NUM, m_iCarPos * 3 + 4);
 }
 
 
@@ -446,6 +444,22 @@ int CRacingGame::GetWaitInterval()
 		//正常速度
 		return DEFAULT_INTERVAL - 13 * m_iSpeed;
 	}
+}
+
+
+bool CRacingGame::CheckGameOver()
+{
+	int nRowIdx = ROW_NUM - CAR_DEFAULTROW;
+	int nColIdx = m_iCarPos * CAR_WIDTH + 2;
+	if (m_arrCurBrick[nRowIdx + 1][nColIdx - 1] || m_arrCurBrick[nRowIdx + 1][nColIdx + 1]	//第四行
+		|| m_arrCurBrick[nRowIdx][nColIdx] //第三行
+		|| m_arrCurBrick[nRowIdx - 1][nColIdx] || m_arrCurBrick[nRowIdx - 1][nColIdx - 1] || m_arrCurBrick[nRowIdx - 1][nColIdx + 1]//第二行
+		|| m_arrCurBrick[nRowIdx - 2][nColIdx])//第一行
+	{
+		return true;
+	}
+
+	return false;
 }
 
 

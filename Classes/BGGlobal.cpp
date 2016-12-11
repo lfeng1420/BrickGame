@@ -20,6 +20,8 @@ const char* EFFECT_PAUSE = "Sounds/pause.wav";
 const char* EFFECT_SOUNDOFF = "Sounds/sndoff.wav";
 const char* EFFECT_SOUNDON = "Sounds/sndon.wav";
 const char* EFFECT_WALL = "Sounds/wall.wav";
+
+const char* FONT_NAME = "DengXian";
 #else
 const char* BGM_START = "Sounds/bgm.mp3";
 const char* EFFECT_ADD = "Sounds/add.mp3";
@@ -32,6 +34,8 @@ const char* EFFECT_PAUSE = "Sounds/pause.mp3";
 const char* EFFECT_SOUNDOFF = "Sounds/sndoff.mp3";
 const char* EFFECT_SOUNDON = "Sounds/sndon.mp3";
 const char* EFFECT_WALL = "Sounds/wall.mp3";
+
+const char* FONT_NAME = "Arial";
 #endif
 
 //无效的数字列表，随机时将排除在外

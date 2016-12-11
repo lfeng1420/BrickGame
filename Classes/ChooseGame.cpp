@@ -65,7 +65,7 @@ void CChooseGame::Play(float dt)
 	m_pAnimData = CGeneralManager::getInstance()->GetAnimData(m_iGameIndex, m_iAnimIndex);
 
 	//下一个动画
-	if (++m_iAnimIndex >= ANIM_NUM)
+	if (++m_iAnimIndex >= GAME_ANIM_NUM)
 	{
 		m_iAnimIndex = 0;
 	}
