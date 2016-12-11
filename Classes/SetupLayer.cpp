@@ -4,14 +4,14 @@
 
 USING_NS_CC;
 
-//²Ëµ¥Ñ¡Ïî¶ÔÓ¦×Ö·û´®ID
+//èœå•é€‰é¡¹å¯¹åº”å­—ç¬¦ä¸²ID
 const int MENU_ITEM_STRING[MENU_MAX][2] =
 {
 	{ STRNAME_MAX },							//MENU_GLOBALSET
 	{ STRNAME_CHINESE, STRNAME_ENGLISH },		//MENU_LANGUAGE
 	{ STRNAME_OFF, STRNAME_ON },				//MENU_SOUND
 	{ STRNAME_OFF, STRNAME_ON },				//MENU_NIGHTMODE
-	{ STRNAME_LANDSCAPE, STRNAME_PORTRAIT },	//MENU_ORIENTATION
+	{ STRNAME_PORTRAIT, STRNAME_LANDSCAPE },	//MENU_ORIENTATION
 	{ STRNAME_MAX },							//MENU_TETRISSET
 	{ STRNAME_OFF, STRNAME_ON },				//MENU_AUTORECOVER
 	{ STRNAME_RIGHTARROW },						//MENU_SAVENOW
@@ -43,7 +43,7 @@ bool CSetupLayer::Init(CGameScene* pGameScene)
 	}
 	m_pGameScene = pGameScene;
 
-	//»ñÈ¡ÅäÖÃ
+	//è·å–é…ç½®
 	bool bNightMode = GET_BOOLVALUE("NIGHTMODE", false);
 	Color4B stColor = Color4B::WHITE;
 	if (bNightMode)
@@ -51,10 +51,10 @@ bool CSetupLayer::Init(CGameScene* pGameScene)
 		stColor = Color4B::BLACK;
 	}
 
-	//´´½¨²Ëµ¥ºÍ±êÇ©
+	//åˆ›å»ºèœå•å’Œæ ‡ç­¾
 	CreateAllMenuAndLabel();
 
-	//ÉèÖÃÎ»ÖÃ
+	//è®¾ç½®ä½ç½®
 	AdjustMenuLabelPos();
 
 	return true;
@@ -74,7 +74,7 @@ void CSetupLayer::CreateAllMenuAndLabel()
 			nFontSize = TITLE_FONT_SIZE;
 		}
 
-		//²Ëµ¥
+		//èœå•
 		int nStrID = GetStrIDByMenuIdx(nIndex);
 		string strText = CGeneralManager::getInstance()->GetStringByID(nLangID, nStrID);
 		Label* pMenuLabel = Label::createWithSystemFont(strText, FONT_NAME, nFontSize, Size::ZERO, TextHAlignment::RIGHT);
@@ -83,7 +83,7 @@ void CSetupLayer::CreateAllMenuAndLabel()
 		m_vecMenuItem.pushBack(pMenuItem);
 
 
-		//×´Ì¬
+		//çŠ¶æ€
 		int nCurChoiceIdx = GetValueByMenuIdx(nIndex);
 		int nChoiceCount = _countof(MENU_ITEM_STRING[nIndex]);
 		assert(nCurChoiceIdx < nChoiceCount);
@@ -95,7 +95,7 @@ void CSetupLayer::CreateAllMenuAndLabel()
 		m_vecLabel.pushBack(pLabel);
 	}
 
-	//Ìí¼Óµ½²Ëµ¥
+	//æ·»åŠ åˆ°èœå•
 	Menu* pMenu = Menu::createWithArray(m_vecMenuItem);
 	pMenu->setPosition(Vec2::ZERO);
 	this->addChild(pMenu);
@@ -107,7 +107,7 @@ void CSetupLayer::UpdateSingleMenuAndLabel(int nMenuIdx)
 	int nLangID = GetValueByMenuIdx(MENU_LANGUAGE);
 	bool bNightMode = GetValueByMenuIdx(MENU_NIGHTMODE);
 
-	//²Ëµ¥
+	//èœå•
 	int nStrID = GetStrIDByMenuIdx(nMenuIdx);
 	string strText = CGeneralManager::getInstance()->GetStringByID(nLangID, nStrID);
 	MenuItem* pMenuItem = m_vecMenuItem.at(nMenuIdx);
@@ -117,24 +117,24 @@ void CSetupLayer::UpdateSingleMenuAndLabel(int nMenuIdx)
 	pLabel->setString(strText);
 	pLabel->setColor(bNightMode ? Color3B::WHITE : Color3B::BLACK);
 
-	//»ñÈ¡×´Ì¬±êÇ©
+	//è·å–çŠ¶æ€æ ‡ç­¾
 	pLabel = m_vecLabel.at(nMenuIdx);
 	assert(pLabel != nullptr);
 
-	//»ñÈ¡µ±Ç°×Ö·û´®
+	//è·å–å½“å‰å­—ç¬¦ä¸²
 	int nCurChoiceIdx = GetValueByMenuIdx(nMenuIdx);
 	int nChoiceCount = _countof(MENU_ITEM_STRING[nMenuIdx]);
 	assert(nCurChoiceIdx < nChoiceCount);
 	nStrID = MENU_ITEM_STRING[nMenuIdx][nCurChoiceIdx];
 	strText = CGeneralManager::getInstance()->GetStringByID(nLangID, nStrID);
-	//¼ÇÂ¼Ô­Ê¼´óĞ¡£¬ºóĞøĞèµ÷ÕûÎ»ÖÃ
+	//è®°å½•åŸå§‹å¤§å°ï¼Œåç»­éœ€è°ƒæ•´ä½ç½®
 	Size originSize = GET_CONTENTSIZE(pLabel);
 	pLabel->setString(strText);
-	//ĞÂµÄ´óĞ¡
+	//æ–°çš„å¤§å°
 	Size nowSize = GET_CONTENTSIZE(pLabel);
 	float fWidthDistance = nowSize.width - originSize.width;
 	Vec2 pos = pLabel->getPosition();
-	////¸ù¾İºáÊúÆÁµ÷ÕûÎ»ÖÃ
+	////æ ¹æ®æ¨ªç«–å±è°ƒæ•´ä½ç½®
 	//bool bPortraitFlag = GetValueByMenuIdx(MENU_ORIENTATION);
 	//if (bPortraitFlag)
 	//{
@@ -164,7 +164,7 @@ void CSetupLayer::AdjustMenuLabelPos()
 	bool bPortraitFlag = GetValueByMenuIdx(MENU_ORIENTATION);
 	if (bPortraitFlag)
 	{
-		//²Ëµ¥ºÍ±êÇ©
+		//èœå•å’Œæ ‡ç­¾
 		float fStartY = visibleSize.height;
 		for (int nIndex = 0; nIndex < m_vecMenuItem.size(); ++nIndex)
 		{
@@ -180,7 +180,7 @@ void CSetupLayer::AdjustMenuLabelPos()
 			pMenuItem->setPosition(MENU_X_PADDING, fStartY - MENU_Y_PADDING);
 			pMenuItem->setContentSize(Size(visibleSize.width, menuItemSize.height));
 
-			//×´Ì¬±êÇ©
+			//çŠ¶æ€æ ‡ç­¾
 			Label* pLabel = m_vecLabel.at(nIndex);
 			assert(pLabel != nullptr);
 			Size labelSize = GET_CONTENTSIZE(pLabel);
@@ -193,7 +193,7 @@ void CSetupLayer::AdjustMenuLabelPos()
 	}
 	else
 	{
-		//²Ëµ¥ºÍ±êÇ©
+		//èœå•å’Œæ ‡ç­¾
 		float fStartX = visibleSize.width + origin.x;
 		for (int nIndex = 0; nIndex < m_vecMenuItem.size(); ++nIndex)
 		{
@@ -209,7 +209,7 @@ void CSetupLayer::AdjustMenuLabelPos()
 			pMenuItem->setPosition(fStartX - MENU_X_PADDING, visibleSize.height - MENU_Y_PADDING);
 			pMenuItem->setContentSize(Size(visibleSize.height, menuItemSize.height));
 
-			//×´Ì¬±êÇ©
+			//çŠ¶æ€æ ‡ç­¾
 			Label* pLabel = m_vecLabel.at(nIndex);
 			assert(pLabel != nullptr);
 			Size labelSize = GET_CONTENTSIZE(pLabel);
@@ -228,25 +228,25 @@ int CSetupLayer::GetValueByMenuIdx(int nMenuIdx)
 	switch (nMenuIdx)
 	{
 	case MENU_LANGUAGE:
-		return GET_INTVALUE("LANGUAGE", LANG_CH);	//0ÖĞÎÄ 1Ó¢Óï
+		return GET_INTVALUE("LANGUAGE", LANG_CH);	//0ä¸­æ–‡ 1è‹±è¯­
 		break;
 	case MENU_SOUND:
-		return GET_BOOLVALUE("SOUND", true); 		//0¹Ø±Õ 1¿ªÆô
+		return GET_BOOLVALUE("SOUND", true); 		//0å…³é—­ 1å¼€å¯
 		break;
 	case MENU_NIGHTMODE:
-		return GET_BOOLVALUE("NIGHTMODE", false);	//0¹Ø±Õ 1¿ªÆô
+		return GET_BOOLVALUE("NIGHTMODE", false);	//0å…³é—­ 1å¼€å¯
 		break;
 	case MENU_ORIENTATION:
-		return GET_BOOLVALUE("PORTRAIT", true);		//0ºáÆÁ 1ÊúÆÁ
+		return GET_BOOLVALUE("PORTRAIT", true);		//0æ¨ªå± 1ç«–å±
 		break;
 	case MENU_AUTORECOVER:
-		return GET_BOOLVALUE("TETRIS_RECORD_VALID", false);	//0¹Ø±Õ 1¿ªÆô
+		return GET_BOOLVALUE("TETRIS_RECORD_VALID", false);	//0å…³é—­ 1å¼€å¯
 		break;
 	case MENU_SAVENOW:
 		return 0;
 		break;
 	case MENU_UPBTN:
-		return GET_INTVALUE("UPBUTTON", 0);			//0Ğı×ª 1Ö±Âä
+		return GET_INTVALUE("UPBUTTON", 0);			//0æ—‹è½¬ 1ç›´è½
 		break;
 	case MENU_AUTHOR:
 	case MENU_RATE:
@@ -268,12 +268,12 @@ void CSetupLayer::OnClickMenu(Ref* pSender, int nMenuIdx)
 	}
 	bool bState = ((nValue == 1) ? true : false);
 
-	//¸÷¸ö²Ëµ¥ÆäËû´¦Àí
+	//å„ä¸ªèœå•å…¶ä»–å¤„ç†
 	switch (nMenuIdx)
 	{
 		case MENU_LANGUAGE:
 		{
-			SET_INTVALUE("LANGUAGE", nValue);			//0ÖĞÎÄ 1Ó¢Óï
+			SET_INTVALUE("LANGUAGE", nValue);			//0ä¸­æ–‡ 1è‹±è¯­
 			UpdateAllMenuAndLabel();
 			AdjustMenuLabelPos();
 		}
@@ -291,14 +291,14 @@ void CSetupLayer::OnClickMenu(Ref* pSender, int nMenuIdx)
 		break;
 		case MENU_ORIENTATION:
 		{
-			SET_BOOLVALUE("PORTRAIT", bState);				//0ºáÆÁ 1ÊúÆÁ
+			SET_BOOLVALUE("PORTRAIT", bState);				//0æ¨ªå± 1ç«–å±
 			UpdateAllMenuAndLabel();
 			AdjustMenuLabelPos();
 		}
 		break;
 		case MENU_AUTORECOVER:
 		{
-			SET_BOOLVALUE("TETRIS_RECORD_VALID", bState);	//0¹Ø±Õ 1¿ªÆô
+			SET_BOOLVALUE("TETRIS_RECORD_VALID", bState);	//0å…³é—­ 1å¼€å¯
 			m_pGameScene->ShowTips(bState ? CGameScene::TIPS_SAVEOPEN : CGameScene::TIPS_SAVECLOSE);
 			UpdateSingleMenuAndLabel(nMenuIdx);
 		}
@@ -310,7 +310,7 @@ void CSetupLayer::OnClickMenu(Ref* pSender, int nMenuIdx)
 		break;
 		case MENU_UPBTN:
 		{
-			SET_INTVALUE("UPBUTTON", nValue);			//0Ğı×ª 1Ö±Âä
+			SET_INTVALUE("UPBUTTON", nValue);			//0æ—‹è½¬ 1ç›´è½
 			UpdateSingleMenuAndLabel(nMenuIdx);
 		}
 		break;
