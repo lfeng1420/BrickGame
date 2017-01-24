@@ -1,5 +1,7 @@
 #include "FlappyBirdGame.h"
 
+//往上移动速度
+const float MOVE_UP_SPEED = 10.001f;
 
 CFlappyBirdGame::CFlappyBirdGame(CGameScene* pGameScene) : CSceneBase(pGameScene)
 {
@@ -79,7 +81,9 @@ void CFlappyBirdGame::Play(float dt)
 bool CFlappyBirdGame::PillarMove(float dt)
 {
 	m_fPillarMoveTime += dt;
-	if (m_fPillarMoveTime < PILLAR_MOVE_INTERVAL - m_iSpeed * 30)
+	float fTimeMax = PILLAR_MOVE_INTERVAL - m_iSpeed * 30;
+	fTimeMax *= m_bImproveSpeed ? 0.5f : 1;
+	if (m_fPillarMoveTime < fTimeMax)
 	{
 		return false;
 	}
@@ -131,33 +135,52 @@ void CFlappyBirdGame::CreatePillar()
 //鸟移动
 bool CFlappyBirdGame::BirdMove(float dt)
 {
+	int nUpMoveCount = 0;
+	if (m_bUpHoldFlag)
+	{
+		//阻止下落
+		m_fBirdTotalTime = BIRD_DOWN_INTERVAL - 3 * m_iSpeed;
+
+		m_fRefreshTime += dt;
+		nUpMoveCount = MOVE_UP_SPEED * m_fRefreshTime / 1000.0f;
+	}
+
+	int nDownMoveCount = 0;
 	const float fFactor = 1.5f;
 	float fInterval = m_fBirdTotalTime / fFactor;
-	//fInterval *= m_bImproveSpeed ? 0.4f : 1;
+	//fInterval *= m_bImproveSpeed ? 0.5f : 1;
 
 	//时间更新
 	m_fBirdMoveTime += dt;
-	if (m_fBirdMoveTime < fInterval)
+	if (m_fBirdMoveTime >= fInterval)
 	{
-		return false;
+		//重置
+		m_fBirdMoveTime = 0;
+		m_fBirdTotalTime /= fFactor;
+
+		//下降行数
+		nDownMoveCount = 1;
 	}
 
-	//重置
-	m_fBirdMoveTime = 0;
-	m_fBirdTotalTime /= fFactor;
-
-	//下降行数
-	int iDownColCount = 1;
-
-	//检查下降的距离是否超过范围
-	if (ROW_NUM - m_iBirdRowIdx <= iDownColCount)
+	int nFinalUpMoveCount = nUpMoveCount - nDownMoveCount;
+	if (nFinalUpMoveCount != 0)
 	{
-		m_enGameState = GAMESTATE_OVER;
-		iDownColCount = ROW_NUM - m_iBirdRowIdx - 1;
-	}
+		//旧位置不显示
+		log("nFinalUpMoveCount=%d  m_fRefreshTime=%f", nFinalUpMoveCount, m_fRefreshTime);
+		m_fRefreshTime = 0;
+		m_pGameScene->UpdateBrick(m_iBirdRowIdx, COLUMN_NUM / 2 - 1, false, false);
+		m_iBirdRowIdx -= nFinalUpMoveCount;
+		if (m_iBirdRowIdx < 0 || m_iBirdRowIdx >= ROW_NUM)
+		{
+			m_iBirdRowIdx = (m_iBirdRowIdx < 0) ? 0 : (ROW_NUM - 1);
+			m_enGameState = GAMESTATE_OVER;
+		}
+		//显示在新位置
+		m_pGameScene->UpdateBrick(m_iBirdRowIdx, COLUMN_NUM / 2 - 1, false, true);
 
-	//更新所在行
-	m_iBirdRowIdx += iDownColCount;
+		//更新游戏状态
+		UpdateGameState();
+	}
 
 	return true;
 }
@@ -262,24 +285,24 @@ void CFlappyBirdGame::OnUpBtnPressed()
 	{
 		return;
 	}
-
+	log("%s", __FUNCTION__);
 	//重置按钮刷新时间
-	m_fBirdTotalTime = BIRD_DOWN_INTERVAL - 3 * m_iSpeed;
+	//m_fBirdTotalTime = BIRD_DOWN_INTERVAL - 3 * m_iSpeed;
+
+	//设置标记
+	m_bUpHoldFlag = true;
+	m_fRefreshTime = 1000.0f / MOVE_UP_SPEED * 0.5f;
 
 	//按钮音效
 	PLAY_EFFECT(EFFECT_CHANGE2);
+}
 
-	m_pGameScene->UpdateBrick(m_iBirdRowIdx, COLUMN_NUM / 2 - 1, false, false);
 
-	if (--m_iBirdRowIdx < 0)
-	{
-		m_iBirdRowIdx = 0;
-		m_enGameState = GAMESTATE_OVER;
-	}
-
-	m_pGameScene->UpdateBrick(m_iBirdRowIdx, COLUMN_NUM / 2 - 1, false, true);
-
-	UpdateGameState();
+void CFlappyBirdGame::OnUpBtnReleased()
+{
+	log("%s", __FUNCTION__);
+	//重置标记
+	m_bUpHoldFlag = false;
 }
 
 
@@ -303,13 +326,14 @@ void CFlappyBirdGame::OnFireBtnPressed()
 //Fire释放
 void CFlappyBirdGame::OnFireBtnReleased()
 {
-	if (m_enGameState != GAMESTATE_RUNNING)
-	{
-		return;
-	}
+	//if (m_enGameState != GAMESTATE_RUNNING)
+	//{
+	//	return;
+	//}
 
-	//设置标记
-	m_bImproveSpeed = false;
+	////设置标记
+	//m_bImproveSpeed = false;
+	OnUpBtnReleased();
 }
 
 
@@ -352,5 +376,8 @@ void CFlappyBirdGame::InitData()
 
 	//加分标记
 	m_bCanAddScore = true;
+
+	//上键持续按下标记
+	m_bUpHoldFlag = false;
 }
 

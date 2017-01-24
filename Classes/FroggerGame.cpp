@@ -47,7 +47,7 @@ void CFroggerGame::Init()
 		bLeft = !bLeft;
 		stRiver.bLeft = bLeft;
 		
-		for (int j = 0; j < 20; ++j)
+		for (int j = 0; j < RIVER_LEN; ++j)
 		{
 			stRiver.arrDefaultState[j] = RIVER_DEFAULT_STATE[iRiverCount][j];
 		}
@@ -147,21 +147,21 @@ void CFroggerGame::Play(float dt)
 }
 
 //获取当前Brick状态
-bool CFroggerGame::GetBrickState(int iRowIndex, int iColIndex)
+bool CFroggerGame::GetBrickState(int nRowIdx, int nColIdx)
 {
 	//仅在游戏运行时显示自己的位置
-	if (m_enGameState == GAMESTATE_RUNNING && iRowIndex == m_iSelfRowIdx && iColIndex == m_iSelfColIdx)
+	if (m_enGameState == GAMESTATE_RUNNING && nRowIdx == m_iSelfRowIdx && nColIdx == m_iSelfColIdx)
 	{
 		return m_bSelfState;
 	}
 
-	return m_arrBrickState[iRowIndex][iColIndex];
+	return m_arrBrickState[nRowIdx][nColIdx];
 }
 
 //生命数
-bool CFroggerGame::GetSmallBrickState(int iRowIndex, int iColIndex)
+bool CFroggerGame::GetSmallBrickState(int nRowIdx, int nColIdx)
 {
-	if (iRowIndex == 0 && iColIndex < m_iLife)
+	if (nRowIdx == 0 && nColIdx < m_iLife)
 	{
 		return true;
 	}
@@ -189,83 +189,63 @@ bool CFroggerGame::UpdateRivers(float dt)
 	m_fRiverCurTime = 0;
 
 	//随机更新几个河道
-	int iUpdateCount = 2 + rand() % (RIVER_COUNT - 2);
-	bool arrUpdateFlag[RIVER_COUNT] = {false};
-	for (int i = 0; i < iUpdateCount; )
+	int iUpdateCount = 2 + Random(0, RIVER_COUNT - 2);
+	ClearInvalidNums();
+	for (int i = 0; i < iUpdateCount; ++i)
 	{
-		int iIndex = Random(0, RIVER_COUNT);
-		if (!arrUpdateFlag[iIndex])
-		{
-			arrUpdateFlag[iIndex] = true;
-			++i;
-		}
+		int nIndex = Random(0, RIVER_COUNT);
+		int nRowIdx = RIVER_ROWTOP_INDEX + 1 + nIndex * 2;
+		UpdateRiver(nRowIdx);
+		AddInvalidNum(nIndex);
 	}
+	ClearInvalidNums();
 
-	bool bNeedRefreshFlag = false;
-	for (int i = RIVER_ROWTOP_INDEX + 1, iIndex = 0; i < ROW_NUM - 1; i += 2, ++iIndex)
-	{
-		if (arrUpdateFlag[iIndex])
-		{
-			UpdateRiver(i);
-			bNeedRefreshFlag = true;
-		}
-	}
-
-	return bNeedRefreshFlag;
+	return iUpdateCount > 0;
 }
 
 //更新指定行的河道
-void CFroggerGame::UpdateRiver(int iRowIndex)
+void CFroggerGame::UpdateRiver(int nRowIdx)
 {
-	RIVER& stRiver = m_mapRiverData[iRowIndex];
+	RIVER& stRiver = m_mapRiverData[nRowIdx];
 
 	//更新
 	if (stRiver.bLeft)
 	{
 		stRiver.iOffset += 1;
-		if (stRiver.iOffset >= 20)
+		if (stRiver.iOffset >= RIVER_LEN)
 		{
 			stRiver.iOffset = 0;
 		}
 
-		for (int i = stRiver.iOffset; i < 20; ++i)
+		int nColIdx = 0;
+		for (int i = stRiver.iOffset; i < RIVER_LEN && nColIdx < COLUMN_NUM; ++i, ++nColIdx)
 		{
-			if (i >= COLUMN_NUM + stRiver.iOffset)
-			{
-				return;
-			}
-
-			m_arrBrickState[iRowIndex][i - stRiver.iOffset] = stRiver.arrDefaultState[i];
+			m_arrBrickState[nRowIdx][nColIdx] = stRiver.arrDefaultState[i];
 
 		}
 
-		for (int i = 0; i < COLUMN_NUM + stRiver.iOffset - 20; ++i)
+		for (int i = 0; i < RIVER_LEN && nColIdx < COLUMN_NUM; ++i, ++nColIdx)
 		{
-			m_arrBrickState[iRowIndex][20 - stRiver.iOffset + i] = stRiver.arrDefaultState[i];
+			m_arrBrickState[nRowIdx][nColIdx] = stRiver.arrDefaultState[i];
 		}
 	}
 	else
 	{
 		stRiver.iOffset -= 1;
-		if (stRiver.iOffset <= -20)
+		if (stRiver.iOffset <= -RIVER_LEN)
 		{
 			stRiver.iOffset = 0;
 		}
 
-		int iStartIndex = stRiver.iOffset + 20;
-		for (int i = iStartIndex; i < 20; ++i)
+		int nColIdx = 0;
+		for (int i = stRiver.iOffset + RIVER_LEN; i < RIVER_LEN && nColIdx < COLUMN_NUM; ++i, ++nColIdx)
 		{
-			if (i >= COLUMN_NUM + iStartIndex)
-			{
-				return;
-			}
-
-			m_arrBrickState[iRowIndex][i - iStartIndex] = stRiver.arrDefaultState[i];
+			m_arrBrickState[nRowIdx][nColIdx] = stRiver.arrDefaultState[i];
 		}
 
-		for (int i = 0; i < COLUMN_NUM + stRiver.iOffset; ++i)
+		for (int i = 0; i < RIVER_LEN && nColIdx < COLUMN_NUM; ++i, ++nColIdx)
 		{
-			m_arrBrickState[iRowIndex][i - stRiver.iOffset] = stRiver.arrDefaultState[i];
+			m_arrBrickState[nRowIdx][nColIdx] = stRiver.arrDefaultState[i];
 		}
 	}
 }

@@ -26,6 +26,9 @@ public:
 	//上按下
 	void OnUpBtnPressed();
 
+	//上按下
+	void OnUpBtnReleased();
+
 	//Fire按下
 	void OnFireBtnPressed();
 
@@ -115,4 +118,6 @@ private:
 	bool m_bImproveSpeed;						//加速
 
 	bool m_bCanAddScore;						//是否可以加分
+
+	int m_bUpHoldFlag;							//上键按下标记
 };

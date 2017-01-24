@@ -69,6 +69,8 @@ public:
 	//退出设置页
 	void QuitSetupLayer();
 
+	//退出流程
+	void LaunchQuitRoutine();
 
 	CREATE_FUNC(CGameScene);
 
@@ -144,9 +146,6 @@ private:
 
 	//清除提示记录
 	void ClearTipsRecord();
-
-	//退出流程
-	void LaunchQuitRoutine();
 
 public:
 	//按钮索引

@@ -14,10 +14,10 @@ public:
 	void Play(float dt);
 
 	//获取当前Brick状态
-	bool GetBrickState(int iRowIndex, int iColIndex);
+	bool GetBrickState(int nRowIdx, int nColIdx);
 
 	//生命数
-	bool GetSmallBrickState(int iRowIndex, int iColIndex);
+	bool GetSmallBrickState(int nRowIdx, int nColIdx);
 
 	//获取游戏类型
 	SCENE_INDEX GetSceneType();
@@ -47,7 +47,7 @@ private:
 	bool UpdateRivers(float dt);
 
 	//更新指定行的河道
-	void UpdateRiver(int iRowIndex);
+	void UpdateRiver(int nRowIdx);
 
 	//更新自己
 	bool UpdateSelf(float dt);
@@ -79,15 +79,17 @@ private:
 		BOOM_REFRESHTIME = 60,		//爆炸闪烁间隔
 
 		GAMEPASS_WAITTIME = 1000,	//通过后等待的时间
+
+		RIVER_LEN = 20,				//河道长度
 	};
 	
 	struct RIVER 
 	{
-		bool bLeft;					//是否向左移动
+		bool bLeft;							//是否向左移动
 
-		int iOffset;				//偏移
+		int iOffset;						//偏移
 
-		bool arrDefaultState[20];	//默认状态
+		bool arrDefaultState[RIVER_LEN];	//默认状态
 	};
 
 	typedef map<int, RIVER> TMAP_RIVER;

@@ -1546,9 +1546,12 @@ void CGameScene::GiveRate()
 {
 #if CC_TARGET_PLATFORM == CC_PLATFORM_WP8 
 	GLView::sharedOpenGLView()->OnGiveScore();
-#endif
 
-#if CC_TARGET_PLATFORM == CC_PLATFORM_ANDROID
+#elif CC_TARGET_PLATFORM == CC_PLATFORM_WINRT
+	GLViewImpl* pGLView = static_cast<GLViewImpl*>(DIRECTOR_INSTANCE()->getOpenGLView());
+	pGLView->OnGiveScore();
+
+#elif CC_TARGET_PLATFORM == CC_PLATFORM_ANDROID
 	JniMethodInfo minfo;
 	bool bFuncExistFlag = JniHelper::getStaticMethodInfo(minfo, "org/cocos2dx/cpp/AppActivity", "OnGiveScore", "()V");
 	if (bFuncExistFlag)
@@ -1563,9 +1566,11 @@ void CGameScene::ShowMyApps()
 {
 #if CC_TARGET_PLATFORM == CC_PLATFORM_WP8 
 	GLView::sharedOpenGLView()->OnShowMyApps();
-#endif
+#elif CC_TARGET_PLATFORM == CC_PLATFORM_WINRT
+	GLViewImpl* pGLView = static_cast<GLViewImpl*>(DIRECTOR_INSTANCE()->getOpenGLView());
+	pGLView->OnShowMyApps();
 
-#if CC_TARGET_PLATFORM == CC_PLATFORM_ANDROID
+#elif CC_TARGET_PLATFORM == CC_PLATFORM_ANDROID
 	JniMethodInfo minfo;
 	bool bFuncExistFlag = JniHelper::getStaticMethodInfo(minfo, "org/cocos2dx/cpp/AppActivity", "OnShowMyApps", "()V");
 	if (bFuncExistFlag)

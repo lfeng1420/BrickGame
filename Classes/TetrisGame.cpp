@@ -395,7 +395,7 @@ void CTetrisGame::OnFireBtnPressed()
 	int iAllTypeCount = sizeof(TETRIS_TYPE_START_IDX) / sizeof(int);
 	int iStartIdx = TETRIS_TYPE_START_IDX[iAllTypeCount - 1];
 	int iEndIdx = GetShapeCount();
-	for (int i = 0; i < iAllTypeCount; ++i)
+	for (int i = 1; i < iAllTypeCount; ++i)
 	{
 		if (m_iCurShape < TETRIS_TYPE_START_IDX[i])
 		{

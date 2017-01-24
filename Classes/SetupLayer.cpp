@@ -11,7 +11,7 @@ const int MENU_ITEM_STRING[MENU_MAX][2] =
 	{ STRNAME_CHINESE, STRNAME_ENGLISH },		//MENU_LANGUAGE
 	{ STRNAME_OFF, STRNAME_ON },				//MENU_SOUND
 	{ STRNAME_OFF, STRNAME_ON },				//MENU_NIGHTMODE
-	{ STRNAME_LANDSCAPE, STRNAME_PORTRAIT },	//MENU_ORIENTATION
+	{ STRNAME_PORTRAIT, STRNAME_LANDSCAPE },	//MENU_ORIENTATION
 	{ STRNAME_MAX },							//MENU_TETRISSET
 	{ STRNAME_OFF, STRNAME_ON },				//MENU_AUTORECOVER
 	{ STRNAME_RIGHTARROW },						//MENU_SAVENOW
@@ -79,7 +79,7 @@ void CSetupLayer::CreateAllMenuAndLabel()
 		string strText = CGeneralManager::getInstance()->GetStringByID(nLangID, nStrID);
 		Label* pMenuLabel = Label::createWithSystemFont(strText, FONT_NAME, nFontSize, Size::ZERO, TextHAlignment::RIGHT);
 		pMenuLabel->setColor(bNightMode ? Color3B::WHITE : Color3B::BLACK);
-		MenuItem* pMenuItem = MenuItemLabel::create(pMenuLabel, CC_CALLBACK_1(CSetupLayer::OnClickMenu, this, nIndex), false);
+		MenuItem* pMenuItem = MenuItemLabel::create(pMenuLabel, CC_CALLBACK_1(CSetupLayer::OnClickMenu, this, nIndex));
 		m_vecMenuItem.pushBack(pMenuItem);
 
 
