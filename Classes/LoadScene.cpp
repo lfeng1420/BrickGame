@@ -36,25 +36,25 @@ bool CLoadScene::init()
 	//ADD_SPRITEFRAME("Plists/Tips.plist");
 
 	Size visibleSize = GET_VISIBLESIZE();
-
-	bool arrBrick[][COLUMN_NUM] = 
+	bool arrBrick[][COLUMN_NUM - 1] =
 	{
-		true, true, true, true, true, false, false, false, true, true, true, true, false, false,
-		false, true, false, false, false, true, false, true, false, false, false, false, false, false,
-		false, true, true, true, true, false, false, true, false, false, false, true, true, false,
-		false, true, false, false, false, true, false, true, false, false, false, false, true, false,
-		true, true, true, true, true, false, false, false, true, true, true, true, false, false,
+		true, true, true, true, true, false, false, false, true, true, true, true, false,
+		false, true, false, false, false, true, false, true, false, false, false, false, false,
+		false, true, true, true, true, false, false, true, false, false, false, true, true,
+		false, true, false, false, false, true, false, true, false, false, false, false, true,
+		true, true, true, true, true, false, false, false, true, true, true, true, false,
 	};
 
+	int nRowCount = sizeof(arrBrick) / sizeof(bool) / (COLUMN_NUM - 1);
 	bool bPortraitFlag = GET_BOOLVALUE("PORTRAIT", true);
 	if (bPortraitFlag)
 	{
-		float fStartY = (visibleSize.height - 5 * BRICK_HEIGHT) / 2;
-		float fStartX = (visibleSize.width - COLUMN_NUM * BRICK_WIDTH) / 2;
-		for (int i = 4; i >= 0; --i)
+		float fStartY = (visibleSize.height - nRowCount * BRICK_HEIGHT) / 2;
+		float fStartX = (visibleSize.width - (COLUMN_NUM - 1) * BRICK_WIDTH) / 2;
+		for (int i = nRowCount - 1; i >= 0; --i)
 		{
 			float fCurX = fStartX;
-			for (int j = 0; j < COLUMN_NUM; ++j)
+			for (int j = 0; j < COLUMN_NUM - 1; ++j)
 			{
 				if (arrBrick[i][j])
 				{
@@ -71,12 +71,12 @@ bool CLoadScene::init()
 	}
 	else
 	{
-		float fStartY = (visibleSize.height - COLUMN_NUM * BRICK_HEIGHT) / 2;
-		float fCurX = (visibleSize.width - 5 * BRICK_WIDTH) / 2;
-		for (int i = 4; i >= 0; --i)
+		float fStartY = (visibleSize.height - (COLUMN_NUM - 1) * BRICK_HEIGHT) / 2;
+		float fCurX = (visibleSize.width - nRowCount * BRICK_WIDTH) / 2;
+		for (int i = nRowCount - 1; i >= 0; --i)
 		{
 			float fCurY = fStartY;
-			for (int j = COLUMN_NUM - 1; j >= 0; --j)
+			for (int j = (COLUMN_NUM - 1) - 1; j >= 0; --j)
 			{
 				if (arrBrick[i][j])
 				{

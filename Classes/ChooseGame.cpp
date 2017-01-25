@@ -16,8 +16,8 @@ CChooseGame::~CChooseGame()
 //初始化
 void CChooseGame::Init()
 {
-	m_iGameIndex = GET_INTVALUE("GAME", GAME_RACING);
-	
+	m_iGameIndex = GET_INTVALUE("GAME", GAME_TANK);
+
 	//更新速度和等级显示
 	m_iSpeed = 0;
 	m_iLevel = 0;
@@ -78,7 +78,14 @@ void CChooseGame::Play(float dt)
 bool CChooseGame::GetBrickState(int iRowIndex, int iColIndex)
 {
 	int iIndex = iRowIndex * COLUMN_NUM + iColIndex;
-	return m_pAnimData->at(iIndex) == 1;
+	int nDataSize = m_pAnimData->size();
+	if (iIndex < nDataSize && iIndex >= 0)
+	{
+		int nValue = (*m_pAnimData)[iIndex];
+		return nValue == 1;
+	}
+
+	return false;
 }
 
 

@@ -12,6 +12,8 @@
 #include "FlappyBirdGame.h"
 #include "HitBrickGame.h"
 #include "SetupLayer.h"
+#include "AppDelegate.h"
+#include "CCApplication.h"
 
 #if(CC_TARGET_PLATFORM == CC_PLATFORM_ANDROID)
 #include "platform/android/jni/JniHelper.h"
@@ -19,7 +21,7 @@
 #endif
 #include "AddBrickGame.h"
 
-//¿ØÖÆ°´Å¥×î´óËõ·Å±¶Êı
+//æ§åˆ¶æŒ‰é’®æœ€å¤§ç¼©æ”¾å€æ•°
 const float FLOAT_CONTROLLER_SCALE_MAX = 1.72f;
 const float FLOAT_CONTROLLER_LAND_SCALE_MAX = 1.5f;
 
@@ -90,40 +92,40 @@ bool CGameScene::init()
 {
 	CC_RETURN_FALSE_IF(!LayerColor::initWithColor(Color4B::BLACK));
 
-	//³õÊ¼»¯±äÁ¿£¬»ñÈ¡Êı¾İµÈ
+	//åˆå§‹åŒ–å˜é‡ï¼Œè·å–æ•°æ®ç­‰
 	InitData();
 
-	//³õÊ¼»¯±³¾°
+	//åˆå§‹åŒ–èƒŒæ™¯
 	InitBgLayer();
 
-	//UI³õÊ¼»¯
+	//UIåˆå§‹åŒ–
 	InitPortUI();
 
-	//ºáÏòUI³õÊ¼»¯
+	//æ¨ªå‘UIåˆå§‹åŒ–
 	InitLandUI();
 
-	//³õÊ¼»¯·½¿é
+	//åˆå§‹åŒ–æ–¹å—
 	InitBrick();
 
-	//³õÊ¼»¯¿ØÖÆÆ÷
+	//åˆå§‹åŒ–æ§åˆ¶å™¨
 	InitPortController();
 
-	//ºáÏò¿ØÖÆÆ÷
+	//æ¨ªå‘æ§åˆ¶å™¨
 	InitLandController();
 
-	//°´¼ü¼àÌı
+	//æŒ‰é”®ç›‘å¬
 	CreateKeyListener();
 
-	//´´½¨ÓÎÏ·¶ÔÏó
+	//åˆ›å»ºæ¸¸æˆå¯¹è±¡
 	CreateGameObj();
 
-	//¿ªÊ¼³¡¾°
+	//å¼€å§‹åœºæ™¯
 	RunScene(SCENE_GAMEOVER);
 
-	//²¥·ÅÒôĞ§
+	//æ’­æ”¾éŸ³æ•ˆ
 	PLAY_BGMUSIC(BGM_START, true);
 
-	//Ö¡¸üĞÂ
+	//å¸§æ›´æ–°
 	this->scheduleUpdate();
 
 	return true;
@@ -136,7 +138,7 @@ void CGameScene::InitData()
 }
 
 
-//³õÊ¼»¯Brick
+//åˆå§‹åŒ–Brick
 void CGameScene::InitBrick()
 {
 	bool arrBrick[ROW_NUM][COLUMN_NUM] =
@@ -208,20 +210,20 @@ void CGameScene::InitBrick()
 }
 
 
-//³õÊ¼»¯UI:·ÖÊı¡¢µÈ¼¶µÈ
+//åˆå§‹åŒ–UI:åˆ†æ•°ã€ç­‰çº§ç­‰
 void CGameScene::InitPortUI()
 {
-	//Í¼Æ¬Ëõ·Å
+	//å›¾ç‰‡ç¼©æ”¾
 	float fSpriteScale = 0.38f;
 	string numZeroName = GetSpriteNameByMode("0.png");
 
-	//×İÏò²ã
+	//çºµå‘å±‚
 	m_pPortNode = Node::create();
 	this->addChild(m_pPortNode);
 	bool bVisible = GET_BOOLVALUE("PORTRAIT", true);
 	m_pPortNode->setVisible(bVisible);
 
-	//·ÖÊı
+	//åˆ†æ•°
 	Size brickSize = GetBrickSize(false);
 	auto pScore = CREATE_SPRITEWITHNAME(GetSpriteNameByMode("score.png"));
 	pScore->setScale(fSpriteScale);
@@ -231,7 +233,7 @@ void CGameScene::InitPortUI()
 	pScore->setPosition(fCurX, fCurY + scoreSize.height / 2);
 	m_pPortNode->addChild(pScore);
 
-	//·ÖÊıSpriteĞòÁĞ
+	//åˆ†æ•°Spriteåºåˆ—
 	Size numSize = GetNumSize();
 	float fTempX = fCurX - NUM_PADDING * 2.5f - numSize.width * 3;
 	fCurY -= numSize.height * 1.3f;
@@ -244,7 +246,7 @@ void CGameScene::InitPortUI()
 		fTempX += numSize.width + NUM_PADDING;
 	}
 
-	//×î¸ß·Ö
+	//æœ€é«˜åˆ†
 	auto pHighScore = CREATE_SPRITEWITHNAME(GetSpriteNameByMode("hiscore.png"));
 	pHighScore->setScale(fSpriteScale);
 	Size highScoreSize = GET_CONTENTSIZE(pHighScore) * fSpriteScale;
@@ -252,7 +254,7 @@ void CGameScene::InitPortUI()
 	pHighScore->setPosition(fCurX, fCurY + highScoreSize.height * 0.5f);
 	m_pPortNode->addChild(pHighScore);
 
-	//×î¸ß·ÖSpriteĞòÁĞ
+	//æœ€é«˜åˆ†Spriteåºåˆ—
 	fCurY -= numSize.height * 1.3f;
 	fTempX = fCurX - NUM_PADDING * 2.5f - numSize.width * 3;
 	for (int i = 0; i < 6; ++i)
@@ -264,7 +266,7 @@ void CGameScene::InitPortUI()
 		fTempX += numSize.width + NUM_PADDING;
 	}
 
-	//Ğ¡·½¿éĞòÁĞ
+	//å°æ–¹å—åºåˆ—
 	float fBrickScale = 0.7f;
 	float fPadding = 2;
 	fCurY -= numSize.height * 0.5f;
@@ -282,7 +284,7 @@ void CGameScene::InitPortUI()
 		fCurY -= brickSize.height * fBrickScale + fPadding;
 	}
 
-	//ËÙ¶È
+	//é€Ÿåº¦
 	auto pSpeed = CREATE_SPRITEWITHNAME(GetSpriteNameByMode("speed.png"));
 	pSpeed->setScale(fSpriteScale);
 	Size speedSize = GET_CONTENTSIZE(pSpeed);
@@ -310,7 +312,7 @@ void CGameScene::InitPortUI()
 	m_pPortNode->addChild(m_pArrLevel[1]);
 	m_pArrLevel[1]->setVisible(false);
 
-	//µÈ¼¶
+	//ç­‰çº§
 	auto pLevel = CREATE_SPRITEWITHNAME(GetSpriteNameByMode("level.png"));
 	pLevel->setScale(fSpriteScale);
 	Size levelSize = GET_CONTENTSIZE(pLevel);
@@ -318,7 +320,7 @@ void CGameScene::InitPortUI()
 	pLevel->setPosition(fCurX, fCurY + levelSize.height / 2);
 	m_pPortNode->addChild(pLevel);
 
-	//ÔİÍ£Í¼±ê
+	//æš‚åœå›¾æ ‡
 	//float fPauseScale = fSpriteScale - 0.04f;
 	m_pPauseSpr = CREATE_SPRITEWITHNAME(GetSpriteNameByMode("tea.png"));
 	m_pPauseSpr->setScale(fSpriteScale);
@@ -327,29 +329,29 @@ void CGameScene::InitPortUI()
 	m_pPauseSpr->setPosition(fCurX, fCurY + pauseSize.height / 2);
 	m_pPortNode->addChild(m_pPauseSpr);
 
-	//Ä¬ÈÏ·ÇÔİÍ£×´Ì¬
+	//é»˜è®¤éæš‚åœçŠ¶æ€
 	m_pPauseSpr->setVisible(m_bPauseFlag);
 }
 
 
 void CGameScene::InitLandUI()
 {
-	//ºáÏò²ã
+	//æ¨ªå‘å±‚
 	m_pLandNode = Node::create();
 	this->addChild(m_pLandNode);
 	bool bVisible = GET_BOOLVALUE("PORTRAIT", true);
 	m_pLandNode->setVisible(!bVisible);
 
-	//Í¼Æ¬Ëõ·Å
+	//å›¾ç‰‡ç¼©æ”¾
 	float fSpriteScale = 0.35f;
 	string numZeroName = GetSpriteNameByMode("0.png");
 
-	//YÎ»ÖÃ
+	//Yä½ç½®
 	Size brickSize = GetBrickSize(true);
 	float fUIPadding = (m_visibleSize.height - brickSize.width * COLUMN_NUM) * 0.5f;
 	float fCurY = fUIPadding + brickSize.width * COLUMN_NUM;
 
-	//·ÖÊı
+	//åˆ†æ•°
 	auto pScore = CREATE_SPRITEWITHNAME(GetSpriteNameByMode("score.png"));
 	pScore->setRotation(90);
 	pScore->setScale(fSpriteScale);
@@ -358,7 +360,7 @@ void CGameScene::InitLandUI()
 	pScore->setPosition(fCurX + scoreSize.height * 0.5f, fCurY + fUIPadding * 0.5f);
 	m_pLandNode->addChild(pScore);
 
-	//·ÖÊıSpriteĞòÁĞ
+	//åˆ†æ•°Spriteåºåˆ—
 	Size numSize = GetNumSize();
 	fCurX -= numSize.height + 5;
 	for (int i = 0; i < 6; ++i)
@@ -370,7 +372,7 @@ void CGameScene::InitLandUI()
 		m_pArrScoreLand[i] = pSpr;
 	}
 
-	//×î¸ß·Ö
+	//æœ€é«˜åˆ†
 	auto pHighScore = CREATE_SPRITEWITHNAME(GetSpriteNameByMode("hiscore.png"));
 	pHighScore->setScale(fSpriteScale);
 	pHighScore->setRotation(90);
@@ -379,7 +381,7 @@ void CGameScene::InitLandUI()
 	pHighScore->setPosition(fCurX + highScoreSize.height * 0.5f, fCurY + fUIPadding * 0.5f);
 	m_pLandNode->addChild(pHighScore);
 
-	//×î¸ß·ÖSpriteĞòÁĞ
+	//æœ€é«˜åˆ†Spriteåºåˆ—
 	fCurX -= numSize.height + 5;
 	for (int i = 0; i < 6; ++i)
 	{
@@ -390,7 +392,7 @@ void CGameScene::InitLandUI()
 		m_pArrHighScoreLand[i] = pSpr;
 	}
 
-	//Ğ¡·½¿éĞòÁĞ
+	//å°æ–¹å—åºåˆ—
 	fCurX = m_visibleSize.width - brickSize.width * 0.5f;
 	float fBrickScale = 0.75f;
 	float fBrickPadding = 2;
@@ -412,7 +414,7 @@ void CGameScene::InitLandUI()
 	}
 
 
-	//ËÙ¶È
+	//é€Ÿåº¦
 	fCurX -= brickSize.width + 20;
 	m_pArrSpeedLand[0] = CREATE_SPRITEWITHNAME(numZeroName);
 	m_pArrSpeedLand[0]->setPosition(fCurX + numSize.height * 0.5f, fUIPadding * 0.5f + numSize.width * 2.2f);
@@ -425,7 +427,7 @@ void CGameScene::InitLandUI()
 	m_pLandNode->addChild(m_pArrSpeedLand[1]);
 	m_pArrSpeedLand[1]->setVisible(false);
 
-	//¹Ø¿¨
+	//å…³å¡
 	m_pArrLevelLand[0] = CREATE_SPRITEWITHNAME(numZeroName);
 	m_pArrLevelLand[0]->setPosition(fCurX + numSize.height * 0.5f, fUIPadding * 0.5f - numSize.width * 2.2f);
 	m_pArrLevelLand[0]->setRotation(90);
@@ -437,7 +439,7 @@ void CGameScene::InitLandUI()
 	m_pLandNode->addChild(m_pArrLevelLand[1]);
 	m_pArrLevelLand[1]->setVisible(false);
 
-	//ÔİÍ£Í¼±ê
+	//æš‚åœå›¾æ ‡
 	m_pPauseSprLand = CREATE_SPRITEWITHNAME(numZeroName);
 	m_pPauseSprLand->setScale(fSpriteScale);
 	m_pPauseSprLand->setRotation(90);
@@ -445,13 +447,13 @@ void CGameScene::InitLandUI()
 	m_pPauseSprLand->setPosition(m_visibleSize.width / 4.2f, fUIPadding * 0.5f);
 	m_pLandNode->addChild(m_pPauseSprLand);
 
-	//Ä¬ÈÏ·ÇÔİÍ£×´Ì¬
+	//é»˜è®¤éæš‚åœçŠ¶æ€
 	m_pPauseSprLand->setVisible(m_bPauseFlag);
 }
 
 void CGameScene::InitPortController()
 {
-	//¿ªÊ¼
+	//å¼€å§‹
 	Sprite* pPlaySpr = CREATE_SPRITEWITHNAME(GetSpriteNameByMode("play.png"));
 	Sprite* pPauseSpr = CREATE_SPRITEWITHNAME(GetSpriteNameByMode("pause.png"));
 	float fSpriteScale = 0.4f;
@@ -464,7 +466,7 @@ void CGameScene::InitPortController()
 	m_pStartBtn->setScale(fSpriteScale);
 	Size startBtnSize = m_pStartBtn->getContentSize() * fSpriteScale;
 
-	//»ñÈ¡ÉùÒô×´Ì¬
+	//è·å–å£°éŸ³çŠ¶æ€
 	Sprite* pSndOnSpr = CREATE_SPRITEWITHNAME(GetSpriteNameByMode("sound_on.png"));
 	Sprite* pSndOffSpr = CREATE_SPRITEWITHNAME(GetSpriteNameByMode("sound_off.png"));
 	bool bSoundState = GET_BOOLVALUE("SOUND", true);
@@ -479,7 +481,7 @@ void CGameScene::InitPortController()
 		nullptr
 		);
 
-	//ÉùÒô¿ª¹Ø
+	//å£°éŸ³å¼€å…³
 	m_pSoundBtn = MenuItemToggle::createWithCallback(
 		CC_CALLBACK_1(CGameScene::OnButtonClick, this, BTN_SOUND),
 		bSoundState ? pSoundOnMenu : pSoundOffMenu,
@@ -489,7 +491,7 @@ void CGameScene::InitPortController()
 	m_pSoundBtn->setScale(fSpriteScale);
 	Size soundBtnSize = m_pSoundBtn->getContentSize() * fSpriteScale;
 
-	//ÖØÖÃ
+	//é‡ç½®
 	Sprite* pResetSpr = CREATE_SPRITEWITHNAME(GetSpriteNameByMode("reset.png"));
 	auto resetBtn = MenuItemSprite::create(
 		pResetSpr,
@@ -499,7 +501,7 @@ void CGameScene::InitPortController()
 	resetBtn->setScale(fSpriteScale);
 	Size resetBtnSize = resetBtn->getContentSize() * fSpriteScale;
 
-	//¶îÍâ¹¦ÄÜ
+	//é¢å¤–åŠŸèƒ½
 	Sprite* pStarSpr = CREATE_SPRITEWITHNAME(GetSpriteNameByMode("setup.png"));
 	auto extremeBtn = MenuItemSprite::create(
 		pStarSpr,
@@ -509,12 +511,12 @@ void CGameScene::InitPortController()
 	extremeBtn->setScale(fSpriteScale);
 	Size themeBtnSize = extremeBtn->getContentSize() * fSpriteScale;
 
-	//µ×²¿°´Å¥¸ß¶È
+	//åº•éƒ¨æŒ‰é’®é«˜åº¦
 	//fHeight = (fTopPosY - soundBtnSize.height) / 2 + soundBtnSize.height / 2;
-	//°´Å¥¼ä¾à
+	//æŒ‰é’®é—´è·
 	float fBtnPadding = soundBtnSize.width * 1.2f;
 
-	//Î»ÖÃ
+	//ä½ç½®
 	float fSmallBtnTopHeight = soundBtnSize.height * 1.3f;
 	float fSmallBtnCenterHeight = fSmallBtnTopHeight - soundBtnSize.height / 3.1f;
 	m_pSoundBtn->setPosition(m_visibleSize.width / 2 - fBtnPadding / 2 - soundBtnSize.width / 2, fSmallBtnCenterHeight);
@@ -527,16 +529,16 @@ void CGameScene::InitPortController()
 	m_pPortNode->addChild(menu);
 
 
-	//Ê£Óà¸ß¶È£¬ÓÃÓÚµ÷Õû¿ØÖÆ°´Å¥Î»ÖÃ
+	//å‰©ä½™é«˜åº¦ï¼Œç”¨äºè°ƒæ•´æ§åˆ¶æŒ‰é’®ä½ç½®
 	float fHeight = m_visibleSize.height - GetBrickSize(false).height * ROW_NUM;
 
-	//°´Å¥Ëõ·Å´óĞ¡
+	//æŒ‰é’®ç¼©æ”¾å¤§å°
 	fBtnPadding = 2.0f;
 	float fControllerPadding = 10;
 	float fBtnScale = (fHeight - fSmallBtnTopHeight - fControllerPadding * 2) * 1.0f / 2 / BTN_HEIGHT;
 	//log("fBtnScale=%f  fRemainHeight=%f", fBtnScale, fHeight - fSmallBtnTopHeight);
 	
-	//ÖØĞÂµ÷Õû¼ä¾à
+	//é‡æ–°è°ƒæ•´é—´è·
 	if (fBtnScale > FLOAT_CONTROLLER_SCALE_MAX)
 	{
 		fBtnScale = FLOAT_CONTROLLER_SCALE_MAX;
@@ -546,28 +548,28 @@ void CGameScene::InitPortController()
 
 	float fTopPosY = fHeight - fControllerPadding;
 
-	//ÉÏ
+	//ä¸Š
 	string strBtn0Name = GetSpriteNameByMode("btn_0.png");
 	Button* pUpBtn = Button::create(strBtn0Name, strBtn0Name, "", Widget::TextureResType::PLIST);
 	pUpBtn->setScale(fBtnScale);
 	pUpBtn->addTouchEventListener(CC_CALLBACK_2(CGameScene::OnButtonEvent, this, BTN_UP));
 	Size upBtnSize = pUpBtn->getContentSize() * fBtnScale;
 
-	//ÓÒ
+	//å³
 	Button* pRightBtn = Button::create(strBtn0Name, strBtn0Name, "", Widget::TextureResType::PLIST);
 	pRightBtn->setScale(fBtnScale);
 	pRightBtn->setRotation(90);
 	pRightBtn->addTouchEventListener(CC_CALLBACK_2(CGameScene::OnButtonEvent, this, BTN_RIGHT));
 	Size rightBtnSize = pRightBtn->getContentSize() * fBtnScale;
 
-	//ÏÂ
+	//ä¸‹
 	Button* pDownBtn = Button::create(strBtn0Name, strBtn0Name, "", Widget::TextureResType::PLIST);
 	pDownBtn->setScale(fBtnScale);
 	pDownBtn->setRotation(180);
 	pDownBtn->addTouchEventListener(CC_CALLBACK_2(CGameScene::OnButtonEvent, this, BTN_DOWN));
 	Size downBtnSize = pDownBtn->getContentSize() * fBtnScale;
 
-	//×ó
+	//å·¦
 	Button* pLeftBtn = Button::create(strBtn0Name, strBtn0Name, "", Widget::TextureResType::PLIST);
 	pLeftBtn->setScale(fBtnScale);
 	pLeftBtn->setRotation(-90);
@@ -581,14 +583,14 @@ void CGameScene::InitPortController()
 	pFireBtn->addTouchEventListener(CC_CALLBACK_2(CGameScene::OnButtonEvent, this, BTN_FIRE));
 	Size fireBtnSize = pFireBtn->getContentSize() * fFireScale;
 
-	//ÉèÖÃÎ»ÖÃ
+	//è®¾ç½®ä½ç½®
 	pLeftBtn->setPosition(Vec2(upBtnSize.height * 0.6f + fBtnPadding, fTopPosY - upBtnSize.height));
 	pRightBtn->setPosition(Vec2(upBtnSize.height * 1.6f - fBtnPadding, fTopPosY - upBtnSize.height));
 	pDownBtn->setPosition(Vec2(upBtnSize.height * 1.1f, fTopPosY - upBtnSize.height * 1.5f + fBtnPadding));
 	pUpBtn->setPosition(Vec2(upBtnSize.height * 1.1f, fTopPosY - upBtnSize.height * 0.5f - fBtnPadding));
 	pFireBtn->setPosition(Vec2(m_visibleSize.width - fireBtnSize.width * 0.8f, fTopPosY - upBtnSize.height));
 
-	//ÖĞĞÄÎ»ÖÃ
+	//ä¸­å¿ƒä½ç½®
 	m_oControllerCenterPos = Vec2(upBtnSize.height * 1.1f, fTopPosY - upBtnSize.height);
 	m_oControllerCenterSize = Size(upBtnSize.width, upBtnSize.width);
 
@@ -602,7 +604,7 @@ void CGameScene::InitPortController()
 
 void CGameScene::InitLandController()
 {
-	//¿ªÊ¼
+	//å¼€å§‹
 	Sprite* pPlaySpr = CREATE_SPRITEWITHNAME(GetSpriteNameByMode("play.png"));
 	Sprite* pPauseSpr = CREATE_SPRITEWITHNAME(GetSpriteNameByMode("pause.png"));
 	float fSpriteScale = 0.4f;
@@ -616,7 +618,7 @@ void CGameScene::InitLandController()
 	m_pStartBtnLand->setRotation(90);
 	Size startBtnSize = m_pStartBtnLand->getContentSize() * fSpriteScale;
 
-	//»ñÈ¡ÉùÒô×´Ì¬
+	//è·å–å£°éŸ³çŠ¶æ€
 	Sprite* pSndOnSpr = CREATE_SPRITEWITHNAME(GetSpriteNameByMode("sound_on.png"));
 	Sprite* pSndOffSpr = CREATE_SPRITEWITHNAME(GetSpriteNameByMode("sound_off.png"));
 	bool bSoundState = GET_BOOLVALUE("SOUND", true);
@@ -631,7 +633,7 @@ void CGameScene::InitLandController()
 		nullptr
 		);
 
-	//ÉùÒô¿ª¹Ø
+	//å£°éŸ³å¼€å…³
 	m_pSoundBtnLand = MenuItemToggle::createWithCallback(
 		CC_CALLBACK_1(CGameScene::OnButtonClick, this, BTN_SOUND),
 		bSoundState ? pSoundOnMenu : pSoundOffMenu,
@@ -642,7 +644,7 @@ void CGameScene::InitLandController()
 	m_pSoundBtnLand->setRotation(90);
 	Size soundBtnSize = m_pSoundBtnLand->getContentSize() * fSpriteScale;
 
-	//ÖØÖÃ
+	//é‡ç½®
 	Sprite* pResetSpr = CREATE_SPRITEWITHNAME(GetSpriteNameByMode("reset.png"));
 	auto resetBtn = MenuItemSprite::create(
 		pResetSpr,
@@ -653,7 +655,7 @@ void CGameScene::InitLandController()
 	resetBtn->setRotation(90);
 	Size resetBtnSize = resetBtn->getContentSize() * fSpriteScale;
 
-	//¶îÍâ¹¦ÄÜ
+	//é¢å¤–åŠŸèƒ½
 	Sprite* pStarSpr = CREATE_SPRITEWITHNAME(GetSpriteNameByMode("setup.png"));
 	auto extremeBtn = MenuItemSprite::create(
 		pStarSpr,
@@ -664,7 +666,7 @@ void CGameScene::InitLandController()
 	extremeBtn->setRotation(90);
 	Size extremeBtnSize = extremeBtn->getContentSize() * fSpriteScale;
 
-	//Î»ÖÃ
+	//ä½ç½®
 	float fPosX = startBtnSize.height * 0.8f;
 	float fBrickBottomHeight = (m_visibleSize.height - COLUMN_NUM * GetBrickSize(true).width) * 0.5f;
 	float fBrickTopHeight = fBrickBottomHeight + COLUMN_NUM * GetBrickSize(true).width;
@@ -680,7 +682,7 @@ void CGameScene::InitLandController()
 	menu->setPosition(Vec2::ZERO);
 	m_pLandNode->addChild(menu);
 
-	//ÖØĞÂµ÷Õû¼ä¾à
+	//é‡æ–°è°ƒæ•´é—´è·
 	string strBtn0Name = GetSpriteNameByMode("btn_0.png");
 	Sprite* pSampleBtn = CREATE_SPRITEWITHNAME(strBtn0Name);
 	Size sampleBtnSize = GET_CONTENTSIZE(pSampleBtn);
@@ -691,28 +693,28 @@ void CGameScene::InitLandController()
 	}
 	sampleBtnSize = sampleBtnSize * fBtnScale;
 
-	//¼ä¾à
+	//é—´è·
 	float fBtnPadding = 2.0f;
 	float fHeightPadding = (fBrickBottomHeight - sampleBtnSize.height * 2 - fBtnPadding * 2) * 0.5f;
 
-	//×ó
+	//å·¦
 	Button* pLeftBtn = Button::create(strBtn0Name, strBtn0Name, "", Widget::TextureResType::PLIST);
 	pLeftBtn->setScale(fBtnScale);
 	pLeftBtn->addTouchEventListener(CC_CALLBACK_2(CGameScene::OnButtonEvent, this, BTN_LEFT));
 
-	//ÉÏ
+	//ä¸Š
 	Button* pUpBtn = Button::create(strBtn0Name, strBtn0Name, "", Widget::TextureResType::PLIST);
 	pUpBtn->setRotation(90);
 	pUpBtn->setScale(fBtnScale);
 	pUpBtn->addTouchEventListener(CC_CALLBACK_2(CGameScene::OnButtonEvent, this, BTN_UP));
 
-	//ÓÒ
+	//å³
 	Button* pRightBtn = Button::create(strBtn0Name, strBtn0Name, "", Widget::TextureResType::PLIST);
 	pRightBtn->setScale(fBtnScale);
 	pRightBtn->setRotation(180);
 	pRightBtn->addTouchEventListener(CC_CALLBACK_2(CGameScene::OnButtonEvent, this, BTN_RIGHT));
 
-	//ÏÂ
+	//ä¸‹
 	Button* pDownBtn = Button::create(strBtn0Name, strBtn0Name, "", Widget::TextureResType::PLIST);
 	pDownBtn->setScale(fBtnScale);
 	pDownBtn->setRotation(270);
@@ -726,7 +728,7 @@ void CGameScene::InitLandController()
 	Size fireBtnSize = GET_CONTENTSIZE(pFireBtn) * fFireScale;
 	pFireBtn->addTouchEventListener(CC_CALLBACK_2(CGameScene::OnButtonEvent, this, BTN_FIRE));
 
-	//ÉèÖÃÎ»ÖÃ
+	//è®¾ç½®ä½ç½®
 	float fTopCenterY = sampleBtnSize.height + fBrickTopHeight + fHeightPadding;
 	pLeftBtn->setPosition(Vec2(m_visibleSize.width * 0.38f, fTopCenterY + sampleBtnSize.height * 0.5f - fBtnPadding));
 	pRightBtn->setPosition(Vec2(m_visibleSize.width * 0.38f, fTopCenterY - sampleBtnSize.height * 0.5f + fBtnPadding));
@@ -734,7 +736,7 @@ void CGameScene::InitLandController()
 	pUpBtn->setPosition(Vec2(m_visibleSize.width * 0.38f + sampleBtnSize.height * 0.5f - fBtnPadding, fTopCenterY));
 	pFireBtn->setPosition(Vec2(m_visibleSize.width * 0.38f, fBrickBottomHeight * 0.5f));
 
-	//ÖĞĞÄÎ»ÖÃ
+	//ä¸­å¿ƒä½ç½®
 	m_oControllerLandCenterPos = Vec2(m_visibleSize.width * 0.38f, fTopCenterY);
 	m_oControllerLandCenterSize = Size(sampleBtnSize.width, sampleBtnSize.width);
 
@@ -775,7 +777,7 @@ Size CGameScene::GetNumSize()
 }
 
 
-//´´½¨°´¼ü¼àÌıÆ÷
+//åˆ›å»ºæŒ‰é”®ç›‘å¬å™¨
 void CGameScene::CreateKeyListener()
 {
 	auto keyListener = EventListenerKeyboard::create();
@@ -845,24 +847,9 @@ void CGameScene::CreateKeyListener()
 		{
 			LaunchQuitRoutine();
 		}
-
-#if CC_TARGET_PLATFORM == CC_PLATFORM_WP8
-		else if (EventKeyboard::KeyCode::KEY_PLAY == keyCode)
-		{
-			LaunchQuitRoutine();
-		}
-		else if (EventKeyboard::KeyCode::KEY_ENTER == keyCode)
-		{
-			if (m_iSceneIndex == SCENE_TETRIS || m_iSceneIndex == SCENE_TETRIS2)
-			{
-				//±£´æÊı¾İ
-				m_mapGameObj[m_iSceneIndex]->SaveGameData();
-			}
-		}
-#endif
 	};
 
-	Director::getInstance()->getEventDispatcher()->addEventListenerWithSceneGraphPriority(keyListener, this);
+	Director::getInstance()->getEventDispatcher()->addEventListenerWithFixedPriority(keyListener, 1);
 }
 
 
@@ -894,42 +881,42 @@ void CGameScene::update(float dt)
 }
 
 
-//´´½¨¸÷¸öÓÎÏ·¶ÔÏó
+//åˆ›å»ºå„ä¸ªæ¸¸æˆå¯¹è±¡
 void CGameScene::CreateGameObj()
 {
-	//ÓÎÏ·½áÊø
+	//æ¸¸æˆç»“æŸ
 	CGameOver* pGameOver = new CGameOver(this);
 	m_mapGameObj[SCENE_GAMEOVER] = pGameOver;
 
-	//Ñ¡ÔñÓÎÏ·
+	//é€‰æ‹©æ¸¸æˆ
 	CChooseGame* pChooseGame = new CChooseGame(this);
 	m_mapGameObj[SCENE_CHOOSEGAME] = pChooseGame;
 
-	//Ì¹¿Ë´óÕ½
+	//å¦å…‹å¤§æˆ˜
 	CTankGame* pTankGame = new CTankGame(this);
 	m_mapGameObj[SCENE_TANK] = pTankGame;
 
-	//Èü³µ
+	//èµ›è½¦
 	CRacingGame* pRacingGame = new CRacingGame(this);
 	m_mapGameObj[SCENE_RACING] = pRacingGame;
 
-	//Ì°³ÔÉß
+	//è´ªåƒè›‡
 	CSnakeGame* pSnakeGame = new CSnakeGame(this);
 	m_mapGameObj[SCENE_SNAKE] = pSnakeGame;
 
-	//Æ¥Åä
+	//åŒ¹é…
 	CMatchGame* pMatchGame = new CMatchGame(this);
 	m_mapGameObj[SCENE_MATCH] = pMatchGame;
 
-	//ÇàÍÜ¹ıºÓ
+	//é’è›™è¿‡æ²³
 	CFroggerGame* pFroggerGame = new CFroggerGame(this);
 	m_mapGameObj[SCENE_FROGGER] = pFroggerGame;
 
-	//µ¯Çò
+	//å¼¹çƒ
 	CPinballGame* pPinballGame = new CPinballGame(this, false);
 	m_mapGameObj[SCENE_PINBALL] = pPinballGame;
 
-	//¶íÂŞË¹·½¿é
+	//ä¿„ç½—æ–¯æ–¹å—
 	CTetrisGame* pTetrisGame = new CTetrisGame(this, false);
 	m_mapGameObj[SCENE_TETRIS] = pTetrisGame;
 
@@ -937,25 +924,25 @@ void CGameScene::CreateGameObj()
 	CFlappyBirdGame* pFlappyBirdGame = new CFlappyBirdGame(this);
 	m_mapGameObj[SCENE_FLAPPYBIRD] = pFlappyBirdGame;
 
-	//¶íÂŞË¹·½¿é2
+	//ä¿„ç½—æ–¯æ–¹å—2
 	CTetrisGame* pTetrisGame2 = new CTetrisGame(this, true);
 	m_mapGameObj[SCENE_TETRIS2] = pTetrisGame2;
 
-	//µ¯Çò2
+	//å¼¹çƒ2
 	CPinballGame* pPinballGame2 = new CPinballGame(this, true);
 	m_mapGameObj[SCENE_PINBALL2] = pPinballGame2;
 
-	//´ò×©¿é
+	//æ‰“ç –å—
 	CHitBrickGame* pHitBrickGame = new CHitBrickGame(this);
 	m_mapGameObj[SCENE_HITBRICK] = pHitBrickGame;
 
-	//¼Ó×©¿é
+	//åŠ ç –å—
 	CAddBrickGame* pAddBrickGame = new CAddBrickGame(this);
 	m_mapGameObj[SCENE_ADDBRICK] = pAddBrickGame;
 }
 
 
-//¸üĞÂµ¥¸öBrick×´Ì¬
+//æ›´æ–°å•ä¸ªBrickçŠ¶æ€
 void CGameScene::UpdateBrick(int iRowIndex, int iColIndex, bool bSmallBrickFlag, bool bShowFlag)
 {
 	Sprite* pLandBrick = GetBrickSprite(iRowIndex, iColIndex, bSmallBrickFlag, true);
@@ -967,11 +954,11 @@ void CGameScene::UpdateBrick(int iRowIndex, int iColIndex, bool bSmallBrickFlag,
 
 	if (!bSmallBrickFlag)
 	{
-		//¸üĞÂ×´Ì¬¼ÇÂ¼
+		//æ›´æ–°çŠ¶æ€è®°å½•
 		m_arrBrickState[iRowIndex][iColIndex] = bShowFlag;
 	}
 
-	//ÉèÖÃÏÔÊ¾»òÒş²Ø×´Ì¬
+	//è®¾ç½®æ˜¾ç¤ºæˆ–éšè—çŠ¶æ€
 	if (bShowFlag)
 	{
 		string strBlackName = GetSpriteNameByMode("black.png");
@@ -987,10 +974,10 @@ void CGameScene::UpdateBrick(int iRowIndex, int iColIndex, bool bSmallBrickFlag,
 }
 
 
-//¸üĞÂËùÓĞBrick×´Ì¬
+//æ›´æ–°æ‰€æœ‰BrickçŠ¶æ€
 void CGameScene::UpdateBricks( int iStartRowIdx /*= -1*/, int iStartColIdx /*= -1*/, int iEndRowIdx /*= -1*/, int iEndColIdx /*= -1*/ )
 {
-	//±ß½ç¼ì²é
+	//è¾¹ç•Œæ£€æŸ¥
 	iEndRowIdx = (iEndRowIdx > ROW_NUM ? ROW_NUM : iEndRowIdx);
 	iEndColIdx = (iEndColIdx > COLUMN_NUM ? COLUMN_NUM : iEndColIdx);
 
@@ -1008,7 +995,7 @@ void CGameScene::UpdateBricks( int iStartRowIdx /*= -1*/, int iStartColIdx /*= -
 }
 
 
-//ÖØÖÃËùÓĞBrick
+//é‡ç½®æ‰€æœ‰Brick
 void CGameScene::ResetBricks()
 {
 	for (int i = 0; i < ROW_NUM; ++i)
@@ -1021,10 +1008,10 @@ void CGameScene::ResetBricks()
 }
 
 
-//°´Å¥ÏìÓ¦
+//æŒ‰é’®å“åº”
 void CGameScene::OnButtonEvent(Ref* pSender, Widget::TouchEventType enType, int iBtnIndex)
 {
-	//Èç¹ûÔİÍ££¬Ôò²»ÏìÓ¦°´Å¥ÊÂ¼ş
+	//å¦‚æœæš‚åœï¼Œåˆ™ä¸å“åº”æŒ‰é’®äº‹ä»¶
 	if (m_bPauseFlag)
 	{
 		return;
@@ -1044,7 +1031,7 @@ void CGameScene::OnButtonEvent(Ref* pSender, Widget::TouchEventType enType, int 
 				return;
 			}
 
-			//Èç¹ûÉÏÒ»´ÎµÄ°´Å¥¼ÇÂ¼ÓĞĞ§£¬ÇÒ´ËÊ±°´ÏÂµÄ°´Å¥ÓëÉÏÒ»´ÎµÄ²»ÏàÍ¬£¬ÔòÊÍ·ÅÉÏÒ»´ÎµÄ°´Å¥
+			//å¦‚æœä¸Šä¸€æ¬¡çš„æŒ‰é’®è®°å½•æœ‰æ•ˆï¼Œä¸”æ­¤æ—¶æŒ‰ä¸‹çš„æŒ‰é’®ä¸ä¸Šä¸€æ¬¡çš„ä¸ç›¸åŒï¼Œåˆ™é‡Šæ”¾ä¸Šä¸€æ¬¡çš„æŒ‰é’®
 			if (m_nRecordBtnIdx < BTN_INVALID && iBtnIndex != m_nRecordBtnIdx)
 			{
 				//Release
@@ -1070,14 +1057,14 @@ void CGameScene::OnButtonEvent(Ref* pSender, Widget::TouchEventType enType, int 
 				return;
 			}
 
-			//Èç¹ûÉÏÒ»´ÎµÄ°´Å¥¼ÇÂ¼ÓĞĞ§£¬ÇÒ´ËÊ±ÊÍ·ÅµÄ°´Å¥ÓëÉÏÒ»´ÎµÄ²»ÏàÍ¬£¬ÔòÊÍ·ÅÉÏÒ»´ÎµÄ°´Å¥
+			//å¦‚æœä¸Šä¸€æ¬¡çš„æŒ‰é’®è®°å½•æœ‰æ•ˆï¼Œä¸”æ­¤æ—¶é‡Šæ”¾çš„æŒ‰é’®ä¸ä¸Šä¸€æ¬¡çš„ä¸ç›¸åŒï¼Œåˆ™é‡Šæ”¾ä¸Šä¸€æ¬¡çš„æŒ‰é’®
 			if (m_nRecordBtnIdx != BTN_INVALID && iBtnIndex != m_nRecordBtnIdx)
 			{
 				//Release
 				OnButtonReleased(m_nRecordBtnIdx);
 			}
 
-			//ÖØÖÃ
+			//é‡ç½®
 			m_nRecordBtnIdx = BTN_INVALID;
 
 			//log("RELEASE  iBtnIndex=%d", iBtnIndex);
@@ -1090,7 +1077,7 @@ void CGameScene::OnButtonEvent(Ref* pSender, Widget::TouchEventType enType, int 
 
 bool CGameScene::AdjustClickIndex(Vec2 pos, int& nIndex)
 {
-	//Ö»´¦Àí·½Ïò¼ü
+	//åªå¤„ç†æ–¹å‘é”®
 	if (nIndex >= BTN_DIRMAX)
 	{
 		return true;
@@ -1134,14 +1121,17 @@ bool CGameScene::AdjustClickIndex(Vec2 pos, int& nIndex)
 }
 
 
-//°´Å¥°´ÏÂ
+//æŒ‰é’®æŒ‰ä¸‹
 void CGameScene::OnButtonPressed(int iBtnIndex)
 {
 	if (m_iSceneIndex <= SCENE_CHOOSEGAME)
 	{
-		//°´Å¥ÒôĞ§
+		//æŒ‰é’®éŸ³æ•ˆ
 		PLAY_EFFECT(EFFECT_CHANGE2);
 	}
+
+	//æŒ¯åŠ¨
+	OnVibrate();
 
 	switch (iBtnIndex)
 	{
@@ -1168,7 +1158,7 @@ void CGameScene::OnButtonPressed(int iBtnIndex)
 }
 
 
-//°´Å¥ÊÍ·Å
+//æŒ‰é’®é‡Šæ”¾
 void CGameScene::OnButtonReleased(int iBtnIndex)
 {
 	switch (iBtnIndex)
@@ -1196,7 +1186,7 @@ void CGameScene::OnButtonReleased(int iBtnIndex)
 }
 
 
-//°´Å¥°´ÏÂ iBtnIndex ¶ÔÓ¦BTN_INDEXË÷Òı
+//æŒ‰é’®æŒ‰ä¸‹ iBtnIndex å¯¹åº”BTN_INDEXç´¢å¼•
 void CGameScene::OnButtonClick(Ref* pSender, int iBtnIndex)
 {
 	double lfCurTime = GetMillSecond();
@@ -1219,7 +1209,7 @@ void CGameScene::OnButtonClick(Ref* pSender, int iBtnIndex)
 				m_pPauseSprLand->setVisible(m_bPauseFlag);
 				ChangePlayState(!m_bPauseFlag);
 
-				//Èç¹ûÔİÍ££¬ÔòÍ£Ö¹¸üĞÂ
+				//å¦‚æœæš‚åœï¼Œåˆ™åœæ­¢æ›´æ–°
 				if (m_bPauseFlag)
 				{
 					this->unscheduleUpdate();
@@ -1237,10 +1227,10 @@ void CGameScene::OnButtonClick(Ref* pSender, int iBtnIndex)
 			bool bState = !GET_BOOLVALUE("SOUND", true);
 			SET_BOOLVALUE("SOUND", bState);
 			
-			//¸üĞÂÉùÒôÉèÖÃ
+			//æ›´æ–°å£°éŸ³è®¾ç½®
 			m_pSetupLayer->UpdateSingleMenuAndLabel(MENU_SOUND);
 
-			//ÉèÖÃÉùÒô°´Å¥×´Ì¬
+			//è®¾ç½®å£°éŸ³æŒ‰é’®çŠ¶æ€
 			bool bPortVisible = GET_BOOLVALUE("PORTRAIT", true);
 			if (bPortVisible)
 			{
@@ -1273,7 +1263,7 @@ void CGameScene::OnButtonClick(Ref* pSender, int iBtnIndex)
 		{
 			PLAY_EFFECT(EFFECT_CHANGE2);
 
-			//Èç¹ûÔİÍ£ÁË£¬Ôò»Ö¸´¸üĞÂ
+			//å¦‚æœæš‚åœäº†ï¼Œåˆ™æ¢å¤æ›´æ–°
 			if (m_bPauseFlag)
 			{
 				m_bPauseFlag = false;
@@ -1285,7 +1275,7 @@ void CGameScene::OnButtonClick(Ref* pSender, int iBtnIndex)
 			{
 				if (m_iSceneIndex == SCENE_TETRIS || m_iSceneIndex == SCENE_TETRIS2)
 				{
-					//±£´æÊı¾İ
+					//ä¿å­˜æ•°æ®
 					m_mapGameObj[m_iSceneIndex]->SaveGameData();
 				}
 
@@ -1297,16 +1287,16 @@ void CGameScene::OnButtonClick(Ref* pSender, int iBtnIndex)
 		{
 			PLAY_EFFECT(EFFECT_CHANGE2);
 
-			//Òş²ØºáÊúÆÁ½çÃæ
+			//éšè—æ¨ªç«–å±ç•Œé¢
 			m_pLandNode->setVisible(false);
 			m_pPortNode->setVisible(false);
-			//ÏÔÊ¾ÉèÖÃ½çÃæ
+			//æ˜¾ç¤ºè®¾ç½®ç•Œé¢
 			m_pSetupLayer->setVisible(true);
 
-			//¼ÇÂ¼ÉùÒô×´Ì¬
+			//è®°å½•å£°éŸ³çŠ¶æ€
 			m_bOldSoundState = GET_BOOLVALUE("SOUND", true);
 
-			//ÔİÍ£
+			//æš‚åœ
 			this->unscheduleUpdate();
 		}
 		break;
@@ -1356,7 +1346,7 @@ Sprite* CGameScene::GetBrickSprite(int nRowIdx, int nColIdx, bool bSmallFlag, bo
 
 void CGameScene::ShowTips(int nTipType)
 {
-	//Èç¹ûÏàÍ¬Ôò²»ÏÔÊ¾
+	//å¦‚æœç›¸åŒåˆ™ä¸æ˜¾ç¤º
 	if (m_nTipType == nTipType)
 	{
 		return;
@@ -1393,7 +1383,7 @@ void CGameScene::ShowTips(int nTipType)
 		break;
 	}
 
-	int nLangID = GET_INTVALUE("LANGUAGE", LANG_CH);
+	int nLangID = (CCApplication::getInstance()->getCurrentLanguage() != LanguageType::CHINESE);
 	string strName = CGeneralManager::getInstance()->GetStringByID(nLangID, nStrID);
 	if (m_pTipsLabel == nullptr)
 	{
@@ -1407,16 +1397,16 @@ void CGameScene::ShowTips(int nTipType)
 		m_pTipsLabel->setString(strName);
 	}
 
-	//ÉèÖÃÑÕÉ«
+	//è®¾ç½®é¢œè‰²
 	bool bNightMode = GET_BOOLVALUE("NIGHTMODE", false);
 	m_pTipsLabel->setColor(bNightMode ? Color3B::WHITE : Color3B::BLACK);
 
-	//ºáÊúÆÁ
+	//æ¨ªç«–å±
 	bool bPortraitFlag = GET_BOOLVALUE("PORTRAIT", true);
 	float fRotation = bPortraitFlag ? 0 : 90;
 	m_pTipsLabel->setRotation(fRotation);
 
-	//ÏÈÍ£Ö¹ËùÓĞ¶¯×÷
+	//å…ˆåœæ­¢æ‰€æœ‰åŠ¨ä½œ
 	m_pTipsLabel->stopAllActions();
 	//m_pTipSpr->setVisible(true);
 	m_pTipsLabel->runAction(
@@ -1431,10 +1421,10 @@ void CGameScene::ChangeColorMode()
 	bNightMode = !bNightMode;
 	SET_BOOLVALUE("NIGHTMODE", bNightMode);
 
-	//±³¾°
+	//èƒŒæ™¯
 	m_pBgLayer->setVisible(!bNightMode);
 
-	//ËùÓĞ·½¿é¸üĞÂ
+	//æ‰€æœ‰æ–¹å—æ›´æ–°
 	for (int nRowIdx = 0; nRowIdx < ROW_NUM; ++nRowIdx)
 	{
 		for (int nColIdx = 0; nColIdx < COLUMN_NUM; ++nColIdx)
@@ -1455,7 +1445,7 @@ void CGameScene::ChangeColorMode()
 			continue;
 		}
 
-		//²Ëµ¥
+		//èœå•
 		Menu* pMenu = dynamic_cast<Menu *>(pNode);
 		if (pMenu != nullptr)
 		{
@@ -1476,7 +1466,7 @@ void CGameScene::ChangeColorMode()
 			}
 		}
 
-		//°´Å¥
+		//æŒ‰é’®
 		Button* pButton = dynamic_cast<Button*>(pNode);
 		if (pButton != nullptr)
 		{
@@ -1496,7 +1486,7 @@ void CGameScene::ChangeColorMode()
 			continue;
 		}
 
-		//²Ëµ¥
+		//èœå•
 		Menu* pMenu = dynamic_cast<Menu *>(pNode);
 		if (pMenu != nullptr)
 		{
@@ -1517,7 +1507,7 @@ void CGameScene::ChangeColorMode()
 			}
 		}
 
-		//°´Å¥
+		//æŒ‰é’®
 		Button* pButton = dynamic_cast<Button*>(pNode);
 		if (pButton != nullptr)
 		{
@@ -1534,10 +1524,10 @@ void CGameScene::SaveTetrisRecord()
 		return;
 	}
 
-	//±£´æ
+	//ä¿å­˜
 	m_mapGameObj[m_iSceneIndex]->SaveGameData();
 
-	//ÌáÊ¾
+	//æç¤º
 	ShowTips(CGameScene::TIPS_SAVEOK);
 }
 
@@ -1581,6 +1571,28 @@ void CGameScene::ShowMyApps()
 }
 
 
+void CGameScene::OnVibrate()
+{
+	if (GET_INTVALUE("VIBRATION", 0) == 0)
+	{
+		return;
+	}
+
+#if CC_TARGET_PLATFORM == CC_PLATFORM_WP8 
+	GLView::sharedOpenGLView()->OnVibrate();
+
+#elif CC_TARGET_PLATFORM == CC_PLATFORM_ANDROID
+	JniMethodInfo minfo;
+	bool bFuncExistFlag = JniHelper::getStaticMethodInfo(minfo, "org/cocos2dx/lib/Cocos2dxHelper", "OnVibrate", "()V");
+	if (bFuncExistFlag)
+	{
+		minfo.env->CallStaticVoidMethod(minfo.classID, minfo.methodID);
+		minfo.env->DeleteLocalRef(minfo.classID);
+	}
+#endif
+}
+
+
 bool CGameScene::CheckSetupLayerVisible()
 {
 	return m_pSetupLayer->isVisible();
@@ -1595,7 +1607,7 @@ void CGameScene::QuitSetupLayer()
 	m_pPortNode->setVisible(bPortVisible);
 	m_pLandNode->setVisible(!bPortVisible);
 
-	//ÉùÒô°´Å¥×´Ì¬´¦Àí
+	//å£°éŸ³æŒ‰é’®çŠ¶æ€å¤„ç†
 	bool bSoundState = GET_BOOLVALUE("SOUND", true);
 	int nIndex = m_pSoundBtn->getSelectedIndex();
 	if (m_bOldSoundState != bSoundState)
@@ -1605,12 +1617,12 @@ void CGameScene::QuitSetupLayer()
 		m_pSoundBtnLand->setSelectedIndex(nIndex);
 	}
 
-	//»Ö¸´
+	//æ¢å¤
 	this->scheduleUpdate();
 }
 
 
-//ÏÔÊ¾ĞÂ³¡¾°
+//æ˜¾ç¤ºæ–°åœºæ™¯
 void CGameScene::RunScene(int iSceneIndex)
 {
 	//log("Old Scene: %d   Current Scene: %d", m_iSceneIndex, iSceneIndex);
@@ -1622,7 +1634,7 @@ void CGameScene::RunScene(int iSceneIndex)
 }
 
 
-//¸üĞÂ·ÖÊıÏÔÊ¾
+//æ›´æ–°åˆ†æ•°æ˜¾ç¤º
 void CGameScene::UpdateScore(int iScore, bool bPlayEffect)
 {
 	if (bPlayEffect)
@@ -1648,7 +1660,7 @@ void CGameScene::UpdateScore(int iScore, bool bPlayEffect)
 }
 
 
-//¸üĞÂ×î¸ß·ÖÏÔÊ¾
+//æ›´æ–°æœ€é«˜åˆ†æ˜¾ç¤º
 void CGameScene::UpdateHighScore(int iGameIdx, int iHighScore)
 {
 	if (iGameIdx < 0)
@@ -1679,12 +1691,12 @@ void CGameScene::UpdateHighScore(int iGameIdx, int iHighScore)
 }
 
 
-//¸üĞÂµÈ¼¶ÏÔÊ¾
+//æ›´æ–°ç­‰çº§æ˜¾ç¤º
 void CGameScene::UpdateLevel(int iLevel)
 {
 	//log("Current Level: %d", iLevel);
 	
-	//»ñÈ¡ÖĞĞÄÎ»ÖÃ
+	//è·å–ä¸­å¿ƒä½ç½®
 	Size brickSize = GetBrickSize(true);
 	Size numSize = GetNumSize();
 	float fCenterPosX = (m_visibleSize.width - COLUMN_NUM * brickSize.width) * 0.5f + COLUMN_NUM * brickSize.width;
@@ -1722,12 +1734,12 @@ void CGameScene::UpdateLevel(int iLevel)
 }
 
 
-//¸üĞÂËÙ¶ÈÏÔÊ¾
+//æ›´æ–°é€Ÿåº¦æ˜¾ç¤º
 void CGameScene::UpdateSpeed(int iSpeed)
 {
 	//log("Current Speed: %d", iSpeed);
 	
-	//»ñÈ¡ÖĞĞÄÎ»ÖÃ
+	//è·å–ä¸­å¿ƒä½ç½®
 	Size brickSize = GetBrickSize(true);
 	Size numSize = GetNumSize();
 	float fCenterPosX = (m_visibleSize.width - COLUMN_NUM * brickSize.width) * 0.5f + COLUMN_NUM * brickSize.width;
@@ -1765,7 +1777,7 @@ void CGameScene::UpdateSpeed(int iSpeed)
 }
 
 
-//¸üĞÂĞ¡·½¿éĞòÁĞ
+//æ›´æ–°å°æ–¹å—åºåˆ—
 void CGameScene::UpdateSmallBricks()
 {
 	for (int i = 0; i < 4; ++i)
@@ -1779,7 +1791,7 @@ void CGameScene::UpdateSmallBricks()
 }
 
 
-//ÖØÖÃËùÓĞĞ¡Brick
+//é‡ç½®æ‰€æœ‰å°Brick
 void CGameScene::ResetSmallBricks()
 {
 	for (int i = 0; i < 4; ++i)
@@ -1795,6 +1807,7 @@ void CGameScene::ResetSmallBricks()
 void CGameScene::ChangeSprite(Sprite* pSprite, bool bNightMode)
 {
 	string strName = pSprite->getSpriteFrameName();
+	log("%s", strName.c_str());
 	int nIndex = strName.find(bNightMode ? ".png" : "_night");
 	if (nIndex != string::npos)
 	{
@@ -1896,7 +1909,7 @@ void CGameScene::ClearTipsRecord()
 
 void CGameScene::LaunchQuitRoutine()
 {
-	//Èç¹ûÏÔÊ¾ÁËÉèÖÃ½çÃæ£¬Ôò·µ»Ø
+	//å¦‚æœæ˜¾ç¤ºäº†è®¾ç½®ç•Œé¢ï¼Œåˆ™è¿”å›
 	if (CheckSetupLayerVisible())
 	{
 		QuitSetupLayer();
@@ -1908,7 +1921,7 @@ void CGameScene::LaunchQuitRoutine()
 	{
 		if (m_iSceneIndex == SCENE_TETRIS || m_iSceneIndex == SCENE_TETRIS2)
 		{
-			//±£´æÊı¾İ
+			//ä¿å­˜æ•°æ®
 			m_mapGameObj[m_iSceneIndex]->SaveGameData();
 		}
 
@@ -1923,7 +1936,7 @@ void CGameScene::LaunchQuitRoutine()
 
 	m_lfClickExitTime = lfCurTime;
 
-	//ÏÔÊ¾ÍË³öÌáÊ¾
+	//æ˜¾ç¤ºé€€å‡ºæç¤º
 	ShowTips(TIPS_EXIT);
 }
 
@@ -1935,7 +1948,7 @@ void CGameScene::InitBgLayer()
 
 	m_pBgLayer->setVisible(!GET_BOOLVALUE("NIGHTMODE", false));
 
-	//³õÊ¼»¯SetupLayer
+	//åˆå§‹åŒ–SetupLayer
 	m_pSetupLayer = CSetupLayer::create();
 	m_pSetupLayer->setPosition(Vec2::ZERO);
 	m_pSetupLayer->Init(this);

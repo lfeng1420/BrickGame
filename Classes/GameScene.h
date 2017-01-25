@@ -63,6 +63,9 @@ public:
 	//查看我的应用
 	void ShowMyApps();
 
+	//振动
+	void OnVibrate();
+
 	//检查设置页是否显示
 	bool CheckSetupLayerVisible();
 

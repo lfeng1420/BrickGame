@@ -99,41 +99,36 @@ void CGameOver::GetCurPos(int& iRowIndex, int& iColIndex)
 
 void CGameOver::OnLeftBtnPressed()
 {
-	//结束播放，跳转下一个界面
-	m_iAllCount = ROW_NUM * COLUMN_NUM;
+	OnFireBtnPressed();
 }
 
 
 void CGameOver::OnRightBtnPressed()
 {
-	//结束播放，跳转下一个界面
-	m_iAllCount = ROW_NUM * COLUMN_NUM;
+	OnFireBtnPressed();
 }
 
 
 void CGameOver::OnDownBtnPressed()
 {
-	//结束播放，跳转下一个界面
-	m_iAllCount = ROW_NUM * COLUMN_NUM;
+	OnFireBtnPressed();
 }
 
 
 void CGameOver::OnUpBtnPressed()
 {
-	//结束播放，跳转下一个界面
-	m_iAllCount = ROW_NUM * COLUMN_NUM;
+	OnFireBtnPressed();
 }
 
 
 void CGameOver::OnFireBtnPressed()
 {
-	//结束播放，跳转下一个界面
-	m_iAllCount = ROW_NUM * COLUMN_NUM;
+	m_pGameScene->ResetBricks();
+	m_pGameScene->RunScene(SCENE_CHOOSEGAME);
 }
 
 
 void CGameOver::OnStart()
 {
-	//结束播放，跳转下一个界面
-	m_iAllCount = ROW_NUM * COLUMN_NUM;
+	m_pGameScene->RunScene(SCENE_CHOOSEGAME);
 }

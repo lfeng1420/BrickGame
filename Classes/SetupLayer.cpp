@@ -8,7 +8,7 @@ USING_NS_CC;
 const int MENU_ITEM_STRING[MENU_MAX][2] =
 {
 	{ STRNAME_MAX },							//MENU_GLOBALSET
-	{ STRNAME_CHINESE, STRNAME_ENGLISH },		//MENU_LANGUAGE
+	{ STRNAME_OFF, STRNAME_ON },				//MENU_VIBRATION
 	{ STRNAME_OFF, STRNAME_ON },				//MENU_SOUND
 	{ STRNAME_OFF, STRNAME_ON },				//MENU_NIGHTMODE
 	{ STRNAME_PORTRAIT, STRNAME_LANDSCAPE },	//MENU_ORIENTATION
@@ -63,7 +63,7 @@ bool CSetupLayer::Init(CGameScene* pGameScene)
 
 void CSetupLayer::CreateAllMenuAndLabel()
 {
-	int nLangID = GetValueByMenuIdx(MENU_LANGUAGE);
+	int nLangID = (CCApplication::getInstance()->getCurrentLanguage() != LanguageType::CHINESE);
 	bool bNightMode = GetValueByMenuIdx(MENU_NIGHTMODE);
 
 	for (int nIndex = MENU_MIN; nIndex < MENU_MAX; ++nIndex)
@@ -104,7 +104,7 @@ void CSetupLayer::CreateAllMenuAndLabel()
 
 void CSetupLayer::UpdateSingleMenuAndLabel(int nMenuIdx)
 {
-	int nLangID = GetValueByMenuIdx(MENU_LANGUAGE);
+	int nLangID = (CCApplication::getInstance()->getCurrentLanguage() != LanguageType::CHINESE);
 	bool bNightMode = GetValueByMenuIdx(MENU_NIGHTMODE);
 
 	//菜单
@@ -227,8 +227,8 @@ int CSetupLayer::GetValueByMenuIdx(int nMenuIdx)
 {
 	switch (nMenuIdx)
 	{
-	case MENU_LANGUAGE:
-		return GET_INTVALUE("LANGUAGE", LANG_CH);	//0中文 1英语
+	case MENU_VIBRATION:
+		return GET_INTVALUE("VIBRATION", 0);		//0关闭 1开启
 		break;
 	case MENU_SOUND:
 		return GET_BOOLVALUE("SOUND", true); 		//0关闭 1开启
@@ -271,11 +271,10 @@ void CSetupLayer::OnClickMenu(Ref* pSender, int nMenuIdx)
 	//各个菜单其他处理
 	switch (nMenuIdx)
 	{
-		case MENU_LANGUAGE:
+		case MENU_VIBRATION:
 		{
-			SET_INTVALUE("LANGUAGE", nValue);			//0中文 1英语
+			SET_INTVALUE("VIBRATION", nValue);			//0开启 1关闭
 			UpdateAllMenuAndLabel();
-			AdjustMenuLabelPos();
 		}
 		break;
 		case MENU_SOUND:
@@ -344,8 +343,8 @@ int CSetupLayer::GetStrIDByMenuIdx(int nMenuIdx)
 		case MENU_GLOBALSET:
 			return STRNAME_GLOBALSETTING;
 			break;
-		case MENU_LANGUAGE: 
-			return STRNAME_LANGUAGE;
+		case MENU_VIBRATION: 
+			return STRNAME_VIBRATION;
 			break;
 		case MENU_SOUND: 
 			return STRNAME_SOUND;
