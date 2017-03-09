@@ -331,6 +331,10 @@ void CAddBrickGame::updateGameState()
 		|| (nSelfColIdx + 1 < COLUMN_NUM && m_arrBrick[nSelfRowIdx][nSelfColIdx + 1]))
 	{
 		m_enGameState = GAMESTATE_OVER;
+
+		//Õñ¶¯
+		m_pGameScene->OnLongVibrate();
+
 		return;
 	}
 
@@ -340,6 +344,10 @@ void CAddBrickGame::updateGameState()
 		if (m_arrBrick[ROW_NUM - 1][nColIdx])
 		{
 			m_enGameState = GAMESTATE_OVER;
+
+			//Õñ¶¯
+			m_pGameScene->OnLongVibrate();
+
 			return;
 		}
 	}
@@ -348,6 +356,10 @@ void CAddBrickGame::updateGameState()
 	if (!m_bSpecialMode && m_iScore >= PASS_SCORE[m_iSpeed])
 	{
 		m_enGameState = GAMESTATE_PASS;
+		
+		//Õñ¶¯
+		m_pGameScene->OnLongVibrate();
+
 		return;
 	}
 }

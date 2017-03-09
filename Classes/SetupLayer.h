@@ -15,17 +15,17 @@ public:
 	//更新单个标签
 	void UpdateSingleMenuAndLabel(int nMenuIdx);
 
-	CREATE_FUNC(CSetupLayer);
-
-private:
-	//创建菜单和标签
-	void CreateAllMenuAndLabel();
-	
 	//更新菜单和标签
 	void UpdateAllMenuAndLabel();
 
 	//调整菜单和标签位置
 	void AdjustMenuLabelPos();
+
+	CREATE_FUNC(CSetupLayer);
+
+private:
+	//创建菜单和标签
+	void CreateAllMenuAndLabel();
 
 	//获取设置
 	int GetValueByMenuIdx(int nMenuIdx);

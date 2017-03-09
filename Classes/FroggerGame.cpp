@@ -341,6 +341,9 @@ void CFroggerGame::UpdateGameState()
 	{
 		m_enGameState = GAMESTATE_OVER;
 		PLAY_EFFECT(EFFECT_BOOM);
+
+		//Õñ¶¯
+		m_pGameScene->OnLongVibrate();
 	}
 }
 
@@ -455,6 +458,9 @@ void CFroggerGame::OnUpBtnPressed()
 		if (m_iPassCount == GAMEPASS_COUNT)
 		{
 			m_enGameState = GAMESTATE_PASS;
+
+			//Õñ¶¯
+			m_pGameScene->OnLongVibrate();
 		}
 		else
 		{

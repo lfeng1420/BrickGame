@@ -16,12 +16,10 @@ bool AppDelegate::applicationDidFinishLaunching() {
 	auto director = Director::getInstance();
 	auto glview = director->getOpenGLView();
 	if (!glview) {
-		glview = GLView::create("Cpp Empty Test");
-		glview->setFrameSize(640, 960);
+        glview = GLView::create("BrickGame");
+		glview->setFrameSize(480, 852);
 		director->setOpenGLView(glview);
 	}
-
-	director->setOpenGLView(glview);
 
 	glview->setDesignResolutionSize(640, 1138, ResolutionPolicy::FIXED_WIDTH);
 

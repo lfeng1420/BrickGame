@@ -17,6 +17,7 @@ const std::string MENU_ITEM_NAME[STRNAME_MAX] =
 	"orientation",
 	"portrait",
 	"landscape",
+	"rhmode",
 	"tetrissetting",
 	"autorecover",
 	"savenow",

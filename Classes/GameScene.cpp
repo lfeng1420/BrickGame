@@ -104,14 +104,17 @@ bool CGameScene::init()
 	//横向UI初始化
 	InitLandUI();
 
-	//初始化方块
-	InitBrick();
-
 	//初始化控制器
 	InitPortController();
 
 	//横向控制器
 	InitLandController();
+
+	//根据右手模式是否开启调整位置
+	ChangeControllerPos();
+
+	//初始化方块
+	InitBrick();
 
 	//按键监听
 	CreateKeyListener();
@@ -535,13 +538,13 @@ void CGameScene::InitPortController()
 	//按钮缩放大小
 	fBtnPadding = 2.0f;
 	float fControllerPadding = 10;
-	float fBtnScale = (fHeight - fSmallBtnTopHeight - fControllerPadding * 2) * 1.0f / 2 / BTN_HEIGHT;
+	m_fPortBtnScale = (fHeight - fSmallBtnTopHeight - fControllerPadding * 2) * 1.0f / 2 / BTN_HEIGHT;
 	//log("fBtnScale=%f  fRemainHeight=%f", fBtnScale, fHeight - fSmallBtnTopHeight);
 	
 	//重新调整间距
-	if (fBtnScale > FLOAT_CONTROLLER_SCALE_MAX)
+	if (m_fPortBtnScale > FLOAT_CONTROLLER_SCALE_MAX)
 	{
-		fBtnScale = FLOAT_CONTROLLER_SCALE_MAX;
+		m_fPortBtnScale = FLOAT_CONTROLLER_SCALE_MAX;
 		fControllerPadding = (fHeight - fSmallBtnTopHeight - FLOAT_CONTROLLER_SCALE_MAX * BTN_HEIGHT * 2) / 2;
 		//log("fControllerPadding=%f", fControllerPadding);
 	}
@@ -550,55 +553,60 @@ void CGameScene::InitPortController()
 
 	//上
 	string strBtn0Name = GetSpriteNameByMode("btn_0.png");
-	Button* pUpBtn = Button::create(strBtn0Name, strBtn0Name, "", Widget::TextureResType::PLIST);
-	pUpBtn->setScale(fBtnScale);
-	pUpBtn->addTouchEventListener(CC_CALLBACK_2(CGameScene::OnButtonEvent, this, BTN_UP));
-	Size upBtnSize = pUpBtn->getContentSize() * fBtnScale;
+	string strBtn1Name = GetSpriteNameByMode("btn_1.png");
+	m_pPortUpBtn = Button::create(strBtn0Name, strBtn1Name, "", Widget::TextureResType::PLIST);
+	m_pPortUpBtn->setScale(m_fPortBtnScale);
+	m_pPortUpBtn->addTouchEventListener(CC_CALLBACK_2(CGameScene::OnButtonEvent, this, BTN_UP));
+	m_pPortUpBtn->setTag(BTNTAG_PORT_UP);
+	Size upBtnSize = m_pPortUpBtn->getContentSize() * m_fPortBtnScale;
 
 	//右
-	Button* pRightBtn = Button::create(strBtn0Name, strBtn0Name, "", Widget::TextureResType::PLIST);
-	pRightBtn->setScale(fBtnScale);
-	pRightBtn->setRotation(90);
-	pRightBtn->addTouchEventListener(CC_CALLBACK_2(CGameScene::OnButtonEvent, this, BTN_RIGHT));
-	Size rightBtnSize = pRightBtn->getContentSize() * fBtnScale;
+	m_pPortRightBtn = Button::create(strBtn0Name, strBtn1Name, "", Widget::TextureResType::PLIST);
+	m_pPortRightBtn->setScale(m_fPortBtnScale);
+	m_pPortRightBtn->setRotation(90);
+	m_pPortRightBtn->addTouchEventListener(CC_CALLBACK_2(CGameScene::OnButtonEvent, this, BTN_RIGHT));
+	m_pPortRightBtn->setTag(BTNTAG_PORT_RIGHT);
+	Size rightBtnSize = m_pPortRightBtn->getContentSize() * m_fPortBtnScale;
 
 	//下
-	Button* pDownBtn = Button::create(strBtn0Name, strBtn0Name, "", Widget::TextureResType::PLIST);
-	pDownBtn->setScale(fBtnScale);
-	pDownBtn->setRotation(180);
-	pDownBtn->addTouchEventListener(CC_CALLBACK_2(CGameScene::OnButtonEvent, this, BTN_DOWN));
-	Size downBtnSize = pDownBtn->getContentSize() * fBtnScale;
+	m_pPortDownBtn = Button::create(strBtn0Name, strBtn1Name, "", Widget::TextureResType::PLIST);
+	m_pPortDownBtn->setScale(m_fPortBtnScale);
+	m_pPortDownBtn->setRotation(180);
+	m_pPortDownBtn->addTouchEventListener(CC_CALLBACK_2(CGameScene::OnButtonEvent, this, BTN_DOWN));
+	m_pPortDownBtn->setTag(BTNTAG_PORT_DOWN);
+	Size downBtnSize = m_pPortDownBtn->getContentSize() * m_fPortBtnScale;
 
 	//左
-	Button* pLeftBtn = Button::create(strBtn0Name, strBtn0Name, "", Widget::TextureResType::PLIST);
-	pLeftBtn->setScale(fBtnScale);
-	pLeftBtn->setRotation(-90);
-	pLeftBtn->addTouchEventListener(CC_CALLBACK_2(CGameScene::OnButtonEvent, this, BTN_LEFT));
-	Size leftBtnSize = pLeftBtn->getContentSize() * fBtnScale;
+	m_pPortLeftBtn = Button::create(strBtn0Name, strBtn1Name, "", Widget::TextureResType::PLIST);
+	m_pPortLeftBtn->setScale(m_fPortBtnScale);
+	m_pPortLeftBtn->setRotation(-90);
+	m_pPortLeftBtn->addTouchEventListener(CC_CALLBACK_2(CGameScene::OnButtonEvent, this, BTN_LEFT));
+	m_pPortDownBtn->setTag(BTNTAG_PORT_LEFT);
+	Size leftBtnSize = m_pPortLeftBtn->getContentSize() * m_fPortBtnScale;
 
 	//Fire
-	float fFireScale = 1.4f;
-	Button* pFireBtn = Button::create(GetSpriteNameByMode("fire_0.png"), GetSpriteNameByMode("fire_1.png"), "", Widget::TextureResType::PLIST);
-	pFireBtn->setScale(fFireScale);
-	pFireBtn->addTouchEventListener(CC_CALLBACK_2(CGameScene::OnButtonEvent, this, BTN_FIRE));
-	Size fireBtnSize = pFireBtn->getContentSize() * fFireScale;
+	float fFireScale = 1.5f;
+	m_pPortFireBtn = Button::create(GetSpriteNameByMode("fire_0.png"), GetSpriteNameByMode("fire_1.png"), "", Widget::TextureResType::PLIST);
+	m_pPortFireBtn->setScale(fFireScale);
+	m_pPortFireBtn->addTouchEventListener(CC_CALLBACK_2(CGameScene::OnButtonEvent, this, BTN_FIRE));
+	Size fireBtnSize = m_pPortFireBtn->getContentSize() * fFireScale;
 
 	//设置位置
-	pLeftBtn->setPosition(Vec2(upBtnSize.height * 0.6f + fBtnPadding, fTopPosY - upBtnSize.height));
-	pRightBtn->setPosition(Vec2(upBtnSize.height * 1.6f - fBtnPadding, fTopPosY - upBtnSize.height));
-	pDownBtn->setPosition(Vec2(upBtnSize.height * 1.1f, fTopPosY - upBtnSize.height * 1.5f + fBtnPadding));
-	pUpBtn->setPosition(Vec2(upBtnSize.height * 1.1f, fTopPosY - upBtnSize.height * 0.5f - fBtnPadding));
-	pFireBtn->setPosition(Vec2(m_visibleSize.width - fireBtnSize.width * 0.8f, fTopPosY - upBtnSize.height));
+	m_pPortLeftBtn->setPosition(Vec2(upBtnSize.height * 0.6f + fBtnPadding, fTopPosY - upBtnSize.height));
+	m_pPortRightBtn->setPosition(Vec2(upBtnSize.height * 1.6f - fBtnPadding, fTopPosY - upBtnSize.height));
+	m_pPortDownBtn->setPosition(Vec2(upBtnSize.height * 1.1f, fTopPosY - upBtnSize.height * 1.5f + fBtnPadding));
+	m_pPortUpBtn->setPosition(Vec2(upBtnSize.height * 1.1f, fTopPosY - upBtnSize.height * 0.5f - fBtnPadding));
+	m_pPortFireBtn->setPosition(Vec2(m_visibleSize.width - fireBtnSize.width * 0.8f, fTopPosY - upBtnSize.height));
 
 	//中心位置
 	m_oControllerCenterPos = Vec2(upBtnSize.height * 1.1f, fTopPosY - upBtnSize.height);
 	m_oControllerCenterSize = Size(upBtnSize.width, upBtnSize.width);
 
-	m_pPortNode->addChild(pLeftBtn);
-	m_pPortNode->addChild(pRightBtn);
-	m_pPortNode->addChild(pDownBtn);
-	m_pPortNode->addChild(pUpBtn);
-	m_pPortNode->addChild(pFireBtn);
+	m_pPortNode->addChild(m_pPortLeftBtn);
+	m_pPortNode->addChild(m_pPortRightBtn);
+	m_pPortNode->addChild(m_pPortDownBtn);
+	m_pPortNode->addChild(m_pPortUpBtn);
+	m_pPortNode->addChild(m_pPortFireBtn);
 }
 
 
@@ -684,67 +692,72 @@ void CGameScene::InitLandController()
 
 	//重新调整间距
 	string strBtn0Name = GetSpriteNameByMode("btn_0.png");
+	string strBtn1Name = GetSpriteNameByMode("btn_1.png");
 	Sprite* pSampleBtn = CREATE_SPRITEWITHNAME(strBtn0Name);
-	Size sampleBtnSize = GET_CONTENTSIZE(pSampleBtn);
-	float fBtnScale = (fBrickBottomHeight - 40) / sampleBtnSize.height / 2.0f;
-	if (fBtnScale > FLOAT_CONTROLLER_SCALE_MAX)
+	m_oSampleBtnSize = GET_CONTENTSIZE(pSampleBtn);
+	m_fLandBtnScale = (fBrickBottomHeight - 40) / m_oSampleBtnSize.height / 2.0f;
+	if (m_fLandBtnScale > FLOAT_CONTROLLER_SCALE_MAX)
 	{
-		fBtnScale = FLOAT_CONTROLLER_SCALE_MAX;
+		m_fLandBtnScale = FLOAT_CONTROLLER_SCALE_MAX;
 	}
-	sampleBtnSize = sampleBtnSize * fBtnScale;
+	m_oSampleBtnSize = m_oSampleBtnSize * m_fLandBtnScale;
 
 	//间距
 	float fBtnPadding = 2.0f;
-	float fHeightPadding = (fBrickBottomHeight - sampleBtnSize.height * 2 - fBtnPadding * 2) * 0.5f;
+	float fHeightPadding = (fBrickBottomHeight - m_oSampleBtnSize.height * 2 - fBtnPadding * 2) * 0.5f;
 
 	//左
-	Button* pLeftBtn = Button::create(strBtn0Name, strBtn0Name, "", Widget::TextureResType::PLIST);
-	pLeftBtn->setScale(fBtnScale);
-	pLeftBtn->addTouchEventListener(CC_CALLBACK_2(CGameScene::OnButtonEvent, this, BTN_LEFT));
+	m_pLandLeftBtn = Button::create(strBtn0Name, strBtn1Name, "", Widget::TextureResType::PLIST);
+	m_pLandLeftBtn->setScale(m_fLandBtnScale);
+	m_pLandLeftBtn->addTouchEventListener(CC_CALLBACK_2(CGameScene::OnButtonEvent, this, BTN_LEFT));
+	m_pLandLeftBtn->setTag(BTNTAG_LAND_LEFT);
 
 	//上
-	Button* pUpBtn = Button::create(strBtn0Name, strBtn0Name, "", Widget::TextureResType::PLIST);
-	pUpBtn->setRotation(90);
-	pUpBtn->setScale(fBtnScale);
-	pUpBtn->addTouchEventListener(CC_CALLBACK_2(CGameScene::OnButtonEvent, this, BTN_UP));
+	m_pLandUpBtn = Button::create(strBtn0Name, strBtn1Name, "", Widget::TextureResType::PLIST);
+	m_pLandUpBtn->setRotation(90);
+	m_pLandUpBtn->setScale(m_fLandBtnScale);
+	m_pLandUpBtn->addTouchEventListener(CC_CALLBACK_2(CGameScene::OnButtonEvent, this, BTN_UP));
+	m_pLandUpBtn->setTag(BTNTAG_LAND_UP);
 
 	//右
-	Button* pRightBtn = Button::create(strBtn0Name, strBtn0Name, "", Widget::TextureResType::PLIST);
-	pRightBtn->setScale(fBtnScale);
-	pRightBtn->setRotation(180);
-	pRightBtn->addTouchEventListener(CC_CALLBACK_2(CGameScene::OnButtonEvent, this, BTN_RIGHT));
+	m_pLandRightBtn = Button::create(strBtn0Name, strBtn1Name, "", Widget::TextureResType::PLIST);
+	m_pLandRightBtn->setScale(m_fLandBtnScale);
+	m_pLandRightBtn->setRotation(180);
+	m_pLandRightBtn->addTouchEventListener(CC_CALLBACK_2(CGameScene::OnButtonEvent, this, BTN_RIGHT));
+	m_pLandRightBtn->setTag(BTNTAG_LAND_RIGHT);
 
 	//下
-	Button* pDownBtn = Button::create(strBtn0Name, strBtn0Name, "", Widget::TextureResType::PLIST);
-	pDownBtn->setScale(fBtnScale);
-	pDownBtn->setRotation(270);
-	pDownBtn->addTouchEventListener(CC_CALLBACK_2(CGameScene::OnButtonEvent, this, BTN_DOWN));
+	m_pLandDownBtn = Button::create(strBtn0Name, strBtn1Name, "", Widget::TextureResType::PLIST);
+	m_pLandDownBtn->setScale(m_fLandBtnScale);
+	m_pLandDownBtn->setRotation(270);
+	m_pLandDownBtn->addTouchEventListener(CC_CALLBACK_2(CGameScene::OnButtonEvent, this, BTN_DOWN));
+	m_pLandDownBtn->setTag(BTNTAG_LAND_DOWN);
 
 	//Fire
 	float fFireScale = 1.5f;
-	Button* pFireBtn = Button::create(GetSpriteNameByMode("fire_0.png"), GetSpriteNameByMode("fire_1.png"), "", Widget::TextureResType::PLIST);
-	pFireBtn->setScale(fFireScale);
-	pFireBtn->setRotation(90);
-	Size fireBtnSize = GET_CONTENTSIZE(pFireBtn) * fFireScale;
-	pFireBtn->addTouchEventListener(CC_CALLBACK_2(CGameScene::OnButtonEvent, this, BTN_FIRE));
+	m_pLandFireBtn = Button::create(GetSpriteNameByMode("fire_0.png"), GetSpriteNameByMode("fire_1.png"), "", Widget::TextureResType::PLIST);
+	m_pLandFireBtn->setScale(fFireScale);
+	m_pLandFireBtn->setRotation(90);
+	Size fireBtnSize = GET_CONTENTSIZE(m_pLandFireBtn) * fFireScale;
+	m_pLandFireBtn->addTouchEventListener(CC_CALLBACK_2(CGameScene::OnButtonEvent, this, BTN_FIRE));
 
 	//设置位置
-	float fTopCenterY = sampleBtnSize.height + fBrickTopHeight + fHeightPadding;
-	pLeftBtn->setPosition(Vec2(m_visibleSize.width * 0.38f, fTopCenterY + sampleBtnSize.height * 0.5f - fBtnPadding));
-	pRightBtn->setPosition(Vec2(m_visibleSize.width * 0.38f, fTopCenterY - sampleBtnSize.height * 0.5f + fBtnPadding));
-	pDownBtn->setPosition(Vec2(m_visibleSize.width * 0.38f - sampleBtnSize.height * 0.5f + fBtnPadding, fTopCenterY));
-	pUpBtn->setPosition(Vec2(m_visibleSize.width * 0.38f + sampleBtnSize.height * 0.5f - fBtnPadding, fTopCenterY));
-	pFireBtn->setPosition(Vec2(m_visibleSize.width * 0.38f, fBrickBottomHeight * 0.5f));
+	float fTopCenterY = m_oSampleBtnSize.height + fBrickTopHeight + fHeightPadding;
+	m_pLandLeftBtn->setPosition(Vec2(m_visibleSize.width * 0.38f, fTopCenterY + m_oSampleBtnSize.height * 0.5f - fBtnPadding));
+	m_pLandRightBtn->setPosition(Vec2(m_visibleSize.width * 0.38f, fTopCenterY - m_oSampleBtnSize.height * 0.5f + fBtnPadding));
+	m_pLandDownBtn->setPosition(Vec2(m_visibleSize.width * 0.38f - m_oSampleBtnSize.height * 0.5f + fBtnPadding, fTopCenterY));
+	m_pLandUpBtn->setPosition(Vec2(m_visibleSize.width * 0.38f + m_oSampleBtnSize.height * 0.5f - fBtnPadding, fTopCenterY));
+	m_pLandFireBtn->setPosition(Vec2(m_visibleSize.width * 0.38f, fBrickBottomHeight * 0.5f));
 
 	//中心位置
 	m_oControllerLandCenterPos = Vec2(m_visibleSize.width * 0.38f, fTopCenterY);
-	m_oControllerLandCenterSize = Size(sampleBtnSize.width, sampleBtnSize.width);
+	m_oControllerLandCenterSize = Size(m_oSampleBtnSize.width, m_oSampleBtnSize.width);
 
-	m_pLandNode->addChild(pLeftBtn);
-	m_pLandNode->addChild(pRightBtn);
-	m_pLandNode->addChild(pDownBtn);
-	m_pLandNode->addChild(pUpBtn);
-	m_pLandNode->addChild(pFireBtn);
+	m_pLandNode->addChild(m_pLandLeftBtn);
+	m_pLandNode->addChild(m_pLandRightBtn);
+	m_pLandNode->addChild(m_pLandDownBtn);
+	m_pLandNode->addChild(m_pLandUpBtn);
+	m_pLandNode->addChild(m_pLandFireBtn);
 }
 
 
@@ -1131,12 +1144,14 @@ void CGameScene::OnButtonPressed(int iBtnIndex)
 	}
 
 	//振动
-	OnVibrate();
+	OnShortVibrate();
 
 	switch (iBtnIndex)
 	{
 	case BTN_DOWN:
-		m_mapGameObj[m_iSceneIndex]->OnDownBtnPressed();
+		{
+			m_mapGameObj[m_iSceneIndex]->OnDownBtnPressed();
+		}
 		break;
 
 	case BTN_LEFT:
@@ -1155,6 +1170,8 @@ void CGameScene::OnButtonPressed(int iBtnIndex)
 		m_mapGameObj[m_iSceneIndex]->OnFireBtnPressed();
 		break;
 	}
+
+	UpdateBtnState(iBtnIndex, true);
 }
 
 
@@ -1183,6 +1200,8 @@ void CGameScene::OnButtonReleased(int iBtnIndex)
 		m_mapGameObj[m_iSceneIndex]->OnFireBtnReleased();
 		break;
 	}
+
+	UpdateBtnState(iBtnIndex, false);
 }
 
 
@@ -1571,7 +1590,7 @@ void CGameScene::ShowMyApps()
 }
 
 
-void CGameScene::OnVibrate()
+void CGameScene::OnShortVibrate()
 {
 	if (GET_INTVALUE("VIBRATION", 0) == 0)
 	{
@@ -1579,11 +1598,33 @@ void CGameScene::OnVibrate()
 	}
 
 #if CC_TARGET_PLATFORM == CC_PLATFORM_WP8 
-	GLView::sharedOpenGLView()->OnVibrate();
+	GLView::sharedOpenGLView()->OnShortVibrate();
 
 #elif CC_TARGET_PLATFORM == CC_PLATFORM_ANDROID
 	JniMethodInfo minfo;
-	bool bFuncExistFlag = JniHelper::getStaticMethodInfo(minfo, "org/cocos2dx/lib/Cocos2dxHelper", "OnVibrate", "()V");
+	bool bFuncExistFlag = JniHelper::getStaticMethodInfo(minfo, "org/cocos2dx/lib/Cocos2dxHelper", "OnShortVibrate", "()V");
+	if (bFuncExistFlag)
+	{
+		minfo.env->CallStaticVoidMethod(minfo.classID, minfo.methodID);
+		minfo.env->DeleteLocalRef(minfo.classID);
+	}
+#endif
+}
+
+
+void CGameScene::OnLongVibrate()
+{
+	if (GET_INTVALUE("VIBRATION", 0) == 0)
+	{
+		return;
+	}
+
+#if CC_TARGET_PLATFORM == CC_PLATFORM_WP8
+	GLView::sharedOpenGLView()->OnLongVibrate();
+
+#elif CC_TARGET_PLATFORM == CC_PLATFORM_ANDROID
+	JniMethodInfo minfo;
+	bool bFuncExistFlag = JniHelper::getStaticMethodInfo(minfo, "org/cocos2dx/lib/Cocos2dxHelper", "OnLongVibrate", "()V");
 	if (bFuncExistFlag)
 	{
 		minfo.env->CallStaticVoidMethod(minfo.classID, minfo.methodID);
@@ -1618,7 +1659,10 @@ void CGameScene::QuitSetupLayer()
 	}
 
 	//恢复
-	this->scheduleUpdate();
+	if (!m_bPauseFlag)
+	{
+		this->scheduleUpdate();
+	}
 }
 
 
@@ -1807,7 +1851,6 @@ void CGameScene::ResetSmallBricks()
 void CGameScene::ChangeSprite(Sprite* pSprite, bool bNightMode)
 {
 	string strName = pSprite->getSpriteFrameName();
-	log("%s", strName.c_str());
 	int nIndex = strName.find(bNightMode ? ".png" : "_night");
 	if (nIndex != string::npos)
 	{
@@ -1907,6 +1950,38 @@ void CGameScene::ClearTipsRecord()
 }
 
 
+void CGameScene::UpdateBtnState(int nBtnIndex, bool bPressedFlag)
+{
+	Button* pButton = nullptr;
+	bool bPortFlag = (m_pPortNode->isVisible());
+	switch (nBtnIndex)
+	{
+	case BTN_DOWN:
+		pButton = bPortFlag ? m_pPortDownBtn : m_pLandDownBtn;
+		break;
+	case BTN_UP:
+		pButton = bPortFlag ? m_pPortUpBtn : m_pLandUpBtn;
+		break;
+	case BTN_LEFT:
+		pButton = bPortFlag ? m_pPortLeftBtn : m_pLandLeftBtn;
+		break;
+	case BTN_RIGHT:
+		pButton = bPortFlag ? m_pPortRightBtn : m_pLandRightBtn;
+		break;
+	default:
+		return;
+		break;
+	}
+
+	if (pButton == nullptr)
+	{
+		return;
+	}
+
+	pButton->setHighlighted(bPressedFlag);
+}
+
+
 void CGameScene::LaunchQuitRoutine()
 {
 	//如果显示了设置界面，则返回
@@ -1954,4 +2029,59 @@ void CGameScene::InitBgLayer()
 	m_pSetupLayer->Init(this);
 	this->addChild(m_pSetupLayer);
 	m_pSetupLayer->setVisible(false);
+}
+
+
+//更改控制按钮位置
+void CGameScene::ChangeControllerPos()
+{
+	float fBtnPadding = 2.0f;
+	Size oPortBtnSize = GET_CONTENTSIZE(m_pPortUpBtn) * m_fPortBtnScale;
+	Size oLandBtnSize = GET_CONTENTSIZE(m_pLandUpBtn) * m_fLandBtnScale;
+	Size fireBtnSize = GET_CONTENTSIZE(m_pPortFireBtn) * 1.5f;
+
+	/////只用于横屏
+	Size oBrickSize = GetBrickSize(true);
+	float fBrickBottomHeight = (m_visibleSize.height - COLUMN_NUM * oBrickSize.width) * 0.5f;
+	float fHeightPadding = (fBrickBottomHeight - m_oSampleBtnSize.height * 2 - fBtnPadding * 2) * 0.5f;
+	float fBrickTopHeight = fBrickBottomHeight + COLUMN_NUM * oBrickSize.width;
+	float fTopCenterY = m_oSampleBtnSize.height + fBrickTopHeight + fHeightPadding;
+	float fBottomCenterY = fBrickBottomHeight * 0.5f;
+
+	if (GET_BOOLVALUE("RHMODE", false))
+	{
+		float fExternPadding = 10.0f;
+		m_pPortLeftBtn->setPositionX(m_visibleSize.width - m_pPortLeftBtn->getPositionX() - oPortBtnSize.height + fBtnPadding * 2 - fExternPadding);
+		m_pPortRightBtn->setPositionX(m_visibleSize.width - m_pPortRightBtn->getPositionX() + oPortBtnSize.height - fBtnPadding * 2 - fExternPadding);
+		m_pPortDownBtn->setPositionX(m_visibleSize.width - m_pPortDownBtn->getPositionX() - fExternPadding);
+		m_pPortUpBtn->setPositionX(m_visibleSize.width - m_pPortUpBtn->getPositionX() - fExternPadding);
+		m_pPortFireBtn->setPositionX(m_visibleSize.width - m_pPortFireBtn->getPositionX() - fExternPadding);
+		m_oControllerCenterPos.x = m_pPortDownBtn->getPositionX();
+
+		m_pLandLeftBtn->setPositionY(fBottomCenterY + m_oSampleBtnSize.height * 0.5f - fBtnPadding);
+		m_pLandRightBtn->setPositionY(fBottomCenterY - m_oSampleBtnSize.height * 0.5f + fBtnPadding);
+		m_pLandDownBtn->setPositionY(fBottomCenterY);
+		m_pLandUpBtn->setPositionY(fBottomCenterY);
+		m_pLandFireBtn->setPositionY(fTopCenterY);
+		m_oControllerLandCenterPos.y = fBottomCenterY;
+	}
+	else
+	{
+		float fPortLeftPosX = oPortBtnSize.height * 1.1f;
+		float fPortRightPosX = m_visibleSize.width - fireBtnSize.width * 0.8f;
+
+		m_pPortLeftBtn->setPositionX(fPortLeftPosX - oPortBtnSize.height * 0.5f + fBtnPadding);
+		m_pPortRightBtn->setPositionX(fPortLeftPosX + oPortBtnSize.height * 0.5f - fBtnPadding);
+		m_pPortDownBtn->setPositionX(fPortLeftPosX);
+		m_pPortUpBtn->setPositionX(fPortLeftPosX);
+		m_pPortFireBtn->setPositionX(fPortRightPosX);
+		m_oControllerCenterPos.x = fPortLeftPosX;
+
+		m_pLandLeftBtn->setPositionY(fTopCenterY + m_oSampleBtnSize.height * 0.5f - fBtnPadding);
+		m_pLandRightBtn->setPositionY(fTopCenterY - m_oSampleBtnSize.height * 0.5f + fBtnPadding);
+		m_pLandDownBtn->setPositionY(fTopCenterY);
+		m_pLandUpBtn->setPositionY(fTopCenterY);
+		m_pLandFireBtn->setPositionY(fBottomCenterY);
+		m_oControllerLandCenterPos.y = fTopCenterY;
+	}
 }

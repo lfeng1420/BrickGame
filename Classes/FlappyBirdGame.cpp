@@ -174,12 +174,18 @@ bool CFlappyBirdGame::BirdMove(float dt)
 		{
 			m_iBirdRowIdx = (m_iBirdRowIdx < 0) ? 0 : (ROW_NUM - 1);
 			m_enGameState = GAMESTATE_OVER;
+
+			//振动
+			m_pGameScene->OnLongVibrate();
 		}
 		//显示在新位置
 		m_pGameScene->UpdateBrick(m_iBirdRowIdx, COLUMN_NUM / 2 - 1, false, true);
 
 		//更新游戏状态
-		UpdateGameState();
+		if (m_enGameState == GAMESTATE_RUNNING)
+		{
+			UpdateGameState();
+		}
 	}
 
 	return true;
@@ -204,6 +210,9 @@ void CFlappyBirdGame::UpdateGameState()
 				(m_iBirdRowIdx >= ROW_NUM - iDownLen && m_iBirdRowIdx < ROW_NUM))
 			{
 				m_enGameState = GAMESTATE_OVER;
+
+				//振动
+				m_pGameScene->OnLongVibrate();
 			}
 			else if (m_bCanAddScore && stData.m_iColIdx == COLUMN_NUM / 2 - 1)
 			{

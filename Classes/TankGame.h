@@ -221,6 +221,8 @@ private:
 		BOSS_FIRE_MAX_INTERVAL = 2000,				//boss发射子弹最大时间间隔
 
 		TANK_SELF_FLAG_FLASH_INTERVAL = 100,		//100毫秒刷新一次
+
+		TANK_BOSS_HIT_BASE_COUNT = 5,				//通关击中BOSS基础次数
 	};
 
 	//阵营

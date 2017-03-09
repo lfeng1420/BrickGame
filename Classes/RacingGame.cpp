@@ -95,6 +95,9 @@ void CRacingGame::Play(float dt)
 		{
 			m_enGameState = GAMESTATE_OVER;
 			PLAY_EFFECT(EFFECT_BOOM);
+
+			//振动
+			m_pGameScene->OnLongVibrate();
 		}
 	}
 	
@@ -236,6 +239,9 @@ void CRacingGame::OnLeftBtnPressed()
 	{
 		m_enGameState = GAMESTATE_OVER;
 		PLAY_EFFECT(EFFECT_BOOM);
+
+		//振动
+		m_pGameScene->OnLongVibrate();
 	}
 }
 
@@ -259,6 +265,9 @@ void CRacingGame::OnRightBtnPressed()
 	{
 		m_enGameState = GAMESTATE_OVER;
 		PLAY_EFFECT(EFFECT_BOOM);
+
+		//振动
+		m_pGameScene->OnLongVibrate();
 	}
 }
 
@@ -344,6 +353,9 @@ void CRacingGame::UpdateBricks()
 		{
 			m_enGameState = GAMESTATE_PASS;
 			m_iAddScoreCount = 0;
+
+			//振动
+			m_pGameScene->OnLongVibrate();
 		}
 	}
 

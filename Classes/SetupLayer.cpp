@@ -12,6 +12,7 @@ const int MENU_ITEM_STRING[MENU_MAX][2] =
 	{ STRNAME_OFF, STRNAME_ON },				//MENU_SOUND
 	{ STRNAME_OFF, STRNAME_ON },				//MENU_NIGHTMODE
 	{ STRNAME_PORTRAIT, STRNAME_LANDSCAPE },	//MENU_ORIENTATION
+	{ STRNAME_OFF, STRNAME_ON },				//MENU_RHMODE
 	{ STRNAME_MAX },							//MENU_TETRISSET
 	{ STRNAME_OFF, STRNAME_ON },				//MENU_AUTORECOVER
 	{ STRNAME_RIGHTARROW },						//MENU_SAVENOW
@@ -69,7 +70,8 @@ void CSetupLayer::CreateAllMenuAndLabel()
 	for (int nIndex = MENU_MIN; nIndex < MENU_MAX; ++nIndex)
 	{
 		int nFontSize = NORMAL_FONT_SIZE;
-		if (CheckMenuTitleFlag(nIndex))
+		bool bTitleFlag = CheckMenuTitleFlag(nIndex);
+		if (bTitleFlag)
 		{
 			nFontSize = TITLE_FONT_SIZE;
 		}
@@ -239,6 +241,9 @@ int CSetupLayer::GetValueByMenuIdx(int nMenuIdx)
 	case MENU_ORIENTATION:
 		return GET_BOOLVALUE("PORTRAIT", true);		//0ºáÆÁ 1ÊúÆÁ
 		break;
+	case MENU_RHMODE:
+		return GET_BOOLVALUE("RHMODE", false);		//0¹Ø±Õ 1¿ªÆô
+		break;
 	case MENU_AUTORECOVER:
 		return GET_BOOLVALUE("TETRIS_RECORD_VALID", false);	//0¹Ø±Õ 1¿ªÆô
 		break;
@@ -293,6 +298,13 @@ void CSetupLayer::OnClickMenu(Ref* pSender, int nMenuIdx)
 			SET_BOOLVALUE("PORTRAIT", bState);				//0ºáÆÁ 1ÊúÆÁ
 			UpdateAllMenuAndLabel();
 			AdjustMenuLabelPos();
+		}
+		break;
+		case MENU_RHMODE:
+		{
+			SET_BOOLVALUE("RHMODE", bState);	//0¹Ø±Õ 1¿ªÆô
+			m_pGameScene->ChangeControllerPos();
+			UpdateSingleMenuAndLabel(nMenuIdx);
 		}
 		break;
 		case MENU_AUTORECOVER:
@@ -354,6 +366,9 @@ int CSetupLayer::GetStrIDByMenuIdx(int nMenuIdx)
 			break;
 		case MENU_ORIENTATION: 
 			return STRNAME_ORIENTATION;
+			break;
+		case MENU_RHMODE:
+			return STRNAME_RHMODE;
 			break;
 		case MENU_TETRISSET: 
 			return STRNAME_TETRISSETTING;

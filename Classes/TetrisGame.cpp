@@ -499,6 +499,9 @@ void CTetrisGame::RandNewShape()
 	if (!CheckBrickPos(iShape, 0, iColIdx))
 	{
 		m_enGameState = GAMESTATE_OVER;
+
+		//振动
+		m_pGameScene->OnLongVibrate();
 	}
 	else
 	{
@@ -563,6 +566,10 @@ bool CTetrisGame::BrickMove(float dt)
 		{
 			//如果没有移动过，但此时已无法再往下移动则游戏结束
 			m_enGameState = GAMESTATE_OVER;
+
+			//振动
+			m_pGameScene->OnLongVibrate();
+
 			return true;
 		}
 
@@ -679,6 +686,9 @@ bool CTetrisGame::DeleteLine(bool bEnd)
 	m_iScore += iDelCount * iDelCount * DELETE_LINE_ADD_SCORE;
 	m_pGameScene->UpdateScore(m_iScore, false);
 	PLAY_EFFECT(EFFECT_DELETE);
+
+	//振动
+	m_pGameScene->OnLongVibrate();
 
 	return true;
 }

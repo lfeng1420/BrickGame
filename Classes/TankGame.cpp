@@ -212,7 +212,7 @@ void CTankGame::Play(float dt)
 			//随机发射子弹时间间隔
 			m_stBoss.m_fFireMaxTime = Random(BOSS_FIRE_MIN_INTERVAL / 10 - m_iSpeed, BOSS_FIRE_MAX_INTERVAL / 10 - 3 * m_iSpeed) * 10;
 			m_stBoss.m_fFireWaitTime = 0;
-			m_stBoss.m_iMaxStep = 12 + m_iSpeed;	//击中最大次数
+			m_stBoss.m_iMaxStep = TANK_BOSS_HIT_BASE_COUNT + m_iLevel * 2;	//击中最大次数
 			m_stBoss.m_iCurStep = 0;
 			
 			//方向只有左右
@@ -1249,6 +1249,9 @@ void CTankGame::BulletShoot()
 						if (++m_stBoss.m_iCurStep >= m_stBoss.m_iMaxStep)
 						{
 							m_enGameState = GAMESTATE_PASS;
+
+							//振动
+							m_pGameScene->OnLongVibrate();
 						}
 
 						//log("m_iCurStep=%d  m_iMaxStep=%d", m_stBoss.m_iCurStep, m_stBoss.m_iMaxStep);
@@ -1275,6 +1278,9 @@ void CTankGame::BulletShoot()
 					//我方坦克死亡
 					m_enGameState = GAMESTATE_OVER;
 					PLAY_EFFECT(EFFECT_BOOM);
+
+					//振动
+					m_pGameScene->OnLongVibrate();
 				}
 
 				//子弹状态

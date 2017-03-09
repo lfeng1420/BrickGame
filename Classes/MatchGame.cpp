@@ -427,6 +427,9 @@ void CMatchGame::UpdateGameState()
 			m_enGameState = GAMESTATE_OVER;
 			PLAY_EFFECT(EFFECT_BOOM);
 			m_arrBoomIndex[iBoomIndex++] = i;
+
+			//Õñ¶¯
+			m_pGameScene->OnLongVibrate();
 		}
 	}
 
@@ -439,6 +442,9 @@ void CMatchGame::UpdateGameState()
 		if (++m_iMatchSuccCount >= GAMEPASS_MATCHCOUNT)
 		{
 			m_enGameState = GAMESTATE_PASS;
+
+			//Õñ¶¯
+			m_pGameScene->OnLongVibrate();
 		}
 		else
 		{

@@ -303,6 +303,10 @@ bool CPinballGame::BallMove( float dt )
 	{
 		m_enGameState = GAMESTATE_OVER;
 		PLAY_EFFECT(EFFECT_BOOM);
+
+		//振动
+		m_pGameScene->OnLongVibrate();
+
 		return true;
 	}
 
@@ -464,6 +468,9 @@ bool CPinballGame::BallMove( float dt )
 	if (CheckGamePass())
 	{
 		m_enGameState = GAMESTATE_PASS;
+
+		//振动
+		m_pGameScene->OnLongVibrate();
 	}
 
 	return true;

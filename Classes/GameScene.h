@@ -63,8 +63,11 @@ public:
 	//查看我的应用
 	void ShowMyApps();
 
-	//振动
-	void OnVibrate();
+	//振动（短）
+	void OnShortVibrate();
+
+	//振动（长）
+	void OnLongVibrate();
 
 	//检查设置页是否显示
 	bool CheckSetupLayerVisible();
@@ -74,6 +77,9 @@ public:
 
 	//退出流程
 	void LaunchQuitRoutine();
+
+	//更改控制按钮位置
+	void ChangeControllerPos();
 
 	CREATE_FUNC(CGameScene);
 
@@ -150,6 +156,9 @@ private:
 	//清除提示记录
 	void ClearTipsRecord();
 
+	//更新按钮状态
+	void UpdateBtnState(int nBtnIndex, bool bPressedFlag);
+
 public:
 	//按钮索引
 	enum BTN_INDEX
@@ -192,6 +201,23 @@ private:
 		CLICK_INTERVAL = 1200,		//1.2秒
 
 		BTN_HEIGHT = 95,			//按钮高度
+	};
+
+	enum BTN_TAG
+	{
+		BTNTAG_PORT_MIN = 100,
+		BTNTAG_PORT_UP = BTNTAG_PORT_MIN,
+		BTNTAG_PORT_DOWN,
+		BTNTAG_PORT_LEFT,
+		BTNTAG_PORT_RIGHT,
+		BTNTAG_PORT_MAX,
+
+		BTNTAG_LAND_MIN = 200,
+		BTNTAG_LAND_UP = BTNTAG_LAND_MIN,
+		BTNTAG_LAND_DOWN,
+		BTNTAG_LAND_LEFT,
+		BTNTAG_LAND_RIGHT,
+		BTNTAG_LAND_MAX,
 	};
 
 private:
@@ -280,5 +306,31 @@ private:
 	CSetupLayer* m_pSetupLayer;							//设置层
 
 	bool	m_bOldSoundState;							//声音状态记录
+
+	Size	m_oSampleBtnSize;							//按钮大小
+
+	Button*	m_pLandLeftBtn;
+
+	Button*	m_pLandRightBtn;
+
+	Button*	m_pLandUpBtn;
+
+	Button*	m_pLandDownBtn;
+
+	Button* m_pLandFireBtn;
+
+	Button*	m_pPortLeftBtn;
+
+	Button*	m_pPortRightBtn;
+
+	Button*	m_pPortUpBtn;
+
+	Button*	m_pPortDownBtn;
+
+	Button* m_pPortFireBtn;
+
+	float	m_fLandBtnScale;
+
+	float	m_fPortBtnScale;
 };
 

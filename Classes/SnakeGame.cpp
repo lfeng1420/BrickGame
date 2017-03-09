@@ -285,6 +285,9 @@ void CSnakeGame::SnakeMove()
 		//设置结束状态
 		m_enGameState = GAMESTATE_OVER;
 
+		//振动
+		m_pGameScene->OnLongVibrate();
+
 		//设置苹果显示状态
 		m_bAppleState = true;
 
