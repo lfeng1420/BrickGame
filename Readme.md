@@ -165,6 +165,7 @@ Android
 ### 	  2016/02/22	  V1.0.2.0
 1、修复一个可能导致严重逻辑错误的Bug；<br>
 2、调整贪吃蛇游戏逻辑，改为无限模式；<br>
+酷安：http://www.coolapk.com/game/com.lfeng.brickgame<br>
 已上线应用宝、91、百度、安卓hiapk<br>
 应用宝：http://a.app.qq.com/o/simple.jsp?pkgname=com.lfeng.brickgame<br>
 91：http://apk.91.com/Soft/Android/com.lfeng.brickgame-1-1.0.2.html<br>
