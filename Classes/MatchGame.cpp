@@ -152,13 +152,13 @@ bool CMatchGame::GetBrickState(int iRowIndex, int iColIndex)
 {
 	if (m_enGameState == GAMESTATE_OVER)
 	{
+		int iIndex = iColIndex / 5;
 		int iBoomStartRowIdx = (m_iMyRowIdx > ROW_NUM - 4 ? ROW_NUM - 4 : m_iMyRowIdx);
 		if (iRowIndex >= iBoomStartRowIdx && iRowIndex < iBoomStartRowIdx + 4)
 		{
-			int iIndex = iColIndex / 5;
 			for (int i = 0; i < BRICK_MATCH_NUM; ++i)
 			{
-				if ((m_arrBoomIndex[i] == iColIndex / 5) && (iColIndex % 5 < 4))
+				if ((m_arrBoomIndex[i] == iIndex) && (iColIndex % 5 < 4))
 				{
 					return m_bShowBoom && BOOM_STATE[iRowIndex - iBoomStartRowIdx][iColIndex % 5];
 				}

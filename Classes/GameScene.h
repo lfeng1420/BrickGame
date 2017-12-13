@@ -184,6 +184,7 @@ public:
 		TIPS_SAVEOPEN,
 		TIPS_SAVECLOSE,
 		TIPS_SAVEOK,
+		TIPS_SAVEFAIL,
 	};
 
 private:
@@ -200,7 +201,7 @@ private:
 
 		CLICK_INTERVAL = 1200,		//1.2秒
 
-		BTN_HEIGHT = 95,			//按钮高度
+		BTN_HEIGHT = 162,			//按钮高度
 	};
 
 	enum BTN_TAG

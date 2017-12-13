@@ -127,7 +127,7 @@ bool CPinballGame::GetBrickState(int iRowIndex, int iColIndex)
 	if (m_enGameState == GAMESTATE_OVER && iRowIndex >= ROW_NUM - 4)
 	{
 		int iEndColIdx = (m_stBallPos.m_iColIdx < 3 ? 3 : m_stBallPos.m_iColIdx);
-		if (iColIndex <= iEndColIdx && iColIndex >= iEndColIdx - 3)
+		if (iColIndex >= iEndColIdx - 3 && iColIndex <= iEndColIdx)
 		{
 			return m_bShowBoom && BOOM_STATE[iRowIndex - (ROW_NUM - 4)][iColIndex - (iEndColIdx - 3)];
 		}
@@ -138,7 +138,11 @@ bool CPinballGame::GetBrickState(int iRowIndex, int iColIndex)
 		return true;
 	}
 
-	return m_arrBricks[iRowIndex][iColIndex];
+	if (iRowIndex >= 0 && iRowIndex < ROW_NUM && iColIndex >= 0 && iColIndex < COLUMN_NUM)
+	{
+		return m_arrBricks[iRowIndex][iColIndex];
+	}
+	return false;
 }
 
 

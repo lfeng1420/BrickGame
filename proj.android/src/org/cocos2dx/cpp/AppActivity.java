@@ -28,5 +28,44 @@ package org.cocos2dx.cpp;
 
 import org.cocos2dx.lib.Cocos2dxActivity;
 
-public class AppActivity extends Cocos2dxActivity {
+import android.content.Context;
+import android.content.Intent;
+import android.net.Uri;
+
+import org.cocos2dx.lib.GameControllerActivity;
+import android.os.Bundle;
+
+
+public class AppActivity extends GameControllerActivity {
+	//ÆÀ·Ö
+	public static void OnGiveScore()
+	{
+		try
+		{
+			Context context = Cocos2dxActivity.getContext();
+			Intent intent = new Intent(Intent.ACTION_VIEW);
+			intent.setData(Uri.parse("market://details?id=" + context.getPackageName()));
+			context.startActivity(intent);
+		}
+		catch(Exception e)
+		{
+			e.printStackTrace();
+		}
+	}
+	
+	//ËÑË÷
+	public static void OnShowMyApps()
+	{
+		try
+		{
+			Context context = Cocos2dxActivity.getContext();
+			Uri uri = Uri.parse("market://search?q=pub:lfeng1420");
+			Intent intent = new Intent(Intent.ACTION_VIEW, uri);
+			context.startActivity(intent);
+		}
+		catch(Exception e)
+		{
+			e.printStackTrace();
+		}
+	}
 }

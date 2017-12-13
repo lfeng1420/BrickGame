@@ -6,9 +6,10 @@ $(call import-add-path,$(LOCAL_PATH)/../../cocos2d)
 $(call import-add-path,$(LOCAL_PATH)/../../cocos2d/external)
 $(call import-add-path,$(LOCAL_PATH)/../../cocos2d/cocos)
 
-LOCAL_MODULE := cocos2dcpp_shared
+LOCAL_MODULE := lfeng
+LOCAL_CFLAGS += -DCOCOS2D_DEBUG=1
 
-LOCAL_MODULE_FILENAME := libcocos2dcpp
+LOCAL_MODULE_FILENAME := liblfeng
 
 LOCAL_SRC_FILES := hellocpp/main.cpp \
                    ../../Classes/AppDelegate.cpp \
@@ -26,7 +27,14 @@ LOCAL_SRC_FILES := hellocpp/main.cpp \
 					../../Classes/SceneBase.cpp \
 					../../Classes/SnakeGame.cpp \
 					../../Classes/TankGame.cpp \
-					../../Classes/TetrisGame.cpp
+					../../Classes/TetrisGame.cpp \
+					../../Classes/AddBrickGame.cpp \
+					../../Classes/SetupLayer.cpp \
+					../../Classes/HitBrickGame.cpp \
+					../../Classes/BarrierLayer.cpp \
+					../../Classes/VolumeLayer.cpp 
+					
+					
 
 LOCAL_C_INCLUDES := $(LOCAL_PATH)/../../Classes
 LOCAL_C_INCLUDES += $(LOCAL_PATH)/../../cocos2d/cocos/ui 

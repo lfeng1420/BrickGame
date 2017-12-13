@@ -36,6 +36,7 @@ import android.content.SharedPreferences;
 import android.content.pm.ApplicationInfo;
 import android.content.res.AssetManager;
 import android.os.Build;
+import android.os.Vibrator;
 import android.preference.PreferenceManager.OnActivityResultListener;
 import android.util.DisplayMetrics;
 import android.view.Display;
@@ -388,6 +389,18 @@ public class Cocos2dxHelper {
     	editor.putString(key, value);
     	editor.commit();
     }
+    
+    public static void OnShortVibrate()
+	{
+		Vibrator vibrator = (Vibrator)sActivity.getSystemService(Context.VIBRATOR_SERVICE);
+		vibrator.vibrate(80);
+	}
+    
+    public static void OnLongVibrate()
+	{
+		Vibrator vibrator = (Vibrator)sActivity.getSystemService(Context.VIBRATOR_SERVICE);
+		vibrator.vibrate(1000);
+	}
 	
 	// ===========================================================
 	// Inner and Anonymous Classes

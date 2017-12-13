@@ -1,4 +1,8 @@
 #include "GeneralManager.h"
+#if CC_TARGET_PLATFORM == CC_PLATFORM_ANDROID
+#include "platform/android/jni/JniHelper.h"
+#include <jni.h>
+#endif
 
 CGeneralManager* _dataManager = nullptr;
 
@@ -33,6 +37,10 @@ const std::string MENU_ITEM_NAME[STRNAME_MAX] =
 	"recoveron",
 	"recoveroff",
 	"saveok",
+	"savefail",
+	"bgmusic",
+	"effect",
+	"back",
 };
 
 CGeneralManager::CGeneralManager()
@@ -338,4 +346,34 @@ void CGeneralManager::LoadTetrisData(bool(&arrState)[ROW_NUM][COLUMN_NUM])
 	}
 
 	oFile.close();
+}
+
+
+std::string CGeneralManager::GetSpriteName(const string& strName, bool bNightMode)
+{
+	int nIndex = strName.find(bNightMode ? ".png" : "_night");
+	if (nIndex != string::npos)
+	{
+		return strName.substr(0, nIndex) + (bNightMode ? "_night.png" : ".png");
+	}
+
+	return strName;
+}
+
+
+bool CGeneralManager::CheckAndroidNavBarExist()
+{
+#if CC_PLATFORM_ANDROID == CC_TARGET_PLATFORM
+	JniMethodInfo t;
+	bool bFuncExistFlag = JniHelper::getStaticMethodInfo(t, "org/cocos2dx/cpp/AppActivity", "IsNavBarExist", "()Z");
+	if (bFuncExistFlag)
+	{
+		jboolean ret = t.env->CallStaticBooleanMethod(t.classID, t.methodID);
+		return ret;
+	}
+
+	return false;
+#endif
+
+	return false;
 }

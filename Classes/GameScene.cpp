@@ -11,6 +11,7 @@
 #include "TetrisGame.h"
 #include "FlappyBirdGame.h"
 #include "HitBrickGame.h"
+#include "AddBrickGame.h"
 #include "SetupLayer.h"
 #include "AppDelegate.h"
 #include "CCApplication.h"
@@ -19,10 +20,11 @@
 #include "platform/android/jni/JniHelper.h"
 #include <jni.h>
 #endif
-#include "AddBrickGame.h"
+#include "base/CCGameController.h"
+
 
 //控制按钮最大缩放倍数
-const float FLOAT_CONTROLLER_SCALE_MAX = 1.72f;
+const float FLOAT_CONTROLLER_SCALE_MAX = 1.0f;
 const float FLOAT_CONTROLLER_LAND_SCALE_MAX = 1.5f;
 
 CGameScene::CGameScene() : m_iSceneIndex(SCENE_GAMEOVER), m_nTipType(TIPS_INVALID), m_nRecordBtnIdx(BTN_DIRMAX), m_iBgColor(0), 
@@ -287,14 +289,14 @@ void CGameScene::InitPortUI()
 		fCurY -= brickSize.height * fBrickScale + fPadding;
 	}
 
-	//速度
+	//速度Label
 	auto pSpeed = CREATE_SPRITEWITHNAME(GetSpriteNameByMode("speed.png"));
 	pSpeed->setScale(fSpriteScale);
 	Size speedSize = GET_CONTENTSIZE(pSpeed);
 	fCurY -= speedSize.height;
 	pSpeed->setPosition(fCurX, fCurY + speedSize.height / 2);
 	m_pPortNode->addChild(pSpeed);
-
+	//速度
 	fCurY -= numSize.height;
 	m_pArrSpeed[0] = CREATE_SPRITEWITHNAME(numZeroName);
 	m_pArrSpeed[0]->setPosition(fCurX, fCurY + numSize.height / 2);
@@ -305,6 +307,7 @@ void CGameScene::InitPortUI()
 	m_pPortNode->addChild(m_pArrSpeed[1]);
 	m_pArrSpeed[1]->setVisible(false);
 
+	//等级
 	fCurY -= numSize.height + NUM_PADDING * 10;
 	m_pArrLevel[0] = CREATE_SPRITEWITHNAME(numZeroName);
 	m_pArrLevel[0]->setPosition(fCurX, fCurY + numSize.height / 2);
@@ -521,6 +524,12 @@ void CGameScene::InitPortController()
 
 	//位置
 	float fSmallBtnTopHeight = soundBtnSize.height * 1.3f;
+#if CC_TARGET_PLATFORM == CC_PLATFORM_ANDROID
+	if (CGeneralManager::getInstance()->CheckAndroidNavBarExist())
+	{
+		fSmallBtnTopHeight = soundBtnSize.height * 1.65f;
+	}
+#endif
 	float fSmallBtnCenterHeight = fSmallBtnTopHeight - soundBtnSize.height / 3.1f;
 	m_pSoundBtn->setPosition(m_visibleSize.width / 2 - fBtnPadding / 2 - soundBtnSize.width / 2, fSmallBtnCenterHeight);
 	m_pStartBtn->setPosition(m_visibleSize.width / 2 - fBtnPadding * 3 / 2 - soundBtnSize.width - startBtnSize.width / 2, fSmallBtnCenterHeight);
@@ -558,6 +567,7 @@ void CGameScene::InitPortController()
 	m_pPortUpBtn->setScale(m_fPortBtnScale);
 	m_pPortUpBtn->addTouchEventListener(CC_CALLBACK_2(CGameScene::OnButtonEvent, this, BTN_UP));
 	m_pPortUpBtn->setTag(BTNTAG_PORT_UP);
+	m_pPortUpBtn->setCustomHighlightFlag(true);
 	Size upBtnSize = m_pPortUpBtn->getContentSize() * m_fPortBtnScale;
 
 	//右
@@ -566,6 +576,7 @@ void CGameScene::InitPortController()
 	m_pPortRightBtn->setRotation(90);
 	m_pPortRightBtn->addTouchEventListener(CC_CALLBACK_2(CGameScene::OnButtonEvent, this, BTN_RIGHT));
 	m_pPortRightBtn->setTag(BTNTAG_PORT_RIGHT);
+	m_pPortRightBtn->setCustomHighlightFlag(true);
 	Size rightBtnSize = m_pPortRightBtn->getContentSize() * m_fPortBtnScale;
 
 	//下
@@ -574,6 +585,7 @@ void CGameScene::InitPortController()
 	m_pPortDownBtn->setRotation(180);
 	m_pPortDownBtn->addTouchEventListener(CC_CALLBACK_2(CGameScene::OnButtonEvent, this, BTN_DOWN));
 	m_pPortDownBtn->setTag(BTNTAG_PORT_DOWN);
+	m_pPortDownBtn->setCustomHighlightFlag(true);
 	Size downBtnSize = m_pPortDownBtn->getContentSize() * m_fPortBtnScale;
 
 	//左
@@ -581,15 +593,14 @@ void CGameScene::InitPortController()
 	m_pPortLeftBtn->setScale(m_fPortBtnScale);
 	m_pPortLeftBtn->setRotation(-90);
 	m_pPortLeftBtn->addTouchEventListener(CC_CALLBACK_2(CGameScene::OnButtonEvent, this, BTN_LEFT));
-	m_pPortDownBtn->setTag(BTNTAG_PORT_LEFT);
+	m_pPortLeftBtn->setTag(BTNTAG_PORT_LEFT);
+	m_pPortLeftBtn->setCustomHighlightFlag(true);
 	Size leftBtnSize = m_pPortLeftBtn->getContentSize() * m_fPortBtnScale;
 
 	//Fire
-	float fFireScale = 1.5f;
 	m_pPortFireBtn = Button::create(GetSpriteNameByMode("fire_0.png"), GetSpriteNameByMode("fire_1.png"), "", Widget::TextureResType::PLIST);
-	m_pPortFireBtn->setScale(fFireScale);
 	m_pPortFireBtn->addTouchEventListener(CC_CALLBACK_2(CGameScene::OnButtonEvent, this, BTN_FIRE));
-	Size fireBtnSize = m_pPortFireBtn->getContentSize() * fFireScale;
+	Size fireBtnSize = m_pPortFireBtn->getContentSize();
 
 	//设置位置
 	m_pPortLeftBtn->setPosition(Vec2(upBtnSize.height * 0.6f + fBtnPadding, fTopPosY - upBtnSize.height));
@@ -676,6 +687,12 @@ void CGameScene::InitLandController()
 
 	//位置
 	float fPosX = startBtnSize.height * 0.8f;
+#if CC_TARGET_PLATFORM == CC_PLATFORM_ANDROID
+	if (CGeneralManager::getInstance()->CheckAndroidNavBarExist())
+	{
+		fPosX = startBtnSize.height * 1.1f;
+	}
+#endif
 	float fBrickBottomHeight = (m_visibleSize.height - COLUMN_NUM * GetBrickSize(true).width) * 0.5f;
 	float fBrickTopHeight = fBrickBottomHeight + COLUMN_NUM * GetBrickSize(true).width;
 	float fUpPadding = (m_visibleSize.height - fBrickTopHeight - startBtnSize.width - soundBtnSize.width) / 3.0f;
@@ -711,6 +728,7 @@ void CGameScene::InitLandController()
 	m_pLandLeftBtn->setScale(m_fLandBtnScale);
 	m_pLandLeftBtn->addTouchEventListener(CC_CALLBACK_2(CGameScene::OnButtonEvent, this, BTN_LEFT));
 	m_pLandLeftBtn->setTag(BTNTAG_LAND_LEFT);
+	m_pLandLeftBtn->setCustomHighlightFlag(true);
 
 	//上
 	m_pLandUpBtn = Button::create(strBtn0Name, strBtn1Name, "", Widget::TextureResType::PLIST);
@@ -718,6 +736,7 @@ void CGameScene::InitLandController()
 	m_pLandUpBtn->setScale(m_fLandBtnScale);
 	m_pLandUpBtn->addTouchEventListener(CC_CALLBACK_2(CGameScene::OnButtonEvent, this, BTN_UP));
 	m_pLandUpBtn->setTag(BTNTAG_LAND_UP);
+	m_pLandUpBtn->setCustomHighlightFlag(true);
 
 	//右
 	m_pLandRightBtn = Button::create(strBtn0Name, strBtn1Name, "", Widget::TextureResType::PLIST);
@@ -725,6 +744,7 @@ void CGameScene::InitLandController()
 	m_pLandRightBtn->setRotation(180);
 	m_pLandRightBtn->addTouchEventListener(CC_CALLBACK_2(CGameScene::OnButtonEvent, this, BTN_RIGHT));
 	m_pLandRightBtn->setTag(BTNTAG_LAND_RIGHT);
+	m_pLandRightBtn->setCustomHighlightFlag(true);
 
 	//下
 	m_pLandDownBtn = Button::create(strBtn0Name, strBtn1Name, "", Widget::TextureResType::PLIST);
@@ -732,9 +752,10 @@ void CGameScene::InitLandController()
 	m_pLandDownBtn->setRotation(270);
 	m_pLandDownBtn->addTouchEventListener(CC_CALLBACK_2(CGameScene::OnButtonEvent, this, BTN_DOWN));
 	m_pLandDownBtn->setTag(BTNTAG_LAND_DOWN);
+	m_pLandDownBtn->setCustomHighlightFlag(true);
 
 	//Fire
-	float fFireScale = 1.5f;
+	float fFireScale = 1.0f;
 	m_pLandFireBtn = Button::create(GetSpriteNameByMode("fire_0.png"), GetSpriteNameByMode("fire_1.png"), "", Widget::TextureResType::PLIST);
 	m_pLandFireBtn->setScale(fFireScale);
 	m_pLandFireBtn->setRotation(90);
@@ -862,7 +883,103 @@ void CGameScene::CreateKeyListener()
 		}
 	};
 
-	Director::getInstance()->getEventDispatcher()->addEventListenerWithFixedPriority(keyListener, 1);
+	_eventDispatcher->addEventListenerWithSceneGraphPriority(keyListener, this);
+
+
+	// 手柄处理
+	auto eventController = EventListenerController::create();
+	eventController->onKeyUp = [&](Controller* pController, int nKey, Event* pEvent)
+	{
+		log("%s: nKey=%d", __FUNCTION__, nKey);
+		switch (nKey)
+		{
+		case Controller::BUTTON_DPAD_UP:
+			OnButtonReleased(BTN_UP);
+			break;
+
+		case Controller::BUTTON_DPAD_DOWN:
+			OnButtonReleased(BTN_DOWN);
+			break;
+
+		case Controller::BUTTON_DPAD_RIGHT:
+			OnButtonReleased(BTN_RIGHT);
+			break;
+
+		case Controller::BUTTON_DPAD_LEFT:
+			OnButtonReleased(BTN_LEFT);
+			break;
+
+		case Controller::BUTTON_A:
+		case Controller::BUTTON_B:
+		case Controller::BUTTON_X:
+		case Controller::BUTTON_Y:
+			OnButtonReleased(BTN_FIRE);
+			break;
+
+		default:
+			break;
+		}
+	};
+
+	eventController->onKeyDown = [&](Controller* pController, int nKey, Event* pEvent)
+	{
+		log("%s: nKey=%d", __FUNCTION__, nKey);
+		switch (nKey)
+		{
+		case Controller::BUTTON_DPAD_UP:
+			OnButtonPressed(BTN_UP);
+			break;
+
+		case Controller::BUTTON_DPAD_DOWN:
+			OnButtonPressed(BTN_DOWN);
+			break;
+
+		case Controller::BUTTON_DPAD_RIGHT:
+			OnButtonPressed(BTN_RIGHT);
+			break;
+
+		case Controller::BUTTON_DPAD_LEFT:
+			OnButtonPressed(BTN_LEFT);
+			break;
+
+		case Controller::BUTTON_START:
+		case Controller::AXIS_RIGHT_TRIGGER:
+			OnButtonClick(nullptr, BTN_START);
+			break;
+
+		case Controller::BUTTON_SELECT:
+		case Controller::AXIS_LEFT_TRIGGER:
+			OnButtonClick(nullptr, BTN_RESET);
+			break;
+
+		case Controller::BUTTON_A:
+		case Controller::BUTTON_B:
+		case Controller::BUTTON_X:
+		case Controller::BUTTON_Y:
+			OnButtonPressed(BTN_FIRE);
+			break;
+
+		default:
+			break;
+		}
+	};
+
+	eventController->onAxisEvent = [&](Controller* pController, int nKey, Event* pEvent)
+	{
+		log("onAxisEvent nKey=%d", nKey);
+	};
+
+	eventController->onConnected = [&](Controller* pController, Event* pEvent)
+	{
+		log("onConnected");
+	};
+	eventController->onDisconnected = [&](Controller* pController, Event* pEvent)
+	{
+		log("onDisconnected");
+	};
+
+	_eventDispatcher->addEventListenerWithSceneGraphPriority(eventController, this);
+	Controller::startDiscoveryController();
 }
 
 
@@ -1039,6 +1156,7 @@ void CGameScene::OnButtonEvent(Ref* pSender, Widget::TouchEventType enType, int 
 		{
 			//log("-----------------\nORIGIN  iBtnIndex=%d", iBtnIndex);
 			oPos = pButton->getTouchBeganPosition();
+			int nOldBtnIdx = iBtnIndex;
 			if (!AdjustClickIndex(oPos, iBtnIndex))
 			{
 				return;
@@ -1247,7 +1365,7 @@ void CGameScene::OnButtonClick(Ref* pSender, int iBtnIndex)
 			SET_BOOLVALUE("SOUND", bState);
 			
 			//更新声音设置
-			m_pSetupLayer->UpdateSingleMenuAndLabel(MENU_SOUND);
+			m_pSetupLayer->UpdateSingleMenu(MENU_SOUND);
 
 			//设置声音按钮状态
 			bool bPortVisible = GET_BOOLVALUE("PORTRAIT", true);
@@ -1397,6 +1515,11 @@ void CGameScene::ShowTips(int nTipType)
 		nStrID = STRNAME_SAVEOK;
 	}
 	break;
+	case TIPS_SAVEFAIL:
+	{
+		nStrID = STRNAME_SAVEFAIL;
+	}
+	break;
 	default:
 		return;
 		break;
@@ -1436,11 +1559,8 @@ void CGameScene::ShowTips(int nTipType)
 
 void CGameScene::ChangeColorMode()
 {
-	bool bNightMode = GET_BOOLVALUE("NIGHTMODE", false);
-	bNightMode = !bNightMode;
-	SET_BOOLVALUE("NIGHTMODE", bNightMode);
-
 	//背景
+	bool bNightMode = GET_BOOLVALUE("NIGHTMODE", false);
 	m_pBgLayer->setVisible(!bNightMode);
 
 	//所有方块更新
@@ -1540,14 +1660,15 @@ void CGameScene::SaveTetrisRecord()
 {
 	if (m_iSceneIndex != SCENE_TETRIS && m_iSceneIndex != SCENE_TETRIS2)
 	{
+		//提示
+		ShowTips(CGameScene::TIPS_SAVEFAIL);
 		return;
 	}
 
 	//保存
 	m_mapGameObj[m_iSceneIndex]->SaveGameData();
-
-	//提示
 	ShowTips(CGameScene::TIPS_SAVEOK);
+	return;
 }
 
 
@@ -1851,13 +1972,8 @@ void CGameScene::ResetSmallBricks()
 void CGameScene::ChangeSprite(Sprite* pSprite, bool bNightMode)
 {
 	string strName = pSprite->getSpriteFrameName();
-	int nIndex = strName.find(bNightMode ? ".png" : "_night");
-	if (nIndex != string::npos)
-	{
-		string strNew = strName.substr(0, nIndex) + (bNightMode ? "_night.png" : ".png");
-		int nTag = pSprite->getTag();
-		pSprite->setSpriteFrame(strNew);
-	}
+	strName = CGeneralManager::getInstance()->GetSpriteName(strName, bNightMode);
+	pSprite->setSpriteFrame(strName);
 }
 
 
@@ -1978,7 +2094,7 @@ void CGameScene::UpdateBtnState(int nBtnIndex, bool bPressedFlag)
 		return;
 	}
 
-	pButton->setHighlighted(bPressedFlag);
+	pButton->setHighlightedWithForce(bPressedFlag);
 }
 
 
@@ -2001,7 +2117,7 @@ void CGameScene::LaunchQuitRoutine()
 		}
 
 #if CC_TARGET_PLATFORM == CC_PLATFORM_WP8
-		Director::getInstance()->getOpenGLView()->QuitGame();
+		Director::getInstance()->getOpenGLView()->OnQuitGame();
 #else
 		DIRECTOR_INSTANCE()->end();
 #endif
@@ -2038,7 +2154,7 @@ void CGameScene::ChangeControllerPos()
 	float fBtnPadding = 2.0f;
 	Size oPortBtnSize = GET_CONTENTSIZE(m_pPortUpBtn) * m_fPortBtnScale;
 	Size oLandBtnSize = GET_CONTENTSIZE(m_pLandUpBtn) * m_fLandBtnScale;
-	Size fireBtnSize = GET_CONTENTSIZE(m_pPortFireBtn) * 1.5f;
+	Size fireBtnSize = GET_CONTENTSIZE(m_pPortFireBtn);
 
 	/////只用于横屏
 	Size oBrickSize = GetBrickSize(true);

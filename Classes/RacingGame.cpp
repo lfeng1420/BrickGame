@@ -209,7 +209,12 @@ bool CRacingGame::GetBrickState(int iRowIndex, int iColIndex)
 		}
 
 	}
-	return m_arrCurBrick[iRowIndex][iColIndex];
+
+	if (iRowIndex >= 0 && iRowIndex < ROW_NUM && iColIndex >= 0 && iColIndex < COLUMN_NUM)
+	{
+		return m_arrCurBrick[iRowIndex][iColIndex];
+	}
+	return false;
 }
 
 

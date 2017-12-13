@@ -37,6 +37,12 @@ public:
 	//获取菜单名字
 	const char* GetStringByID(int nLangID, int nStrID);
 
+	//获取图片名字
+	string GetSpriteName(const string& strName, bool bNightMode);
+
+	//检查android是否有虚拟键
+	bool CheckAndroidNavBarExist();
+
 private:
 	//初始化·
 	void Init();

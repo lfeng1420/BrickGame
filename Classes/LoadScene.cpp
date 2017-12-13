@@ -33,7 +33,10 @@ bool CLoadScene::init()
 	ADD_SPRITEFRAME("Plists/Brick.plist");
 	ADD_SPRITEFRAME("Plists/Font.plist");
 	ADD_SPRITEFRAME("Plists/Images.plist");
-	//ADD_SPRITEFRAME("Plists/Tips.plist");
+
+	//ÒôÁ¿´¦Àí
+	AUDIO_INSTANCE()->setBackgroundMusicVolume(GET_INTVALUE("BGM_VOLUME", 100) * 0.01f);
+	AUDIO_INSTANCE()->setEffectsVolume(GET_INTVALUE("EFFECT_VOLUME", 100) * 0.01f);
 
 	Size visibleSize = GET_VISIBLESIZE();
 	bool arrBrick[][COLUMN_NUM - 1] =

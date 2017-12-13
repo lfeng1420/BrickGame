@@ -1,29 +1,39 @@
 #include "SetupLayer.h"
 #include "GeneralManager.h"
 #include "GameScene.h"
+#include "VolumeLayer.h"
+#include "BarrierLayer.h"
 
 USING_NS_CC;
 
 //菜单选项对应字符串ID
-const int MENU_ITEM_STRING[MENU_MAX][2] =
+const string MENU_SPRITE_STRING[MENU_MAX][2] =
 {
-	{ STRNAME_MAX },							//MENU_GLOBALSET
-	{ STRNAME_OFF, STRNAME_ON },				//MENU_VIBRATION
-	{ STRNAME_OFF, STRNAME_ON },				//MENU_SOUND
-	{ STRNAME_OFF, STRNAME_ON },				//MENU_NIGHTMODE
-	{ STRNAME_PORTRAIT, STRNAME_LANDSCAPE },	//MENU_ORIENTATION
-	{ STRNAME_OFF, STRNAME_ON },				//MENU_RHMODE
-	{ STRNAME_MAX },							//MENU_TETRISSET
-	{ STRNAME_OFF, STRNAME_ON },				//MENU_AUTORECOVER
-	{ STRNAME_RIGHTARROW },						//MENU_SAVENOW
-	{ STRNAME_ROTATE, STRNAME_QUICKLAND },		//MENU_UPBTN
-	{ STRNAME_MAX },							//MENU_OTHERSET
-	{ STRNAME_LFENG },							//MENU_AUTHOR
-	{ STRNAME_RIGHTARROW },						//MENU_RATE
+	{ "vibrate_off.png", "vibrate.png"  },		//MENU_VIBRATION
+	{ "sound.png", "sound.png" },				//MENU_SOUND
+	{ "sun.png", "moon.png" },					//MENU_NIGHTMODE
+	{ "portrait.png", "landscape.png" },		//MENU_ORIENTATION
+	{ "lefthand.png", "righthand.png" },		//MENU_RHMODE
+	{ "autorecover.png", "autorecover.png" },	//MENU_AUTORECOVER
+	{ "save.png", "save.png" },					//MENU_SAVENOW
+	{ "rotate.png", "down.png" },				//MENU_UPBTN
+	{ "lfeng.png", "lfeng.png" },				//MENU_AUTHOR
+	{ "like.png", "like.png" },					//MENU_RATE
+	{ "back.png", "back.png" },					//MENU_BACK
 };
+
+//主菜单和子菜单关系
+const int MENU_RELATION[MAINMENU_MAX][5] = 
+{
+	{ MENU_VIBRATION, MENU_SOUND, MENU_NIGHTMODE, MENU_ORIENTATION, MENU_RHMODE },
+	{ MENU_AUTORECOVER, MENU_SAVENOW, MENU_UPBTN, -1, -1 },
+	{ MENU_AUTHOR, MENU_RATE, MENU_BACK, -1, -1 },
+};
+
 
 const float LANDSCAPE_MENU_SCALE = 1.03f;
 const float PORTRAIT_MENU_SCALE = 1.6f;
+
 
 
 CSetupLayer::CSetupLayer() : m_pGameScene(nullptr)
@@ -44,188 +54,51 @@ bool CSetupLayer::Init(CGameScene* pGameScene)
 	}
 	m_pGameScene = pGameScene;
 
-	//获取配置
-	bool bNightMode = GET_BOOLVALUE("NIGHTMODE", false);
-	Color4B stColor = Color4B::WHITE;
-	if (bNightMode)
-	{
-		stColor = Color4B::BLACK;
-	}
+	//创建所有菜单
+	initAllMenu();
 
-	//创建菜单和标签
-	CreateAllMenuAndLabel();
-
-	//设置位置
-	AdjustMenuLabelPos();
+	//调整位置
+	adjustMenuPos();
 
 	return true;
 }
 
 
-void CSetupLayer::CreateAllMenuAndLabel()
+void CSetupLayer::UpdateSingleMenu(int nMenuIdx)
 {
-	int nLangID = (CCApplication::getInstance()->getCurrentLanguage() != LanguageType::CHINESE);
-	bool bNightMode = GetValueByMenuIdx(MENU_NIGHTMODE);
-
-	for (int nIndex = MENU_MIN; nIndex < MENU_MAX; ++nIndex)
-	{
-		int nFontSize = NORMAL_FONT_SIZE;
-		bool bTitleFlag = CheckMenuTitleFlag(nIndex);
-		if (bTitleFlag)
-		{
-			nFontSize = TITLE_FONT_SIZE;
-		}
-
-		//菜单
-		int nStrID = GetStrIDByMenuIdx(nIndex);
-		string strText = CGeneralManager::getInstance()->GetStringByID(nLangID, nStrID);
-		Label* pMenuLabel = Label::createWithSystemFont(strText, FONT_NAME, nFontSize, Size::ZERO, TextHAlignment::RIGHT);
-		pMenuLabel->setColor(bNightMode ? Color3B::WHITE : Color3B::BLACK);
-		MenuItem* pMenuItem = MenuItemLabel::create(pMenuLabel, CC_CALLBACK_1(CSetupLayer::OnClickMenu, this, nIndex));
-		m_vecMenuItem.pushBack(pMenuItem);
-
-
-		//状态
-		int nCurChoiceIdx = GetValueByMenuIdx(nIndex);
-		int nChoiceCount = _countof(MENU_ITEM_STRING[nIndex]);
-		assert(nCurChoiceIdx < nChoiceCount);
-		nStrID = MENU_ITEM_STRING[nIndex][nCurChoiceIdx];
-		strText = CGeneralManager::getInstance()->GetStringByID(nLangID, nStrID);
-		Label* pLabel = Label::createWithSystemFont(strText, FONT_NAME, nFontSize, Size::ZERO, TextHAlignment::LEFT);
-		pLabel->setColor(bNightMode ? Color3B::WHITE : Color3B::BLACK);
-		this->addChild(pLabel);
-		m_vecLabel.pushBack(pLabel);
-	}
-
-	//添加到菜单
-	Menu* pMenu = Menu::createWithArray(m_vecMenuItem);
-	pMenu->setPosition(Vec2::ZERO);
-	this->addChild(pMenu);
-}
-
-
-void CSetupLayer::UpdateSingleMenuAndLabel(int nMenuIdx)
-{
-	int nLangID = (CCApplication::getInstance()->getCurrentLanguage() != LanguageType::CHINESE);
-	bool bNightMode = GetValueByMenuIdx(MENU_NIGHTMODE);
-
-	//菜单
-	int nStrID = GetStrIDByMenuIdx(nMenuIdx);
-	string strText = CGeneralManager::getInstance()->GetStringByID(nLangID, nStrID);
 	MenuItem* pMenuItem = m_vecMenuItem.at(nMenuIdx);
-	assert(pMenuItem != nullptr);
-	MenuItemLabel* pMenuItemLabel = static_cast<MenuItemLabel*>(pMenuItem);
-	Label* pLabel = static_cast<Label*>(pMenuItemLabel->getLabel());
-	pLabel->setString(strText);
-	pLabel->setColor(bNightMode ? Color3B::WHITE : Color3B::BLACK);
-
-	//获取状态标签
-	pLabel = m_vecLabel.at(nMenuIdx);
-	assert(pLabel != nullptr);
-
-	//获取当前字符串
-	int nCurChoiceIdx = GetValueByMenuIdx(nMenuIdx);
-	int nChoiceCount = _countof(MENU_ITEM_STRING[nMenuIdx]);
-	assert(nCurChoiceIdx < nChoiceCount);
-	nStrID = MENU_ITEM_STRING[nMenuIdx][nCurChoiceIdx];
-	strText = CGeneralManager::getInstance()->GetStringByID(nLangID, nStrID);
-	//记录原始大小，后续需调整位置
-	Size originSize = GET_CONTENTSIZE(pLabel);
-	pLabel->setString(strText);
-	//新的大小
-	Size nowSize = GET_CONTENTSIZE(pLabel);
-	float fWidthDistance = nowSize.width - originSize.width;
-	Vec2 pos = pLabel->getPosition();
-	////根据横竖屏调整位置
-	//bool bPortraitFlag = GetValueByMenuIdx(MENU_ORIENTATION);
-	//if (bPortraitFlag)
-	//{
-	//	pLabel->setPositionX(pos.x + fWidthDistance);
-	//}
-	//else
-	//{
-	//	pLabel->setPositionY(pos.y + fWidthDistance);
-	//}
-	pLabel->setColor(bNightMode ? Color3B::WHITE : Color3B::BLACK);
+	if (pMenuItem == nullptr)
+	{
+		return;
+	}
+	
+	updateSingleMenu(pMenuItem, nMenuIdx);
 }
 
 
-void CSetupLayer::UpdateAllMenuAndLabel()
+void CSetupLayer::updateAllMenu()
 {
-	for (int nIndex = MENU_MIN; nIndex < MENU_MAX; ++nIndex)
+	for (int nIndex = 0; nIndex < m_vecMenuItem.size(); ++nIndex)
 	{
-		UpdateSingleMenuAndLabel(nIndex);
+		UpdateSingleMenu(nIndex);
+	}
+
+	//更新Label
+	bool bNightMode = getValueByMenuIdx(MENU_NIGHTMODE);
+	for (int nIndex = 0; nIndex < m_vecLabel.size(); ++nIndex)
+	{
+		Label* pLabel = m_vecLabel.at(nIndex);
+		if (pLabel == nullptr)
+		{
+			continue;
+		}
+
+		pLabel->setColor(bNightMode ? Color3B::WHITE : Color3B::BLACK);
 	}
 }
 
 
-void CSetupLayer::AdjustMenuLabelPos()
-{
-	Size visibleSize = GET_VISIBLESIZE();
-	Vec2 origin = GET_VISIBLEORIGIN();
-	bool bPortraitFlag = GetValueByMenuIdx(MENU_ORIENTATION);
-	if (bPortraitFlag)
-	{
-		//菜单和标签
-		float fStartY = visibleSize.height;
-		for (int nIndex = 0; nIndex < m_vecMenuItem.size(); ++nIndex)
-		{
-			MenuItem* pMenuItem = m_vecMenuItem.at(nIndex);
-			if (pMenuItem == nullptr)
-			{
-				continue;
-			}
-
-			Size menuItemSize = GET_CONTENTSIZE(pMenuItem);
-			pMenuItem->setAnchorPoint(Vec2(0, 1.0f));
-			pMenuItem->setRotation(0);
-			pMenuItem->setPosition(MENU_X_PADDING, fStartY - MENU_Y_PADDING);
-			pMenuItem->setContentSize(Size(visibleSize.width, menuItemSize.height));
-
-			//状态标签
-			Label* pLabel = m_vecLabel.at(nIndex);
-			assert(pLabel != nullptr);
-			Size labelSize = GET_CONTENTSIZE(pLabel);
-			pLabel->setAnchorPoint(Vec2(1.0f, 1.0f));
-			pLabel->setPosition(visibleSize.width - MENU_X_PADDING, fStartY - MENU_Y_PADDING);
-			pLabel->setRotation(0);
-
-			fStartY -= menuItemSize.height * PORTRAIT_MENU_SCALE;
-		}
-	}
-	else
-	{
-		//菜单和标签
-		float fStartX = visibleSize.width + origin.x;
-		for (int nIndex = 0; nIndex < m_vecMenuItem.size(); ++nIndex)
-		{
-			MenuItem* pMenuItem = m_vecMenuItem.at(nIndex);
-			if (pMenuItem == nullptr)
-			{
-				continue;
-			}
-
-			Size menuItemSize = GET_CONTENTSIZE(pMenuItem);
-			pMenuItem->setRotation(90);
-			pMenuItem->setAnchorPoint(Vec2(0, 1.0f));
-			pMenuItem->setPosition(fStartX - MENU_X_PADDING, visibleSize.height - MENU_Y_PADDING);
-			pMenuItem->setContentSize(Size(visibleSize.height, menuItemSize.height));
-
-			//状态标签
-			Label* pLabel = m_vecLabel.at(nIndex);
-			assert(pLabel != nullptr);
-			Size labelSize = GET_CONTENTSIZE(pLabel);
-			pLabel->setAnchorPoint(Vec2(1.0f, 1.0f));
-			pLabel->setPosition(fStartX - MENU_X_PADDING, MENU_Y_PADDING);
-			pLabel->setRotation(90);
-
-			fStartX -= menuItemSize.height * LANDSCAPE_MENU_SCALE + MENU_X_PADDING;
-		}
-	}
-}
-
-
-int CSetupLayer::GetValueByMenuIdx(int nMenuIdx)
+int CSetupLayer::getValueByMenuIdx(int nMenuIdx)
 {
 	switch (nMenuIdx)
 	{
@@ -247,14 +120,9 @@ int CSetupLayer::GetValueByMenuIdx(int nMenuIdx)
 	case MENU_AUTORECOVER:
 		return GET_BOOLVALUE("TETRIS_RECORD_VALID", false);	//0关闭 1开启
 		break;
-	case MENU_SAVENOW:
-		return 0;
-		break;
 	case MENU_UPBTN:
 		return GET_INTVALUE("UPBUTTON", 0);			//0旋转 1直落
 		break;
-	case MENU_AUTHOR:
-	case MENU_RATE:
 	default:
 		return 0;
 		break;
@@ -262,15 +130,11 @@ int CSetupLayer::GetValueByMenuIdx(int nMenuIdx)
 }
 
 
-void CSetupLayer::OnClickMenu(Ref* pSender, int nMenuIdx)
+void CSetupLayer::onClickMenu(Ref* pSender, int nMenuIdx)
 {
-	log("%s", __FUNCTION__);
-	int nValue = GetValueByMenuIdx(nMenuIdx);
-	int nChoiceCount = _countof(MENU_ITEM_STRING[nMenuIdx]);
-	if (nChoiceCount > 1)
-	{
-		nValue = ((nValue == 1) ? 0 : 1);
-	}
+	MenuItem* pMenuItem = static_cast<MenuItem*>(pSender);
+	int nValue = getValueByMenuIdx(nMenuIdx);
+	nValue = ((nValue != 0) ? 0 : 1);
 	bool bState = ((nValue == 1) ? true : false);
 
 	//各个菜单其他处理
@@ -279,39 +143,42 @@ void CSetupLayer::OnClickMenu(Ref* pSender, int nMenuIdx)
 		case MENU_VIBRATION:
 		{
 			SET_INTVALUE("VIBRATION", nValue);			//0开启 1关闭
-			UpdateAllMenuAndLabel();
+			updateSingleMenu(pMenuItem, nMenuIdx);
 		}
 		break;
 		case MENU_SOUND:
 		{
-			m_pGameScene->OnButtonClick(nullptr, CGameScene::BTN_SOUND);
+			CVolumeLayer* pLayer = CVolumeLayer::create();
+			pLayer->setPosition(Size::ZERO);
+			this->addChild(pLayer);
 		}
 		break;
 		case MENU_NIGHTMODE:
 		{
+			SET_BOOLVALUE("NIGHTMODE", bState);				//0日间模式 1夜间模式
 			m_pGameScene->ChangeColorMode();
-			UpdateAllMenuAndLabel();
+			updateAllMenu();
 		}
 		break;
 		case MENU_ORIENTATION:
 		{
 			SET_BOOLVALUE("PORTRAIT", bState);				//0横屏 1竖屏
-			UpdateAllMenuAndLabel();
-			AdjustMenuLabelPos();
+			updateAllMenu();
+			adjustMenuPos();
 		}
 		break;
 		case MENU_RHMODE:
 		{
 			SET_BOOLVALUE("RHMODE", bState);	//0关闭 1开启
 			m_pGameScene->ChangeControllerPos();
-			UpdateSingleMenuAndLabel(nMenuIdx);
+			updateSingleMenu(pMenuItem, nMenuIdx);
 		}
 		break;
 		case MENU_AUTORECOVER:
 		{
 			SET_BOOLVALUE("TETRIS_RECORD_VALID", bState);	//0关闭 1开启
 			m_pGameScene->ShowTips(bState ? CGameScene::TIPS_SAVEOPEN : CGameScene::TIPS_SAVECLOSE);
-			UpdateSingleMenuAndLabel(nMenuIdx);
+			updateSingleMenu(pMenuItem, nMenuIdx);
 		}
 		break;
 		case MENU_SAVENOW:
@@ -322,7 +189,7 @@ void CSetupLayer::OnClickMenu(Ref* pSender, int nMenuIdx)
 		case MENU_UPBTN:
 		{
 			SET_INTVALUE("UPBUTTON", nValue);			//0旋转 1直落
-			UpdateSingleMenuAndLabel(nMenuIdx);
+			updateSingleMenu(pMenuItem, nMenuIdx);
 		}
 		break;
 		case MENU_AUTHOR:
@@ -335,9 +202,7 @@ void CSetupLayer::OnClickMenu(Ref* pSender, int nMenuIdx)
 			m_pGameScene->GiveRate();
 		}
 		break;
-		case MENU_GLOBALSET:
-		case MENU_TETRISSET:
-		case MENU_OTHERSET:
+		case MENU_BACK:
 		{
 			m_pGameScene->QuitSetupLayer();
 		}
@@ -348,13 +213,10 @@ void CSetupLayer::OnClickMenu(Ref* pSender, int nMenuIdx)
 }
 
 
-int CSetupLayer::GetStrIDByMenuIdx(int nMenuIdx)
+int CSetupLayer::getStrIDByMenuIdx(int nMenuIdx)
 {
 	switch (nMenuIdx)
 	{
-		case MENU_GLOBALSET:
-			return STRNAME_GLOBALSETTING;
-			break;
 		case MENU_VIBRATION: 
 			return STRNAME_VIBRATION;
 			break;
@@ -370,9 +232,6 @@ int CSetupLayer::GetStrIDByMenuIdx(int nMenuIdx)
 		case MENU_RHMODE:
 			return STRNAME_RHMODE;
 			break;
-		case MENU_TETRISSET: 
-			return STRNAME_TETRISSETTING;
-			break;
 		case MENU_AUTORECOVER: 
 			return STRNAME_AUTORECOVER;
 			break;
@@ -382,14 +241,14 @@ int CSetupLayer::GetStrIDByMenuIdx(int nMenuIdx)
 		case MENU_UPBTN: 
 			return STRNAME_UPBTN;
 			break;
-		case MENU_OTHERSET: 
-			return STRNAME_OTHER;
-			break;
 		case MENU_AUTHOR: 
 			return STRNAME_AUTHOR;
 			break;
 		case MENU_RATE: 
 			return STRNAME_RATE;
+			break;
+		case MENU_BACK:
+			return STRNAME_BACK;
 			break;
 		default: 
 			return STRNAME_MAX;
@@ -398,12 +257,288 @@ int CSetupLayer::GetStrIDByMenuIdx(int nMenuIdx)
 }
 
 
-bool CSetupLayer::CheckMenuTitleFlag(int nMenuIdx)
+void CSetupLayer::initAllMenu()
 {
-	if (nMenuIdx == MENU_GLOBALSET || nMenuIdx == MENU_TETRISSET || nMenuIdx == MENU_OTHERSET)
+	Size visibleSize = GET_VISIBLESIZE();
+	float fCurHeight = visibleSize.height;
+
+	int nLangID = (CCApplication::getInstance()->getCurrentLanguage() != LanguageType::CHINESE);
+	bool bNightMode = getValueByMenuIdx(MENU_NIGHTMODE);
+	float fMenuHeight = 0.0f;
+
+	for (int nMainMenuIdx = MAINMENU_MIN; nMainMenuIdx < MAINMENU_MAX; ++nMainMenuIdx)
 	{
-		return true;
+		fCurHeight -= fMenuHeight;
+
+		//主菜单Label
+		int nStrID = getStrIDByMainMenuIdx(nMainMenuIdx);
+		string strText = CGeneralManager::getInstance()->GetStringByID(nLangID, nStrID);
+		Label* pMainTitle = Label::createWithSystemFont(strText, FONT_NAME, TITLE_FONT_SIZE);
+		Size mainTitleSize = GET_CONTENTSIZE(pMainTitle);
+		pMainTitle->setColor(bNightMode ? Color3B::WHITE : Color3B::BLACK);
+		pMainTitle->setPosition(mainTitleSize.width * 0.5f + MENU_X_PADDING, fCurHeight - mainTitleSize.height);
+		this->addChild(pMainTitle);
+		m_vecLabel.pushBack(pMainTitle);
+
+		fCurHeight -= mainTitleSize.height * 1.5f;
+		float fCurWidth = MENU_X_PADDING;
+		fMenuHeight = 0;
+
+		for (int nIndex = 0; nIndex < _countof(MENU_RELATION[nMainMenuIdx]); ++nIndex)
+		{
+			int nMenuIdx = MENU_RELATION[nMainMenuIdx][nIndex];
+			if (nMenuIdx < 0)
+			{
+				continue;
+			}
+
+			//根据菜单ID获取字符串
+			nStrID = getStrIDByMenuIdx(nMenuIdx);
+			strText = CGeneralManager::getInstance()->GetStringByID(nLangID, nStrID);
+
+			//获取记录值
+			int nValue = getValueByMenuIdx(nMenuIdx);
+			nValue = (nValue != 0) ? 1 : 0;
+
+			//菜单
+			const string& strSprName = MENU_SPRITE_STRING[nMenuIdx][nValue];
+			MenuItemSprite* pMenuItem = MenuItemSprite::create(
+				CREATE_SPRITEWITHNAME(CGeneralManager::getInstance()->GetSpriteName(strSprName, bNightMode)),
+				CREATE_SPRITEWITHNAME(CGeneralManager::getInstance()->GetSpriteName(strSprName, bNightMode)),
+				CC_CALLBACK_1(CSetupLayer::onClickMenu, this, nMenuIdx)
+				);
+			Size menuItemSize = GET_CONTENTSIZE(pMenuItem);
+			pMenuItem->setPosition(fCurWidth + menuItemSize.width * 0.5f, fCurHeight - menuItemSize.height * 0.5f - MENU_Y_PADDING);
+
+			//图标底部标签
+			Label* pTitle = Label::createWithSystemFont(strText, FONT_NAME, NORMAL_FONT_SIZE, Size::ZERO, TextHAlignment::CENTER);
+			Size titleSize = GET_CONTENTSIZE(pTitle);
+			pTitle->setColor(bNightMode ? Color3B::WHITE : Color3B::BLACK);
+			pTitle->setPosition(menuItemSize.width * 0.5f, -MENU_Y_PADDING);
+			pTitle->setTag(TITLE_TAG);
+			pMenuItem->addChild(pTitle);
+
+			//宽度调整
+			if (fCurWidth + menuItemSize.width >= visibleSize.width)
+			{
+				fCurWidth = MENU_X_PADDING;
+				//高度减去一个菜单高度和标签高度
+				fCurHeight -= menuItemSize.height + titleSize.height + MENU_Y_PADDING * 2;
+				//设置位置
+				pMenuItem->setPosition(fCurWidth + menuItemSize.width * 0.5f, fCurHeight - menuItemSize.height * 0.5f - MENU_Y_PADDING);
+			}
+
+			//更新菜单总高度
+			if (FLOAT_EQ(fMenuHeight, 0))
+			{
+				fMenuHeight = menuItemSize.height + titleSize.height + MENU_Y_PADDING * 2;
+			}
+			fCurWidth += menuItemSize.width * 1.2f + MENU_X_PADDING;
+
+			//保存
+			m_vecMenuItem.pushBack(pMenuItem);
+		}
 	}
 
-	return false;
+	//添加到菜单
+	Menu* pMenu = Menu::createWithArray(m_vecMenuItem);
+	pMenu->setPosition(Vec2::ZERO);
+	this->addChild(pMenu);
 }
+
+
+int CSetupLayer::getStrIDByMainMenuIdx(int nMainMenuIdx)
+{
+	switch (nMainMenuIdx)
+	{
+	case MAINMENU_GLOBALSET:
+		return STRNAME_GLOBALSETTING;
+		break;
+
+	case MAINMENU_TETRISSET:
+		return STRNAME_TETRISSETTING;
+		break;
+
+	case MAINMENU_OTHERSET:
+		return STRNAME_OTHER;
+		break;
+
+	default:
+		return 0;
+		break;
+	}
+}
+
+
+void CSetupLayer::updateSingleMenu(MenuItem* pMenuItem, int nMenuIdx)
+{
+	bool bNightMode = getValueByMenuIdx(MENU_NIGHTMODE);
+	MenuItemSprite* pMenuItemSpr = static_cast<MenuItemSprite*>(pMenuItem);
+
+	//获取值
+	int nValue = getValueByMenuIdx(nMenuIdx);
+	nValue = ((nValue != 0) ? 1 : 0);
+
+	//更新菜单
+	const string& strSprName = MENU_SPRITE_STRING[nMenuIdx][nValue];
+	pMenuItemSpr->setNormalImage(CREATE_SPRITEWITHNAME(CGeneralManager::getInstance()->GetSpriteName(strSprName, bNightMode)));
+	pMenuItemSpr->setSelectedImage(CREATE_SPRITEWITHNAME(CGeneralManager::getInstance()->GetSpriteName(strSprName, bNightMode)));
+
+	//获取Label
+	Node* pLabelNode = pMenuItem->getChildByTag(TITLE_TAG);
+	if (pLabelNode == nullptr)
+	{
+		return;
+	}
+
+	Label* pLabel = static_cast<Label*>(pLabelNode);
+	pLabel->setColor(bNightMode ? Color3B::WHITE : Color3B::BLACK);
+}
+
+
+int CSetupLayer::getMenuCountByMainMenuIdx(int nMainMenuIdx)
+{
+	if (nMainMenuIdx < MAINMENU_MIN || nMainMenuIdx >= MAINMENU_MAX)
+	{
+		return 0;
+	}
+
+	int nCount = _countof(MENU_RELATION[nMainMenuIdx]);
+	for (int nIndex = 0; nIndex < nCount; ++nIndex)
+	{
+		if (MENU_RELATION[nMainMenuIdx][nIndex] == -1)
+		{
+			return nIndex;
+		}
+	}
+
+	return nCount;
+}
+
+
+void CSetupLayer::adjustMenuPosForPortrait()
+{
+	Size visibleSize = GET_VISIBLESIZE();
+	float fCurHeight = visibleSize.height;
+	float fMenuHeight = 0.0f;
+	int nMenuIdx = 0;
+
+	for (int nMainMenuIdx = 0; nMainMenuIdx < m_vecLabel.size(); ++nMainMenuIdx)
+	{
+		fCurHeight -= fMenuHeight;
+
+		//主菜单Label
+		Label* pMainTitle = m_vecLabel.at(nMainMenuIdx);
+		assert(pMainTitle != nullptr);
+		Size mainTitleSize = GET_CONTENTSIZE(pMainTitle);
+		pMainTitle->setRotation(0);
+		pMainTitle->setPosition(mainTitleSize.width * 0.5f + MENU_X_PADDING, fCurHeight - mainTitleSize.height);
+
+		fCurHeight -= mainTitleSize.height * 1.5f;
+		float fCurWidth = MENU_X_PADDING;
+		fMenuHeight = 0;
+
+		int nMenuCount = getMenuCountByMainMenuIdx(nMainMenuIdx);
+		for (int nCount = 0; nCount < nMenuCount; ++nCount, ++nMenuIdx)
+		{
+			MenuItem* pMenuItem = m_vecMenuItem.at(nMenuIdx);
+			assert(pMenuItem != nullptr);
+			Size menuItemSize = GET_CONTENTSIZE(pMenuItem);
+			pMenuItem->setPosition(fCurWidth + menuItemSize.width * 0.5f, fCurHeight - menuItemSize.height * 0.5f - MENU_Y_PADDING);
+			pMenuItem->setRotation(0);
+
+			Node* pLabelNode = pMenuItem->getChildByTag(TITLE_TAG);
+			assert(pLabelNode != nullptr);
+			Size labelSize = GET_CONTENTSIZE(pLabelNode);
+
+			//宽度调整
+			if (fCurWidth + menuItemSize.width >= visibleSize.width)
+			{
+				fCurWidth = MENU_X_PADDING;
+				//高度减去一个菜单高度和标签高度
+				fCurHeight -= menuItemSize.height + labelSize.height + MENU_Y_PADDING * 2;
+				//设置位置
+				pMenuItem->setPosition(fCurWidth + menuItemSize.width * 0.5f, fCurHeight - menuItemSize.height * 0.5f - MENU_Y_PADDING);
+			}
+
+			//更新菜单总高度
+			if (FLOAT_EQ(fMenuHeight, 0))
+			{
+				fMenuHeight = menuItemSize.height + labelSize.height + MENU_Y_PADDING * 2;
+			}
+			fCurWidth += menuItemSize.width * 1.2f + MENU_X_PADDING;
+		}
+	}
+}
+
+
+void CSetupLayer::adjustMenuPosForLandscape()
+{
+	Size visibleSize = GET_VISIBLESIZE();
+	float fCurWidth = visibleSize.width;
+	float fMenuWidth = 0.0f;
+	int nMenuIdx = 0;
+
+	for (int nMainMenuIdx = 0; nMainMenuIdx < m_vecLabel.size(); ++nMainMenuIdx)
+	{
+		fCurWidth -= fMenuWidth;
+
+		//主菜单Label
+		Label* pMainTitle = m_vecLabel.at(nMainMenuIdx);
+		assert(pMainTitle != nullptr);
+		Size mainTitleSize = GET_CONTENTSIZE(pMainTitle);
+		pMainTitle->setRotation(90);
+		pMainTitle->setPosition(fCurWidth - mainTitleSize.height * 0.8f, visibleSize.height - mainTitleSize.width * 0.5f - MENU_X_PADDING);
+
+		fCurWidth -= mainTitleSize.height * 1.3f;
+		float fCurHeight = visibleSize.height - MENU_X_PADDING;
+		fMenuWidth = 0;
+
+		int nMenuCount = getMenuCountByMainMenuIdx(nMainMenuIdx);
+		for (int nCount = 0; nCount < nMenuCount; ++nCount, ++nMenuIdx)
+		{
+			MenuItem* pMenuItem = m_vecMenuItem.at(nMenuIdx);
+			assert(pMenuItem != nullptr);
+			Size menuItemSize = GET_CONTENTSIZE(pMenuItem);
+			pMenuItem->setPosition(fCurWidth - menuItemSize.height * 0.5f - MENU_Y_PADDING, fCurHeight - menuItemSize.width * 0.5f - MENU_X_PADDING * 2);
+			pMenuItem->setRotation(90);
+
+			Node* pLabelNode = pMenuItem->getChildByTag(TITLE_TAG);
+			Size labelSize = GET_CONTENTSIZE(pLabelNode);
+			assert(pLabelNode != nullptr);
+			//pLabelNode->setPosition(-MENU_Y_PADDING, menuItemSize.width * 0.5f);
+
+			//宽度调整
+			if (fCurHeight - menuItemSize.width <= 0)
+			{
+				fCurHeight = visibleSize.height - MENU_X_PADDING;
+				//高度减去一个菜单高度和标签高度
+				fCurWidth -= menuItemSize.height + labelSize.height + MENU_Y_PADDING;
+				//设置位置
+				pMenuItem->setPosition(fCurWidth - menuItemSize.height * 0.5f - MENU_Y_PADDING, fCurHeight - menuItemSize.width * 0.5f - MENU_X_PADDING);
+			}
+
+			//更新菜单总高度
+			if (FLOAT_EQ(fMenuWidth, 0))
+			{
+				fMenuWidth = menuItemSize.height + labelSize.height + MENU_Y_PADDING;
+			}
+			fCurHeight -= menuItemSize.width * 1.0f + MENU_X_PADDING * 2;
+		}
+	}
+}
+
+
+void CSetupLayer::adjustMenuPos()
+{
+	int nValue = getValueByMenuIdx(MENU_ORIENTATION);
+	if (nValue == 1)
+	{
+		adjustMenuPosForPortrait();
+	}
+	else
+	{
+		adjustMenuPosForLandscape();
+	}
+}
+
