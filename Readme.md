@@ -16,12 +16,16 @@ J	滚动版弹球  	（已完成）<br>
 K	打方块	（已完成）<br>
 L	加方块	（已完成）<br>
 
+
+
 截图
 ----
 ![](https://github.com/lfeng1420/BrickGame/blob/master/Images/1.png)
 ![](https://github.com/lfeng1420/BrickGame/blob/master/Images/2.png)
 ![](https://github.com/lfeng1420/BrickGame/blob/master/Images/3.png)
 ![](https://github.com/lfeng1420/BrickGame/blob/master/Images/4.png)
+
+
 
 发布记录
 ----
@@ -192,6 +196,8 @@ Android
 方块游戏第一版已上线360手机助手。<br>
 360手机助手：http://zhushou.360.cn/detail/index/soft_id/3222557<br>
 下载地址：http://openbox.mobilem.360.cn/index/d/sid/3222557<br>
+
+
 
 开源许可协议
 ----
