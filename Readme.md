@@ -2,29 +2,29 @@
 ===
 
 进度
-===
-A  坦克大战	  （已完成）<br>
-B  青蛙过河	  （已完成）<br>
-C  赛车	  （已完成）<br>
-D  匹配	 （已完成） <br>
-E  贪吃蛇	 （已完成）<br>
-F  弹球	  （已完成）<br>
-G  俄罗斯方块	  （已完成）<br>
-H  FlappyBird	（已完成）<br>
-I  俄罗斯方块[包含特殊方块]  	（已完成）<br>
-J  滚动版弹球  	（已完成）<br>
-K  打方块	（已完成）<br>
-L  加方块	（已完成）<br>
+----
+A	坦克大战	  （已完成）<br>
+B	青蛙过河	  （已完成）<br>
+C	赛车	  （已完成）<br>
+D	匹配	 （已完成） <br>
+E	贪吃蛇	 （已完成）<br>
+F	弹球	  （已完成）<br>
+G	俄罗斯方块	  （已完成）<br>
+H	FlappyBird	（已完成）<br>
+I	俄罗斯方块[包含特殊方块]  	（已完成）<br>
+J	滚动版弹球  	（已完成）<br>
+K	打方块	（已完成）<br>
+L	加方块	（已完成）<br>
 
 截图
-===
+----
 ![](https://github.com/lfeng1420/BrickGame/blob/master/Images/1.png)
 ![](https://github.com/lfeng1420/BrickGame/blob/master/Images/2.png)
 ![](https://github.com/lfeng1420/BrickGame/blob/master/Images/3.png)
 ![](https://github.com/lfeng1420/BrickGame/blob/master/Images/4.png)
 
 发布记录
-===
+----
 Windows Phone & Android
 ---
 ### 	  2017/12/26	  V1.11.1.0
@@ -140,7 +140,7 @@ Windows Phone & Android
 
 
 Windows Phone
----
+----
 ### 	  2016/03/07	  V1.2.0.0 
 1、新增Flappy Bird仿制版游戏； <br>
 2、修复贪吃蛇中一个导致崩溃的Bug； <br>
@@ -174,7 +174,7 @@ Windows Phone
 
 
 Android
----
+----
 ### 	  2016/02/22	  V1.0.2.0
 1、修复一个可能导致严重逻辑错误的Bug；<br>
 2、调整贪吃蛇游戏逻辑，改为无限模式；<br>
@@ -194,7 +194,7 @@ Android
 下载地址：http://openbox.mobilem.360.cn/index/d/sid/3222557<br>
 
 开源许可协议
-===
+----
 MIT License
 
 Copyright (c) 2017 lfeng
