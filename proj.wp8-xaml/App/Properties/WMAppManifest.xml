@@ -1,11 +1,11 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Deployment xmlns="http://schemas.microsoft.com/windowsphone/2012/deployment" AppPlatformVersion="8.0">
-  <DefaultLanguage xmlns="" code="zh" />
+  <DefaultLanguage xmlns="" code="zh-CN" />
   <Languages xmlns="">
-    <Language code="zh" />
     <Language code="en" />
+    <Language code="zh-CN" />
   </Languages>
-  <App xmlns="" ProductID="{83cc88fe-7e79-4e1e-a129-742987130b5c}" Title="方块游戏" RuntimeType="Silverlight" Version="1.8.0.0" Genre="apps.normal" Author="lfeng" Description="A brick game." Publisher="lfeng" PublisherID="{ebf6c0e1-80a3-41f1-8553-4aaab70da912}">
+  <App xmlns="" ProductID="{83cc88fe-7e79-4e1e-a129-742987130b5c}" Title="方块游戏" RuntimeType="Silverlight" Version="2.0.0.0" Genre="apps.normal" Author="lfeng" Description="方块游戏" Publisher="lfeng" PublisherID="{ebf6c0e1-80a3-41f1-8553-4aaab70da912}">
     <IconPath IsRelative="true" IsResource="false">Assets\ApplicationIcon.png</IconPath>
     <Capabilities>
       <Capability Name="ID_CAP_MEDIALIB_AUDIO" />
@@ -20,11 +20,10 @@
           <SmallImageURI IsRelative="true" IsResource="false">Assets\Tiles\FlipCycleTileSmall.png</SmallImageURI>
           <Count>0</Count>
           <BackgroundImageURI IsRelative="true" IsResource="false">Assets\Tiles\FlipCycleTileMedium.png</BackgroundImageURI>
-          <Title>
-          </Title>
+          <Title>方块游戏</Title>
           <BackContent>
           </BackContent>
-          <BackBackgroundImageURI IsRelative="true" IsResource="false">
+          <BackBackgroundImageURI>
           </BackBackgroundImageURI>
           <BackTitle>
           </BackTitle>
@@ -32,18 +31,12 @@
           <LargeBackContent />
           <LargeBackBackgroundImageURI IsRelative="true" IsResource="false">
           </LargeBackBackgroundImageURI>
-          <DeviceLockImageURI IsRelative="true" IsResource="false">
+          <DeviceLockImageURI>
           </DeviceLockImageURI>
           <HasLarge>True</HasLarge>
         </TemplateFlip>
       </PrimaryToken>
     </Tokens>
-    <ActivatableClasses>
-      <InProcessServer>
-        <Path>BrickGameComponent.dll</Path>
-        <ActivatableClass ActivatableClassId="PhoneDirect3DXamlAppComponent.Direct3DInterop" ThreadingModel="both" />
-      </InProcessServer>
-    </ActivatableClasses>
     <ScreenResolutions>
       <ScreenResolution Name="ID_RESOLUTION_WVGA" />
       <ScreenResolution Name="ID_RESOLUTION_WXGA" />

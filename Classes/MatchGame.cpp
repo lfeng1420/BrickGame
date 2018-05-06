@@ -1,461 +1,252 @@
+#include "stdafx.h"
 #include "MatchGame.h"
 
-const bool BRICK_STATE[][2][2] =
+static const int SHAPE_ROW_COUNT = 2;
+static const int SHAPE_COL_COUNT = 2;
+static const bool MATCH_SHAPE[][SHAPE_ROW_COUNT * SHAPE_COL_COUNT] =
 {
-	{
-		{ false, false },
-		{ true, false, },
-	},
-	{
-		{ true, false },
-		{ true, false, },
-	},
-	{
-		{ true, false },
-		{ true, true, },
-	},
-	{
-		{ true, true },
-		{ true, true, },
-	},
+	{ false, false, true, false, },
+	{ true, false, true, false, },
+	{ true, false, true, true, },
+	{ true, true, true, true, },
 };
 
-CMatchGame::CMatchGame(CGameScene* pGameScene) : CSceneBase(pGameScene)
+
+void CMatchGame::Start()
 {
+	CGameBase::Start();
+
+	// Initialize shapes
+	__InitSrcDestShapes();
+
+	// Initialize match succ count
+	m_nMatchSuccCount = 0;
+
+	// Update now
+	__UpdateAllBricksState();
 }
 
 
-CMatchGame::~CMatchGame()
+void CMatchGame::Update(float dt)
 {
-}
+	bool bUpdateFlag = false;
 
-
-//初始化
-void CMatchGame::Init()
-{
-	//获取在选择游戏界面设置的速度和等级
-	m_iSpeed = GET_INTVALUE("SPEED", 0);
-	m_iLevel = GET_INTVALUE("LEVEL", 0);
-
-	//默认生命数为4
-	m_iLife = GET_INTVALUE("LIFE", 4);
-
-	//初始化当前分数
-	m_iScore = 0;
-
-	//更新界面，分数、等级和生命
-	m_pGameScene->UpdateScore(m_iScore, false);
-	m_pGameScene->UpdateLevel(m_iLevel);
-	m_pGameScene->UpdateSmallBricks();
-
-	//初始化匹配成功计数
-	m_iMatchSuccCount = 0;
-
-	InitData();
-}
-
-
-//更新
-void CMatchGame::Play(float dt)
-{
-	if (m_enGameState ==  GAMESTATE_PASS)
+	switch (m_enGameStage)
 	{
-		//时间更新
-		m_fWaitTime += dt;
-		if (m_fWaitTime < GAMEPASS_REFRESH_INTERVAL)
+	case STAGE_FAIL:
+		UpdateBoomAnim(dt, bUpdateFlag);
+		break;
+
+	case STAGE_PASS:
 		{
+			// loop add score util the count is arrived
+			AddScoreInPassStage(dt, SHAPE_MATCH_ADD_SCORE);
 			return;
 		}
-		m_fWaitTime = 0;
+		break;
 
-		if (m_iAddScoreCount < GAMEPASS_ADDCOUNT)
+	case STAGE_NORMAL:
 		{
-			++m_iAddScoreCount;
-			m_iScore += MACTHSUCC_ADDSCORE;
-			m_pGameScene->UpdateScore(m_iScore);
-			return;
+			bUpdateFlag = __UpdateShapes(dt);
 		}
-		else
-		{
-			//更新速度和等级
-			if (++m_iSpeed > 10)
-			{
-				m_iSpeed = 0;
-				if (++m_iLevel > 10)
-				{
-					m_iLevel = 0;
-				}
-			}
+		break;
 
-			//更新显示
-			m_pGameScene->UpdateLevel(m_iLevel);
-			m_pGameScene->UpdateSpeed(m_iSpeed);
-
-			//重置匹配次数
-			m_iMatchSuccCount = 0;
-
-			//重置数据
-			InitData();
-		}
+	default:
+		return;
+		break;
 	}
 
-	if (m_enGameState == GAMESTATE_RUNNING)
+	if (bUpdateFlag)
 	{
-		//方块移动
-		bool bUpdateFlag = DestBricksMove(dt);
-		bUpdateFlag = MyBricksMove(dt) || bUpdateFlag;
-		if (!bUpdateFlag)
-		{
-			return;
-		}
+		__UpdateAllBricksState();
 	}
-
-	if (m_enGameState == GAMESTATE_OVER)
-	{
-		//时间更新
-		m_fWaitTime += dt;
-		if (m_fWaitTime < BOOM_REFRESH_INTERVAL)
-		{
-			return;
-		}
-		m_fWaitTime = 0;
-
-		if (m_iShowBoomCount < BOOM_SHOWCOUNT)
-		{
-			m_bShowBoom = !m_bShowBoom;
-			++m_iShowBoomCount;
-		}
-		else
-		{
-			//设置剩余生命
-			--m_iLife;
-			m_pGameScene->UpdateSmallBricks();
-
-			//检查是否有剩余生命，没有则返回游戏结束界面
-			if (m_iLife <= 0)
-			{
-				m_pGameScene->RunScene(SCENE_GAMEOVER);
-				return;
-			}
-
-			//重置数据
-			InitData();
-		}
-	}
-
-	m_pGameScene->UpdateBricks();
 }
 
 
-//获取当前Brick状态
-bool CMatchGame::GetBrickState(int iRowIndex, int iColIndex)
+EnGameID CMatchGame::GetGameID()
 {
-	if (m_enGameState == GAMESTATE_OVER)
-	{
-		int iIndex = iColIndex / 5;
-		int iBoomStartRowIdx = (m_iMyRowIdx > ROW_NUM - 4 ? ROW_NUM - 4 : m_iMyRowIdx);
-		if (iRowIndex >= iBoomStartRowIdx && iRowIndex < iBoomStartRowIdx + 4)
-		{
-			for (int i = 0; i < BRICK_MATCH_NUM; ++i)
-			{
-				if ((m_arrBoomIndex[i] == iIndex) && (iColIndex % 5 < 4))
-				{
-					return m_bShowBoom && BOOM_STATE[iRowIndex - iBoomStartRowIdx][iColIndex % 5];
-				}
-			}
-		}
-	}
-
-	do 
-	{
-		bool bMyFlag = false;
-		int iAcutalRowIdx = 0;
-
-		if (iRowIndex < m_iDestRowIdx + 2 && iRowIndex >= m_iDestRowIdx)
-		{
-			iAcutalRowIdx = iRowIndex - m_iDestRowIdx;
-		}
-		else if (iRowIndex < m_iMyRowIdx + 2 && iRowIndex >= m_iMyRowIdx)
-		{
-			iAcutalRowIdx = iRowIndex - m_iMyRowIdx;
-			bMyFlag = true;
-		}
-		else
-		{
-			break;
-		}
-
-		int iIndex = iColIndex / 5;
-		if (iColIndex % 5 < 2)
-		{
-			int iType = bMyFlag ? m_arrMyBrick[iIndex] : m_arrDestBrick[iIndex];
-			int iActualColIdx = iColIndex - iIndex * 5;
-			return BRICK_STATE[iType][iAcutalRowIdx][iActualColIdx];
-		}
-	} while (0);
-
-	return false;
+	return GAMEID_MATCH;
 }
 
 
-//获取小方块序列中的方块状态
-bool CMatchGame::GetSmallBrickState(int iRowIndex, int iColIndex)
+void CMatchGame::OnButtonEvent(const SEventContextButton* pButtonEvent)
 {
-	if (iRowIndex == 0 && iColIndex < m_iLife)
-	{
-		return true;
-	}
-
-	return false;
-}
-
-
-//获取游戏类型
-SCENE_INDEX CMatchGame::GetSceneType()
-{
-	return SCENE_MATCH;
-}
-
-
-//左按下
-void CMatchGame::OnLeftBtnPressed()
-{
-	ChangeType(DIR_LEFT, true);
-}
-
-
-//左释放
-void CMatchGame::OnLeftBtnReleased()
-{
-	ChangeType(DIR_LEFT, false);
-}
-
-
-//右按下
-void CMatchGame::OnRightBtnPressed()
-{
-	ChangeType(DIR_RIGHT, true);
-}
-
-
-//右释放
-void CMatchGame::OnRightBtnReleased()
-{
-	ChangeType(DIR_RIGHT, false);
-}
-
-
-//上按下
-void CMatchGame::OnUpBtnPressed()
-{
-	ChangeType(DIR_UP, true);
-}
-
-
-//上释放
-void CMatchGame::OnUpBtnReleased()
-{
-	ChangeType(DIR_UP, false);
-}
-
-
-//下按下
-void CMatchGame::OnDownBtnPressed()
-{
-	ChangeType(DIR_DOWN, true);
-}
-
-
-//下释放
-void CMatchGame::OnDownBtnReleased()
-{
-	ChangeType(DIR_DOWN, false);
-}
-
-
-//Fire按下
-void CMatchGame::OnFireBtnPressed()
-{
-	m_bConfirmMatch = true;
-}
-
-
-//初始化数据
-void CMatchGame::InitData()
-{
-	//初始化4个方块
-	int iTypeCount = sizeof(BRICK_STATE) / sizeof(bool) / 4;
-	for (int i = 0; i < BRICK_MATCH_NUM; ++i)
-	{
-		m_arrDestBrick[i] = Random(0, iTypeCount);
-		m_arrMyBrick[i] = Random(0, iTypeCount);
-
-		//爆炸位置索引
-		m_arrBoomIndex[i] = -1;
-	}
-
-	//目标方块所在行
-	m_iDestRowIdx = m_iLevel;
-
-	//我方方块所在行
-	m_iMyRowIdx = ROW_NUM - 2;
-
-	//时间相关
-	m_fDestBrickMoveTime = 0;
-	m_fWaitTime = 0;
-
-	//游戏状态
-	m_enGameState = GAMESTATE_RUNNING;
-
-	//爆炸显示计数
-	m_iShowBoomCount = 0;
-
-	//分数增加次数计数
-	m_iAddScoreCount = 0;
-
-	//爆炸显示状态
-	m_bShowBoom = true;
-
-	//是否加速
-	m_bConfirmMatch = false;
-
-	//更新界面
-	m_pGameScene->UpdateBricks();
-}
-
-
-//目标方块移动
-bool CMatchGame::DestBricksMove( float dt )
-{
-	m_fDestBrickMoveTime += dt;
-	if (m_fDestBrickMoveTime < BRICK_MOVE_INTERVAL - 70 * m_iSpeed)
-	{
-		return false;
-	}
-
-	//重置
-	m_fDestBrickMoveTime = 0;
-
-	//目标方块下降一格
-	if (++m_iDestRowIdx <= m_iMyRowIdx - 2)
-	{
-		return true;
-	}
-
-	//更新游戏状态
-	UpdateGameState();
-
-	return true;
-}
-
-
-//更改方块类型
-void CMatchGame::ChangeType(DIRECTION enDirection, bool bPressed)
-{
-	if (m_enGameState != GAMESTATE_RUNNING)
+	if (m_enGameStage != STAGE_NORMAL 
+		|| !pButtonEvent->bPressedFlag)
 	{
 		return;
 	}
 
-	//按钮音效
-	if (bPressed)
+	if (pButtonEvent->nButtonID == BTNID_FIRE)
 	{
-		PLAY_EFFECT(EFFECT_CHANGE2);
-		UpdateMyBricks(enDirection);
+		// Ready match
+		m_stSrcShape.nInterval = 0;
+		return;
+	}
+
+	if (pButtonEvent->nButtonID < BTNID_DIRMAX)
+	{
+		const int BTNID_2_SHAPEIDX[] = {2, SHAPE_COUNT_MAX, 0, 1};
+		int nShapeIdx = BTNID_2_SHAPEIDX[pButtonEvent->nButtonID];
+		if (nShapeIdx < 0 || nShapeIdx >= SHAPE_COUNT_MAX)
+		{
+			return;
+		}
+
+		int& nShapeID = m_stSrcShape.arrShapeID[nShapeIdx];
+		if (++nShapeID >= _countof(MATCH_SHAPE))
+		{
+			nShapeID = 0;
+		}
+
+		__UpdateShapes(__GetShapeMoveInterval(false) - m_stSrcShape.nInterval);
+		__UpdateAllBricksState();
 	}
 }
 
 
-
-void CMatchGame::UpdateMyBricks(DIRECTION enDirection)
+void CMatchGame::__InitSrcDestShapes()
 {
-	const int arrRelation[DIR_MAX] = { 2, -1, 0, 1 };
-	int iTypeCount = sizeof(BRICK_STATE) / sizeof(bool) / 4;
+	// Init dest shape data
+	m_stDestShape.nRowIdx = 0;
+	m_stDestShape.nInterval = 0;
+	__RandomShapes(m_stDestShape.arrShapeID);
 
-	int iBrickIndex = arrRelation[enDirection];
-	if (iBrickIndex == -1)
+	// Init src shape data
+	m_stSrcShape.nRowIdx = ROW_COUNT - SHAPE_ROW_COUNT;
+	m_stSrcShape.nInterval = -1;
+	__RandomShapes(m_stSrcShape.arrShapeID);
+}
+
+
+void CMatchGame::__RandomShapes(int* arrShapes)
+{
+	if (_countof(MATCH_SHAPE) < SHAPE_COUNT_MAX)
 	{
 		return;
 	}
 
-	if (++m_arrMyBrick[iBrickIndex] > iTypeCount - 1)
+	vector<int> vecShapes;
+	for (int nIndex = 0; nIndex < _countof(MATCH_SHAPE); ++nIndex)
 	{
-		m_arrMyBrick[iBrickIndex] = 0;
+		vecShapes.push_back(nIndex);
 	}
 
-	m_pGameScene->UpdateBricks(m_iMyRowIdx, 0, m_iMyRowIdx + 2, COLUMN_NUM);
-}
+	std::random_shuffle(vecShapes.begin(), vecShapes.end());
 
-
-//我方方块移动
-bool CMatchGame::MyBricksMove(float dt)
-{
-	if (!m_bConfirmMatch)
+	for (int nIndex = 0; nIndex < SHAPE_COUNT_MAX; ++nIndex)
 	{
-		return false;
-	}
-
-	m_fWaitTime += dt;
-	if (m_fWaitTime < 30)
-	{
-		return false;
-	}
-
-	//重置
-	m_fWaitTime = 0;
-
-	if (--m_iMyRowIdx >= m_iDestRowIdx + 2)
-	{
-		return true;
-	}
-
-	//已经和目标方块重合，更新游戏状态
-	UpdateGameState();
-	
-	return true;
-}
-
-
-void CMatchGame::UpdateGameState()
-{
-	//检查是否匹配
-	int iBoomIndex = 0;
-	for (int i = 0; i < BRICK_MATCH_NUM; ++i)
-	{
-		if (m_arrMyBrick[i] != m_arrDestBrick[i])
-		{
-			m_enGameState = GAMESTATE_OVER;
-			PLAY_EFFECT(EFFECT_BOOM);
-			m_arrBoomIndex[iBoomIndex++] = i;
-
-			//振动
-			m_pGameScene->OnLongVibrate();
-		}
-	}
-
-	//如果都匹配，则加分，检查是否通过当前等级
-	if (iBoomIndex == 0)
-	{
-		m_iScore += MACTHSUCC_ADDSCORE;
-		m_pGameScene->UpdateScore(m_iScore);
-
-		if (++m_iMatchSuccCount >= GAMEPASS_MATCHCOUNT)
-		{
-			m_enGameState = GAMESTATE_PASS;
-
-			//振动
-			m_pGameScene->OnLongVibrate();
-		}
-		else
-		{
-			//重新产生目标方块和我方方块
-			InitData();
-		}
+		arrShapes[nIndex] = vecShapes[nIndex];
 	}
 }
 
 
-void CMatchGame::SaveGameData()
+void CMatchGame::__UpdateAllBricksState()
 {
-	
+	for (int nBrickID = 0; nBrickID < ROW_COUNT * COLUMN_COUNT; ++nBrickID)
+	{
+		UpdateBrickState(nBrickID, false);
+	}
+
+	// Draw shapes
+	int nSepBrickCount = (COLUMN_COUNT - SHAPE_COUNT_MAX * SHAPE_COL_COUNT) / (SHAPE_COUNT_MAX + 1);
+	for (int nIndex = 0; nIndex < SHAPE_COUNT_MAX; ++nIndex)
+	{
+		int nSrcShapeID = m_stSrcShape.arrShapeID[nIndex];
+		int nDestShapeID = m_stDestShape.arrShapeID[nIndex];
+		int nColIdx = SHAPE_COL_COUNT * nIndex + (nIndex + 1) * nSepBrickCount;
+		for (int nBrickID = 0; nBrickID < SHAPE_ROW_COUNT * SHAPE_COL_COUNT; ++nBrickID)
+		{
+			int nRowOffset = nBrickID / SHAPE_COL_COUNT;
+			int nColOffset = nBrickID % SHAPE_COL_COUNT;
+			UpdateBrickState(GET_BRICKID(m_stSrcShape.nRowIdx + nRowOffset, nColIdx + nColOffset), MATCH_SHAPE[nSrcShapeID][nBrickID]);
+			UpdateBrickState(GET_BRICKID(m_stDestShape.nRowIdx + nRowOffset, nColIdx + nColOffset), MATCH_SHAPE[nDestShapeID][nBrickID]);
+		}
+	}
+
+	// Draw boom
+	DrawBoom();
+
+	// Update immediately
+	UpdateBrickState(0, GetBrickState(0), true);
+}
+
+
+bool CMatchGame::__UpdateShapes(float dt, bool bSelfOnlyFlag /*= false*/)
+{
+	bool bUpdateFlag = false;
+
+	if (m_stSrcShape.nInterval >= 0)
+	{
+		bUpdateFlag = true;
+		m_stSrcShape.nInterval += dt;
+		if (m_stSrcShape.nInterval >= __GetShapeMoveInterval(false))
+		{
+			m_stSrcShape.nInterval = 0;
+			if (--m_stSrcShape.nRowIdx <= m_stDestShape.nRowIdx)
+			{
+				__HandleMatchResult();
+			}
+		}
+	}
+
+	if (!bSelfOnlyFlag)
+	{
+		m_stDestShape.nInterval += dt;
+		if (m_stDestShape.nInterval >= __GetShapeMoveInterval(true))
+		{
+			bUpdateFlag = true;
+			m_stDestShape.nInterval = 0;
+			if (++m_stDestShape.nRowIdx > (ROW_COUNT - SHAPE_ROW_COUNT * 2))
+			{
+				__HandleMatchResult();
+			}
+		}
+	}
+
+	return bUpdateFlag;
+}
+
+
+int CMatchGame::__GetShapeMoveInterval(bool bDestShapeFlag)
+{
+	return (bDestShapeFlag ? (DEST_SHAPE_MOVE_INTERVAL - 70 * m_nSpeed) : SRC_SHAPE_MOVE_INTERVAL);
+}
+
+
+int CMatchGame::__GetDismatchShapeIdx()
+{
+	for (int nIndex = 0; nIndex < SHAPE_COUNT_MAX; ++nIndex)
+	{
+		if (m_stDestShape.arrShapeID[nIndex] != m_stSrcShape.arrShapeID[nIndex])
+		{
+			return nIndex;
+		}
+	}
+
+	return SHAPE_COUNT_MAX;
+}
+
+
+void CMatchGame::__HandleMatchResult()
+{
+	int nDisMatchIdx = __GetDismatchShapeIdx();
+	if (nDisMatchIdx != SHAPE_COUNT_MAX)
+	{
+		int nSepBrickCount = (COLUMN_COUNT - SHAPE_COUNT_MAX * SHAPE_COL_COUNT) / (SHAPE_COUNT_MAX + 1);
+		POSITION stPos = { m_stDestShape.nRowIdx, SHAPE_COL_COUNT * nDisMatchIdx + (nDisMatchIdx + 1) * nSepBrickCount };
+		GameOverWithBoomAnim(stPos);
+		return;
+	}
+
+	// Add score
+	AddScore(SHAPE_MATCH_ADD_SCORE);
+	// Start next match
+	__InitSrcDestShapes();
+	// Add match succ count
+	if (++m_nMatchSuccCount >= REQUIRE_MATCH_SUCC_COUNT)
+	{
+		m_enGameStage = STAGE_PASS;
+		return;
+	}
 }

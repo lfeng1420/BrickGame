@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include "AppDelegate.h"
 #include "LoadScene.h"
 
@@ -12,16 +13,16 @@ AppDelegate::~AppDelegate()
 }
 
 bool AppDelegate::applicationDidFinishLaunching() {
-	// initialize director
-	auto director = Director::getInstance();
-	auto glview = director->getOpenGLView();
-	if (!glview) {
-        glview = GLView::create("BrickGame");
+    // initialize director
+    auto director = Director::getInstance();
+    auto glview = director->getOpenGLView();
+    if(!glview) {
+        glview = GLView::create("My Game");
 		glview->setFrameSize(480, 852);
-		director->setOpenGLView(glview);
-	}
+        director->setOpenGLView(glview);
+    }
 
-	glview->setDesignResolutionSize(640, 1138, ResolutionPolicy::FIXED_WIDTH);
+	glview->setDesignResolutionSize(640, 1136, ResolutionPolicy::FIXED_WIDTH);
 
     // turn on display FPS
     director->setDisplayStats(false);
@@ -30,7 +31,7 @@ bool AppDelegate::applicationDidFinishLaunching() {
     director->setAnimationInterval(1.0 / 60);
 
     // create a scene. it's an autorelease object
-	auto scene = CLoadScene::CreateScene();
+    auto scene = CLoadScene::CreateScene();
 
     // run
     director->runWithScene(scene);

@@ -1,294 +1,183 @@
 #pragma once
-#include "SceneBase.h"
+#include "GameBase.h"
 
-class CTankGame : public CSceneBase
+class CTankGame : public CGameBase
 {
-private:
-	//坦克数据
-	struct TANK_DATA
-	{
-		POSITION m_stPos;		//位置
+    // Start
+    void Start();
 
-		int m_iDirection;		//移动方向
+    // Update
+    // param: dt, millisecond
+    void Update(float dt);
 
-		int m_iCurStep;			//当前已走步数
+    // Get game id
+    EnGameID GetGameID();
 
-		int m_iMaxStep;			//最大步数
-
-		bool m_bNeedReset;		//是否需要重置（步数和方向）
-
-		int m_iCamp;			//阵营
-
-		float m_fFireWaitTime;	//发射等待的时间
-
-		float m_fFireMaxTime;	//本次发射需等待总时间
-
-		bool m_bDead;			//是否死亡
-	};
-
-	//子弹数据
-	struct BULLET_DATA
-	{
-		int m_iCamp;			//阵营
-
-		POSITION m_stPos;		//位置
-
-		float m_fMoveTime;		//移动等待时间
-
-		int m_iDirection;		//方向
-
-		bool m_bValid;			//是否有效
-	};
-
-	enum OBJECT_TYPE
-	{
-		TYPE_BOSS,
-		TYPE_TANK,
-		TYPE_BULLET,
-	};
-
-	//struct BOSS_DATA
-	//{
-	//	bool m_bDead;			//是否死亡
-
-	//	int m_iColIdx;			//列位置
-
-	//	float m_fMoveTime;		//移动等待时间
-
-	//	float m_fMoveMaxTime;	//移动等待最大间隔
-
-	//	float m_fFireTime;		//等待发射子弹时间
-
-	//	float m_fFireMaxTime;	//发射子弹等待最大间隔
-
-	//	int m_iDirection;		//方向
-	//};
-
-public:
-	CTankGame(CGameScene* pGameScene);
-	~CTankGame();
-
-	//---------------------    CSceneBase    ----------------------
-	//初始化
-	void Init();
-
-	//更新
-	void Play(float dt);
-
-	//获取当前Brick状态
-	bool GetBrickState(int iRowIndex, int iColIndex);
-
-	//获取小方块序列中的方块状态
-	bool GetSmallBrickState(int iRowIndex, int iColIndex);
-
-	//获取游戏类型
-	SCENE_INDEX GetSceneType();
-
-	//左按下
-	void OnLeftBtnPressed();
-
-	//左释放
-	void OnLeftBtnReleased();
-
-	//右按下
-	void OnRightBtnPressed();
-
-	//右释放
-	void OnRightBtnReleased();
-
-	//上按下
-	void OnUpBtnPressed();
-
-	//上释放
-	void OnUpBtnReleased();
-
-	//下按下
-	void OnDownBtnPressed();
-
-	//下释放
-	void OnDownBtnReleased();
-
-	//Fire按下
-	void OnFireBtnPressed();
-
-	//Fire释放
-	void OnFireBtnReleased();
-
-	//游戏状态
-	void SaveGameData();
-
-	//---------------------    CSceneBase    ----------------------
+    // Button event
+    void OnButtonEvent(const SEventContextButton* pButtonEvent);
 
 private:
-	//初始化数据，与Init不同，Init在切换到该场景时调用，InitData在重置时调用
-	void InitData();
+    // Camp
+	enum _EnCampID
+	{
+		enCamp_Self,
+		enCamp_Enemy,
+	};
+    
+    struct _TTankData
+    {
+        POSITION stPos;         // Current pos
+        POSITION stDestPos;     // Dest pos
+		int nDir;				// Direction
+        int nCurMoveInterval;   // Current move interval
+		int nMoveInterval;		// Move interval
+        int nFireInterval;      // Fire interval
+        int nCurFireInterval;   // Current fire interval
+        _EnCampID enCampID;     // Camp
+        bool bValidFlag;        // Valid or not
+	};
 
-	//创建坦克
-	bool CreateTank(float dt);
+	struct _TBossTankData : public _TTankData
+	{
+		int nBossLife;
+	};
 
-	//画坦克
-	bool DrawTank(const POSITION& stPos, int iDirection, const POSITION& stTargetPos);
+    struct _TBulletData
+    {
+        POSITION stPos;         // Current pos
+        int nDir;				// Direction
+        _EnCampID enCampID;     // Camp
+        int nInterval;          // Update interval
+		bool bValidFlag;		// Valid or not
+	};
 
-	//检查位置是否有效
-	bool CheckPos(int iTankIdx, const POSITION& stPos);
+    typedef vector<_TBulletData>  TVec_BulletData;
+	typedef set<int>			  TSet_InvalidBulletIdx;
 
-	//坦克移动
-	bool TankMove(float dt);
+    // Config
+    enum
+    {
+        TANK_CREATE_INTERVAL_BASE = 800,
+        TANK_FIRE_INTERVAL_BASE = 4000,
+		TANK_MOVE_INTERVAL_BASE = 1000,
+		SELF_TANK_FIRE_INTERVAL_BASE = 400,
+		SELF_TANK_MOVE_INTERVAL_BASE = 55,
+		BULLET_MOVE_INTERVAL = 40,
+		TANK_KILL_ADD_SCORE = 10,
+        NORMAL_STAGE_TANK_COUNT_MAX = 5,
+		TANK_TOTAL_COUNT = 30,
+		BOSS_SHAPE_ROW_COUNT = 8,
+		BOSS_SHAPE_COLUMN_COUNT = 9,
+		BOSS_TANK_LIFE_COUNT = 10,
+		SELF_TANK_ANIM_INTERVAL = 100,
+	};
 
-	//更新某个坦克位置
-	void UpdateTankPos(int iTankIdx);
+	struct _TCreateTankData
+	{
+		int nCreateInterval;
+		int nCreateCount;
+		bool bCreateFinishFlag;
+	};
 
-	//获取下一个位置
-	bool GetNextPos(int iTankIdx, POSITION& stOutPos);
-
-	//获取下一个位置
-	bool GetNextPos(const POSITION& stCurPos, int iDirection, POSITION& stOutPos, OBJECT_TYPE enType);
-
-	//我方坦克移动
-	bool SelfTankMove(float dt);
-
-	//坦克发射子弹
-	bool TankFire(float dt);
-
-	//子弹创建
-	void CreateBullet(int iTankIdx);
-
-	//子弹移动
-	bool BulletMove(float dt);
-
-	//子弹
-	void BulletShoot();
-
-	//获取子弹打中的子弹索引
-	int GetBulletFireBulletIndex(const POSITION& stBulletPos, int iCamp);
-
-	//子弹打中的坦克索引，未打中时返回-1
-	int GetBulletFireTankIndex(const POSITION& stBulletPos, int iCamp);
-
-	//显示爆炸效果，返回结果表示是否需要使用传出的值
-	bool ShowBoom(int iRowIndex, int iColIndex, bool& bState);
-
-	//是否通过当前等级
-	bool CheckAllTankDead();
-
-	//获取一个有效的角落位置
-	bool GetCornerPos(int iTankIdx);
-
-	//等待移动到底部中间
-	bool WaitToMoveBottomCenter(float dt, bool& bDoneFlag);
-
-	//我方标记闪烁
-	void SelfFlagFlash(float dt);
-
-	//获取标记所在位置
-	bool GetFlagPos(POSITION& stPos);
+	struct _TSelfTankAnimData
+	{
+		int nInterval;
+		bool bShowFlag;
+	};
 
 private:
-	enum
-	{
-		TANK_MAXNUM = 4,							//坦克最大数量
+	// Init tank data
+	void __InitAllTanks();
 
-		BULLET_MAXNUM = 20,							//子弹出现最大数量
+	// Init all bullets
+	void __InitAllBullets();
 
-		TANK_MOVE_INTERVAL = 800,					//坦克移动时间间隔
+    // Create tank
+    void __CreateTank(float dt, bool& bUpdateFlag);
 
-		BULLET_MOVE_INTERVAL = 40,					//子弹移动时间间隔
+    // Get invalid tank data index
+    int __GetInvalidTankIdx();
 
-		BULLET_CREATE_MAXTIME = 4500,				//最大发射子弹时间
+    // Check overlap
+    bool __CheckTankPosValid(int nTankIdx, const _TTankData& stTankData, int nDir);
 
-		TANK_CREATE_TIME = TANK_MOVE_INTERVAL,		//坦克创建时间间隔
+	// Check tank overlap
+	int __CheckTankOverlap(int nSrcTankIdx, const _TTankData& stSrcTankData, const POSITION& stBrickPos);
 
-		TANK_MOVE_MAXSTEP = 10,						//坦克移动最大步数
+    // Check tank hitted or not
+	_TTankData* __GetHitTankData(const POSITION& stBrickPos, _EnCampID enCampID);
 
-		TANK_SELF_MOVE_INTERVAL = 55,				//我方坦克每次移动等待时间
+    // Random dest pos
+    bool __GenDestPos(int nTankIdx, _TTankData& stTankData);
 
-		TANK_SELF_FIRE_TIME = 400,					//每次发射子弹后间隔
+    // Update bullet
+    void __UpdateBullet(float dt, bool& bUpdateFlag);
 
-		BOOM_SHOWCOUNT = 16,						//闪烁显示爆炸效果次数
+    // Handle tank dead
+    // If a tank dies, return true
+    bool __HandleTankDead(_TTankData* pTankData);
 
-		GAMEPASS_ADDCOUNT = 10,						//增加10次
+    // Update tank, like pos, fire, etc
+    void __UpdateTank(float dt, bool& bUpdateFlag);
 
-		GAMEPASS_REFRESH_INTERVAL = 200,			//通过显示刷新时间
+	// One tank move
+	bool __OneTankMove(int nTankIdx, _TTankData& stTankData, float dt);
 
-		BOOM_REFRESH_INTERVAL = 50,					//爆炸效果刷新时间
+	// One tank fire
+	bool __OneTankFire(_TTankData& stTankData, float dt);
 
-		TANK_KILL_ADD_SCORE = 10,					//杀掉一个坦克增加的分数
+	// Generate all bricks state
+	void __UpdateAllBricksState();
 
-		TANK_CREATE_MAXCOUNT = 30,					//每一个等级坦克创建最大数量
+	// Get valid tank count
+	int __GetValidTankCount();
 
-		BOSS_FIRE_MIN_INTERVAL = 1000,				//boss发射子弹最小时间间隔
+	// Update game stage
+	void __UpdateGameStage();
 
-		BOSS_FIRE_MAX_INTERVAL = 2000,				//boss发射子弹最大时间间隔
+	// Create boss tank
+	void __CreateBossTank();
 
-		TANK_SELF_FLAG_FLASH_INTERVAL = 100,		//100毫秒刷新一次
+	// Update boss tank
+	void __UpdateBossTank(float dt, bool& bUpdateFlag);
 
-		TANK_BOSS_HIT_BASE_COUNT = 5,				//通关击中BOSS基础次数
-	};
+	// Boss tank move
+	bool __BossTankMove(float dt);
 
-	//阵营
-	enum CAMP
-	{
-		CAMP_NONE,
-		CAMP_A,
-		CAMP_B,
-	};
+	// Update self tank anim
+	void __UpdateSelfTankAnim(float dt, bool& bUpdateFlag);
 
-	enum TANK_INDEX
-	{
-		TANK_BOSS = -2,
-		TANK_SELF = -1,
-	};
+	// Draw self tank flag
+	void __DrawSelfTankFlag(bool bUpdateFlag = false);
 
-	typedef vector<BULLET_DATA> TVEC_BULLET;
-	typedef TVEC_BULLET::iterator TVEC_BULLET_ITER;
+	//////////////////////////////////////////////////////////////////////////
+
+    // Get create tank interval
+    int __GetCreateTankInterval();
+
+	// Get tank move interval
+	int __GetTankMoveInterval(bool bSelfTankFlag);
+
+	// Random fire interval
+	int __GetTankFireInterval(bool bSelfTankFlag);
+
+	// Get bullet move interval
+	int __GetBulletMoveInterval();
+
 
 private:
-	TANK_DATA m_arrTank[TANK_MAXNUM];			//坦克数据序列
+    // Tank data
+	_TTankData				m_arrTankData[NORMAL_STAGE_TANK_COUNT_MAX];
+    
+    // Bullet data
+    TVec_BulletData			m_vecBulletData;
 
-	BULLET_DATA m_arrBullet[BULLET_MAXNUM];	//子弹数据序列
+	// Create tank data
+	_TCreateTankData		m_stCreateTankData;
 
-	TANK_DATA m_stSelfTank;						//坦克自己
+	// Boss data
+	_TBossTankData			m_stBossData;
 
-	bool m_arrBtnState[DIR_MAX];				//四个方向按钮状态
-
-	int m_iSpeed;								//速度
-
-	int m_iLevel;								//关卡
-
-	int m_iLife;								//剩余生命
-
-	int m_iScore;								//分数
-
-	float m_fTankMoveTime;						//坦克移动等待时间
-
-	float m_fTankCreateTime;					//坦克创建时间
-
-	float m_fSelfMoveTime;						//我方坦克移动时间
-
-	float m_fWaitRefreshTime;					//等待刷新时间
-
-	bool m_arrCornerState[4];					//第一次创建四个角落坦克的情况
-
-	GAME_STATE m_enGameState;					//游戏状态
-
-	bool m_bShowBoom;							//爆炸显示/隐藏标记（闪烁）
-
-	int m_iShowBoomCount;						//闪烁显示爆炸效果次数
-
-	int m_iAddScoreCount;						//当前分数增加次数
-
-	bool m_bFireState;							//发射状态
-
-	int m_iTankCreateCount;						//坦克创建数量
-
-	TANK_DATA m_stBoss;							//boss数据
-
-	bool m_bBossFlag;							//是否开启BOSS阶段
-
-	double m_lfCurTime;							//当前毫秒
-
-	double m_lfSelfFlashTime;					//我方坦克标记闪烁时间
-
-	bool m_bSelfFlagVisible;					//我方标记显示状态
+	// Self tank anim data
+	_TSelfTankAnimData		m_stSelfTankAnimData;
 };
-

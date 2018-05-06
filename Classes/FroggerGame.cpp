@@ -1,507 +1,366 @@
+#include "stdafx.h"
 #include "FroggerGame.h"
 
-
-CFroggerGame::CFroggerGame(CGameScene* pGameScene) : CSceneBase(pGameScene)
+// River shape
+static const bool RIVER_SHAPE[CFroggerGame::RIVER_COUNT][CFroggerGame::RIVER_COLUMN_COUNT] =
 {
+	{ false, true, true, true, false, false, true, true, true, false, false, true, true, true, false, false, true, true, true, false },
+	{ true, true, true, false, false, false, false, false, true, true, true, true, true, false, false, false, false, false, true, true },
+	{ false, false, true, true, true, false, false, true, true, false, false, false, true, true, true, false, false, true, true, false },
+	{ false, false, false, false, true, true, true, true, false, false, false, false, false, false, true, true, true, true, false, false },
+	{ false, false, true, true, true, false, false, false, false, false, false, false, true, true, true, false, false, false, false, false },
+};
+
+
+void CFroggerGame::Start()
+{
+	CGameBase::Start();
+
+	// Init rivers
+	__InitRivers();
+
+	// Init self
+	m_stSelfData.bVisibleFlag = true;
+	m_stSelfData.nInterval = 0;
+	m_stSelfData.stPos.x = min(ROW_COUNT - 1, __GetStartRowIdx() + RIVER_COUNT * 2);
+	m_stSelfData.stPos.y = (COLUMN_COUNT - 1) / 2;
+	m_stSelfData.nPassCount = 0;
+
+	// Clear all succ dots
+	m_lsSuccDotPos.clear();
+
+	// Update immediately
+	__UpdateAllBricksState();
 }
 
 
-CFroggerGame::~CFroggerGame()
+void CFroggerGame::Update(float dt)
 {
-}
+	bool bUpdateFlag = false;
 
-
-//初始化
-void CFroggerGame::Init()
-{
-	//获取在选择游戏界面设置的速度和等级
-	m_iSpeed = GET_INTVALUE("SPEED", 0);
-	m_iLevel = GET_INTVALUE("LEVEL", 0);
-
-	//默认生命数为4
-	m_iLife = GET_INTVALUE("LIFE", 4);
-
-	//初始化当前分数
-	m_iScore = 0;
-
-	//更新界面，分数、等级和生命
-	m_pGameScene->UpdateScore(m_iScore, false);
-	m_pGameScene->UpdateLevel(m_iLevel);
-	m_pGameScene->UpdateSmallBricks();
-
-	//初始河道状态数据
-	const bool RIVER_DEFAULT_STATE[5][20] =
+	switch (m_enGameStage)
 	{
-		{ false, true, true, true, false, false, true, true, true, false, false, true, true, true, false, false, true, true, true, false },
-		{ true, true, true, false, false, false, false, false, true, true, true, true, true, false, false, false, false, false, true, true },
-		{ false, false, true, true, true, false, false, true, true, false, false, false, true, true, true, false, false, true, true, false },
-		{ false, false, false, false, true, true, true, true, false, false, false, false, false, false, true, true, true, true, false, false },
-		{ false, false, true, true, true, false, false, false, false, false, false, false, true, true, true, false, false, false, false, false },
-	};
+	case STAGE_FAIL:
+		UpdateBoomAnim(dt, bUpdateFlag);
+		break;
 
-	//初始化河道数据
-	bool bLeft = false;
-	for (int i = RIVER_ROWTOP_INDEX + 1, iRiverCount = 0; i < ROW_NUM - 1; i += 2)
+	case STAGE_PASS:
 	{
-		RIVER& stRiver = m_mapRiverData[i];
-		bLeft = !bLeft;
-		stRiver.bLeft = bLeft;
-		
-		for (int j = 0; j < RIVER_LEN; ++j)
-		{
-			stRiver.arrDefaultState[j] = RIVER_DEFAULT_STATE[iRiverCount][j];
-		}
+		// loop add score util the count is arrived
+		AddScoreInPassStage(dt, PASS_ONE_ADD_SCORE);
+		return;
+	}
+	break;
 
-		++iRiverCount;
+	case STAGE_NORMAL:
+	{
+		__UpdateRivers(dt, bUpdateFlag);
+		__UpdateSelf(dt, bUpdateFlag);
+	}
+	break;
+
+	default:
+		return;
+		break;
 	}
 
-	//初始化通过数量
-	m_iPassCount = 0;
-
-	InitData();
+	if (bUpdateFlag)
+	{
+		__UpdateAllBricksState();
+	}
 }
 
-//更新
-void CFroggerGame::Play(float dt)
+
+EnGameID CFroggerGame::GetGameID()
 {
-	if (m_enGameState == GAMESTATE_PASS)
+	return GAMEID_FROGGER;
+}
+
+
+void CFroggerGame::OnButtonEvent(const SEventContextButton* pButtonEvent)
+{
+	if (m_enGameStage != STAGE_NORMAL 
+		|| !pButtonEvent->bPressedFlag)
 	{
-		m_fPassCurTime += dt;
-		if (m_fPassCurTime < GAMEPASS_WAITTIME)
-		{
-			return;
-		}
-
-		//重置通过数量
-		m_iPassCount = 0;
-
-		//更新速度和等级
-		if (++m_iSpeed > 10)
-		{
-			m_iSpeed = 0;
-			if (++m_iLevel > 10)
-			{
-				m_iLevel = 0;
-			}
-		}
-
-		//更新显示
-		m_pGameScene->UpdateLevel(m_iLevel);
-		m_pGameScene->UpdateSpeed(m_iSpeed);
-
-		//重置数据
-		InitData();
-
-		//界面更新
-		m_pGameScene->UpdateBricks();
 		return;
 	}
 
-	//进行中
-	if (m_enGameState == GAMESTATE_RUNNING)
+	int nBtnID = ((pButtonEvent->nButtonID == BTNID_FIRE) ? BTNID_UP : pButtonEvent->nButtonID);
+	if (nBtnID >= BTNID_DIRMAX)
 	{
-		//更新自己
-		bool bUpdateFlag = UpdateSelf(dt);
+		return;
+	}
 
-		//更新河道
-		bUpdateFlag = UpdateRivers(dt) || bUpdateFlag;
+	// Get next pos
+	POSITION stNextPos = m_stSelfData.stPos;
+	int nDir = BTNID_2_DIR[nBtnID];
+	if (!__GetNextPos(stNextPos, nDir))
+	{
+		return;
+	}
 
-		if (!bUpdateFlag)
+	// Update old pos
+	UpdateBrickState(GET_BRICKIDBYPOS(m_stSelfData.stPos), false, false);
+	m_stSelfData.stPos = stNextPos;
+	// Update current pos
+	UpdateBrickState(GET_BRICKIDBYPOS(m_stSelfData.stPos), false, true);
+	// Check game over
+	if (__CheckGameOver())
+	{
+		GameOverWithBoomAnim(m_stSelfData.stPos);
+		return;
+	}
+
+	if (m_stSelfData.stPos.x == max(__GetTopRowIdx(), 0))
+	{
+		m_lsSuccDotPos.push_back(m_stSelfData.stPos);
+		// Add score
+		AddScore(PASS_ONE_ADD_SCORE);
+		// Reset self
+		m_stSelfData.stPos.x = min(ROW_COUNT - 1, __GetStartRowIdx() + RIVER_COUNT * 2);
+		m_stSelfData.stPos.y = (COLUMN_COUNT - 1) / 2;
+		// Check pass condition
+		if (++m_stSelfData.nPassCount >= PASS_REQUIRE_COUNT)
 		{
-			return;
+			// Update last time
+			__UpdateAllBricksState();
+			// Go to the pass stage
+			m_enGameStage = STAGE_PASS;
 		}
+	}
+}
 
-		//更新游戏状态
-		UpdateGameState();
+
+void CFroggerGame::__InitRivers()
+{
+	bool bLeftFlag = (Random(0, 100) < 50);
+	int nStartRowIdx = __GetStartRowIdx();
+
+	// first sep
+	for (int nColIdx = 0; nColIdx < COLUMN_COUNT; ++nColIdx)
+	{
+		int nBrickID = GET_BRICKID(nStartRowIdx - 1, nColIdx);
+		UpdateBrickState(nBrickID, true);
 	}
 
-	if (m_enGameState == GAMESTATE_OVER)
+	// Random river index
+	vector<int> vecRiverIdx;
+	for (int nIdex = 0; nIdex < RIVER_COUNT; ++nIdex)
 	{
-		if (!SetBoom(dt))
+		vecRiverIdx.push_back(nIdex);
+	}
+	std::random_shuffle(vecRiverIdx.begin(), vecRiverIdx.end());
+
+	for (int nRowIdx = nStartRowIdx, nIndex = 0; nRowIdx < min(nStartRowIdx + RIVER_COUNT * 2, ROW_COUNT) && nIndex < RIVER_COUNT; nRowIdx += 2, ++nIndex)
+	{
+		_TRiverData& stRiverData = m_arrRiverData[nIndex];
+		stRiverData.bLeftFlag = bLeftFlag;
+		stRiverData.nOffset = vecRiverIdx[nIndex];
+		stRiverData.nRiverIdx = nIndex;
+		stRiverData.nRowIdx = nRowIdx;
+		stRiverData.nMoveInterval = 0;
+		bLeftFlag = !bLeftFlag;
+
+		// sep
+		for (int nColIdx = 0; nColIdx < COLUMN_COUNT; ++nColIdx)
 		{
-			return;
-		}
-
-		if (m_iShowBoomCount >= BOOM_SHOWCOUNT)
-		{
-			//设置剩余生命
-			--m_iLife;
-			m_pGameScene->UpdateSmallBricks();
-			
-			//检查是否有剩余生命，没有则返回游戏结束界面
-			if (m_iLife == 0)
-			{
-				m_pGameScene->RunScene(SCENE_GAMEOVER);
-				return;
-			}
-
-			//重置数据
-			InitData();
-
-			m_pGameScene->UpdateSmallBricks();
+			int nBrickID = GET_BRICKID(nRowIdx + 1, nColIdx);
+			UpdateBrickState(nBrickID, true);
 		}
 	}
-
-	//界面更新
-	m_pGameScene->UpdateBricks();
 }
 
-//获取当前Brick状态
-bool CFroggerGame::GetBrickState(int nRowIdx, int nColIdx)
+
+void CFroggerGame::__UpdateRivers(float dt, bool& bUpdateFlag)
 {
-	//仅在游戏运行时显示自己的位置
-	if (m_enGameState == GAMESTATE_RUNNING && nRowIdx == m_iSelfRowIdx && nColIdx == m_iSelfColIdx)
+	std::vector<int> vecUpdateRiverIdx;
+	for (int nIndex = 0; nIndex < RIVER_COUNT; ++nIndex)
 	{
-		return m_bSelfState;
+		vecUpdateRiverIdx.push_back(nIndex);
 	}
 
-	return m_arrBrickState[nRowIdx][nColIdx];
-}
+	// random
+	std::random_shuffle(vecUpdateRiverIdx.begin(), vecUpdateRiverIdx.end());
 
-//生命数
-bool CFroggerGame::GetSmallBrickState(int nRowIdx, int nColIdx)
-{
-	if (nRowIdx == 0 && nColIdx < m_iLife)
-	{
-		return true;
-	}
-
-	return false;
-}
-
-//获取游戏类型
-SCENE_INDEX CFroggerGame::GetSceneType()
-{
-	return SCENE_FROGGER;
-}
-
-
-//更新所有河道
-bool CFroggerGame::UpdateRivers(float dt)
-{
-	m_fRiverCurTime += dt;
-	if (m_fRiverCurTime < DEFAULT_REFRESHTIME - 30 * m_iSpeed)
-	{
-		return false;
-	}
+	// Random udpate river count
+	int nUpdateRiverCount = Random(UPDATE_RIVER_COUNT_MIN, RIVER_COUNT);
 	
-	//重置
-	m_fRiverCurTime = 0;
-
-	//随机更新几个河道
-	int iUpdateCount = 2 + Random(0, RIVER_COUNT - 2);
-	ClearInvalidNums();
-	for (int i = 0; i < iUpdateCount; ++i)
+	// Update
+	for (int nUpdateIdx = 0; nUpdateIdx < nUpdateRiverCount && nUpdateIdx < RIVER_COUNT; ++nUpdateIdx)
 	{
-		int nIndex = Random(0, RIVER_COUNT);
-		int nRowIdx = RIVER_ROWTOP_INDEX + 1 + nIndex * 2;
-		UpdateRiver(nRowIdx);
-		AddInvalidNum(nIndex);
-	}
-	ClearInvalidNums();
-
-	return iUpdateCount > 0;
-}
-
-//更新指定行的河道
-void CFroggerGame::UpdateRiver(int nRowIdx)
-{
-	RIVER& stRiver = m_mapRiverData[nRowIdx];
-
-	//更新
-	if (stRiver.bLeft)
-	{
-		stRiver.iOffset += 1;
-		if (stRiver.iOffset >= RIVER_LEN)
+		int nRiverIdx = vecUpdateRiverIdx[nUpdateIdx];
+		_TRiverData& stRiverData = m_arrRiverData[nRiverIdx];
+		stRiverData.nMoveInterval += dt;
+		if (stRiverData.nMoveInterval < __GetRiverUpdateInterval())
 		{
-			stRiver.iOffset = 0;
+			continue;
 		}
 
+		stRiverData.nMoveInterval = 0;
+		stRiverData.nOffset += (stRiverData.bLeftFlag ? 1 : -1);
+		if (stRiverData.nOffset <= -RIVER_COLUMN_COUNT)
+		{
+			stRiverData.nOffset = 0;
+		}
+		else if (stRiverData.nOffset >= RIVER_COLUMN_COUNT)
+		{
+			stRiverData.nOffset = 0;
+		}
+
+		if (__CheckGameOver())
+		{
+			GameOverWithBoomAnim(m_stSelfData.stPos);
+		}
+
+		// Need update
+		bUpdateFlag = true;
+	}
+}
+
+
+void CFroggerGame::__UpdateSelf(float dt, bool& bUpdateFlag)
+{
+	m_stSelfData.nInterval += dt;
+	if (m_stSelfData.nInterval < SELF_UPDATE_INTERVAL)
+	{
+		return;
+	}
+
+	// Reset
+	m_stSelfData.nInterval = 0;
+	m_stSelfData.bVisibleFlag = !m_stSelfData.bVisibleFlag;
+	bUpdateFlag = true;
+}
+
+
+void CFroggerGame::__UpdateAllBricksState()
+{
+	// Draw rivers
+	for (int nIndex = 0; nIndex < RIVER_COUNT; ++nIndex)
+	{
+		const _TRiverData& stRiverData = m_arrRiverData[nIndex];
+		int nOffset = ((stRiverData.nOffset < 0) ? (RIVER_COLUMN_COUNT + stRiverData.nOffset) : stRiverData.nOffset);
+		const bool* arrRiverShape = RIVER_SHAPE[stRiverData.nRiverIdx];
 		int nColIdx = 0;
-		for (int i = stRiver.iOffset; i < RIVER_LEN && nColIdx < COLUMN_NUM; ++i, ++nColIdx)
+		for (int nIdx = nOffset; nIdx < RIVER_COLUMN_COUNT && nColIdx < COLUMN_COUNT; ++nIdx, ++nColIdx)
 		{
-			m_arrBrickState[nRowIdx][nColIdx] = stRiver.arrDefaultState[i];
-
+			UpdateBrickState(GET_BRICKID(stRiverData.nRowIdx, nColIdx), arrRiverShape[nIdx]);
+		}
+		for (int nIdx = 0; nColIdx < COLUMN_COUNT; ++nIdx, ++nColIdx)
+		{
+			UpdateBrickState(GET_BRICKID(stRiverData.nRowIdx, nColIdx), arrRiverShape[nIdx]);
 		}
 
-		for (int i = 0; i < RIVER_LEN && nColIdx < COLUMN_NUM; ++i, ++nColIdx)
-		{
-			m_arrBrickState[nRowIdx][nColIdx] = stRiver.arrDefaultState[i];
-		}
 	}
-	else
+
+	// Draw succ dot
+	FOREACH_IN_CONST_CONTAINER(TList_SuccDotPos, m_lsSuccDotPos, itDotPos)
 	{
-		stRiver.iOffset -= 1;
-		if (stRiver.iOffset <= -RIVER_LEN)
-		{
-			stRiver.iOffset = 0;
-		}
-
-		int nColIdx = 0;
-		for (int i = stRiver.iOffset + RIVER_LEN; i < RIVER_LEN && nColIdx < COLUMN_NUM; ++i, ++nColIdx)
-		{
-			m_arrBrickState[nRowIdx][nColIdx] = stRiver.arrDefaultState[i];
-		}
-
-		for (int i = 0; i < RIVER_LEN && nColIdx < COLUMN_NUM; ++i, ++nColIdx)
-		{
-			m_arrBrickState[nRowIdx][nColIdx] = stRiver.arrDefaultState[i];
-		}
+		UpdateBrickState(GET_BRICKIDBYPOS(*itDotPos), true);
 	}
+
+	// Draw boom or self
+	if (!DrawBoom())
+	{
+		UpdateBrickState(GET_BRICKIDBYPOS(m_stSelfData.stPos), m_stSelfData.bVisibleFlag);
+	}
+
+	// Update immediately
+	UpdateBrickState(0, GetBrickState(0), true);
 }
 
 
-//更新自己
-bool CFroggerGame::UpdateSelf(float dt)
+int CFroggerGame::__GetRiverUpdateInterval()
 {
-	m_fSelfCurTime += dt;
-	if (m_fSelfCurTime >= SELF_REFRESHTIME)
-	{
-		m_fSelfCurTime = 0;
-		m_bSelfState = !m_bSelfState;
-		return true;
-	}
-
-	return false;
+	return RIVER_UPDATE_INTERVAL - 40 * m_nSpeed;
 }
 
 
-//初始化数据、变量等
-void CFroggerGame::InitData()
-
+bool CFroggerGame::__GetNextPos(POSITION& stPos, int nDir)
 {
-	//设置初始所在位置
-	m_iSelfRowIdx = ROW_NUM - 1;
-	m_iSelfColIdx = COLUMN_NUM / 2 - 1;
-
-	//初始化青蛙的时间和状态
-	m_fSelfCurTime = 0;
-	m_bSelfState = false;
-
-	//初始化爆炸状态
-	m_iShowBoomCount = 0;
-	m_fBoomCurTime = 0;
-
-	//初始化河道当前时间
-	m_fRiverCurTime = 0;
-
-	//初始化游戏通过当前时间
-	m_fPassCurTime = 0;
-
-	//初始化游戏状态
-	m_enGameState = GAMESTATE_RUNNING;
-
-	//初始化各个河道状态数据
-	int iRiverCount = 0;
-	for (int i = ROW_NUM - 2; i >= RIVER_ROWTOP_INDEX; --i)
+	switch (nDir)
 	{
-		if (i % 2 == 0)
-		{
-			for (int j = 0; j < COLUMN_NUM; ++j)
-			{
-				m_arrBrickState[i][j] = true;
-			}
-		}
-		else
-		{
-			RIVER& stRiver = m_mapRiverData[i];
-			stRiver.iOffset = 0;
+	case DIR_RIGHT:
+		++stPos.y;
+		break;
 
-			//设置初始状态
-			for (int j = 0; j < COLUMN_NUM; ++j)
-			{
-				m_arrBrickState[i][j] = stRiver.arrDefaultState[j];
-			}
+	case DIR_LEFT:
+		--stPos.y;
+		break;
 
-			++iRiverCount;
-		}
+	case DIR_UP:
+		stPos.x -= 2;
+		break;
+
+	case DIR_DOWN:
+		stPos.x += 2;
+		break;
+
+	default:
+		return false;
+		break;
 	}
 
-	//初始化其他行
-	for (int i = RIVER_ROWTOP_INDEX - 1; i >= 0; --i)
-	{
-		for (int j = 0; j < COLUMN_NUM; ++j)
-		{
-			m_arrBrickState[i][j] = false;
-		}
-	}
-
-	//最后一行
-	for (int j = 0; j < COLUMN_NUM; ++j)
-	{
-		m_arrBrickState[ROW_NUM - 1][j] = false;
-	}
-}
-
-
-//更新游戏状态：检查是否游戏结束
-void CFroggerGame::UpdateGameState()
-{
-	if (m_arrBrickState[m_iSelfRowIdx][m_iSelfColIdx])
-	{
-		m_enGameState = GAMESTATE_OVER;
-		PLAY_EFFECT(EFFECT_BOOM);
-
-		//振动
-		m_pGameScene->OnLongVibrate();
-	}
-}
-
-
-//设置爆炸
-bool CFroggerGame::SetBoom( float dt )
-{
-	m_fBoomCurTime += dt;
-	if (m_fBoomCurTime < BOOM_REFRESHTIME)
+	if (stPos.x < 0 || stPos.x >= ROW_COUNT
+		|| stPos.y < 0 || stPos.y >= COLUMN_COUNT)
 	{
 		return false;
 	}
 
-	//重置
-	m_fBoomCurTime = 0;
-
-	int iColStartIdx = m_iSelfColIdx;
-	if (iColStartIdx > COLUMN_NUM - 4)
-	{
-		iColStartIdx = COLUMN_NUM - 4;
-	}
-
-	bool bShow = (m_iShowBoomCount % 2 == 0);
-	for (int i = m_iSelfRowIdx - 3; i <= m_iSelfRowIdx; ++i)
-	{
-		int iIndex = i - (m_iSelfRowIdx - 3);
-		for (int j = iColStartIdx; j < iColStartIdx + 4; ++j)
-		{
-			m_arrBrickState[i][j] = bShow && BOOM_STATE[iIndex][j - iColStartIdx];
-		}
-	}
-
-	++m_iShowBoomCount;
 	return true;
 }
 
 
-//左按下
-void CFroggerGame::OnLeftBtnPressed()
+bool CFroggerGame::__CheckGameOver()
 {
-	if (m_enGameState != GAMESTATE_RUNNING || m_iSelfColIdx == 0)
+	// Check current column
+	for (int nIndex = 0; nIndex < RIVER_COUNT; ++nIndex)
 	{
-		return;
-	}
-
-	//按钮音效
-	PLAY_EFFECT(EFFECT_CHANGE2);
-
-	//清除旧的位置
-	m_pGameScene->UpdateBrick(m_iSelfRowIdx, m_iSelfColIdx, false, false);
-
-	--m_iSelfColIdx;
-	m_pGameScene->UpdateBrick(m_iSelfRowIdx, m_iSelfColIdx, false, true);
-
-	//更新游戏状态
-	UpdateGameState();
-}
-
-//右按下
-void CFroggerGame::OnRightBtnPressed()
-{
-	if (m_enGameState != GAMESTATE_RUNNING || m_iSelfColIdx == COLUMN_NUM - 1)
-	{
-		return;
-	}
-
-	//按钮音效
-	PLAY_EFFECT(EFFECT_CHANGE2);
-
-	//清除旧的位置
-	m_pGameScene->UpdateBrick(m_iSelfRowIdx, m_iSelfColIdx, false, false);
-
-	++m_iSelfColIdx;
-	m_pGameScene->UpdateBrick(m_iSelfRowIdx, m_iSelfColIdx, false, true);
-
-	//更新游戏状态
-	UpdateGameState();
-}
-
-//上按下
-void CFroggerGame::OnUpBtnPressed()
-{
-	if (m_enGameState != GAMESTATE_RUNNING || m_iSelfRowIdx < RIVER_ROWTOP_INDEX)
-	{
-		return;
-	}
-
-	//按钮音效
-	PLAY_EFFECT(EFFECT_CHANGE2);
-
-	//清除旧的位置
-	m_pGameScene->UpdateBrick(m_iSelfRowIdx, m_iSelfColIdx, false, false);
-
-	m_iSelfRowIdx -= 2;
-	m_pGameScene->UpdateBrick(m_iSelfRowIdx, m_iSelfColIdx, false, true);
-
-	UpdateGameState();
-
-	if (m_iSelfRowIdx == RIVER_ROWTOP_INDEX - 1 && m_enGameState != GAMESTATE_OVER)
-	{
-		//到达顶端的方块不再闪烁显示
-		m_arrBrickState[m_iSelfRowIdx][m_iSelfColIdx] = true;
-
-		//到达最顶端，分数增加
-		m_iScore += 30;
-		m_pGameScene->UpdateScore(m_iScore);
-
-		//更新通过的青蛙数量
-		++m_iPassCount;
-
-		//检查是否通过关卡
-		if (m_iPassCount == GAMEPASS_COUNT)
+		const _TRiverData& stRiverData = m_arrRiverData[nIndex];
+		if (m_stSelfData.stPos.x != stRiverData.nRowIdx)
 		{
-			m_enGameState = GAMESTATE_PASS;
-
-			//振动
-			m_pGameScene->OnLongVibrate();
+			continue;
 		}
-		else
+
+		int nOffset = ((stRiverData.nOffset < 0) ? (RIVER_COLUMN_COUNT + stRiverData.nOffset) : stRiverData.nOffset);
+		const bool* arrRiverShape = RIVER_SHAPE[stRiverData.nRiverIdx];
+		int nColIdx = 0;
+		for (int nIdx = nOffset; nIdx < RIVER_COLUMN_COUNT && nColIdx < COLUMN_COUNT; ++nIdx, ++nColIdx)
 		{
-			//重置位置和状态
-			m_iSelfRowIdx = ROW_NUM - 1;
-			m_iSelfColIdx = 6;
-			m_fSelfCurTime = 0;
-			m_bSelfState = true;
+			if (arrRiverShape[nIdx] && nColIdx == m_stSelfData.stPos.y)
+			{
+				return true;
+			}
+		}
+		for (int nIdx = 0; nColIdx < COLUMN_COUNT; ++nIdx, ++nColIdx)
+		{
+			if (arrRiverShape[nIdx] && nColIdx == m_stSelfData.stPos.y)
+			{
+				return true;
+			}
 		}
 	}
-}
 
-//下按下
-void CFroggerGame::OnDownBtnPressed()
-{
-	if (m_enGameState != GAMESTATE_RUNNING || m_iSelfRowIdx >= ROW_NUM - 1)
+	// Check top pos
+	FOREACH_IN_CONST_CONTAINER(TList_SuccDotPos, m_lsSuccDotPos, itDotPos)
 	{
-		return;
+		if (EQUAL_POS(*itDotPos, m_stSelfData.stPos))
+		{
+			return true;
+		}
 	}
 
-	//按钮音效
-	PLAY_EFFECT(EFFECT_CHANGE2);
-
-	//清除旧的位置
-	m_pGameScene->UpdateBrick(m_iSelfRowIdx, m_iSelfColIdx, false, false);
-
-	m_iSelfRowIdx += 2;
-	m_pGameScene->UpdateBrick(m_iSelfRowIdx, m_iSelfColIdx, false, true);
-
-	//更新游戏状态
-	UpdateGameState();
-}
-
-//Fire按下
-void CFroggerGame::OnFireBtnPressed()
-{
-	OnUpBtnPressed();
+	return false;
 }
 
 
-void CFroggerGame::SaveGameData()
+int CFroggerGame::__GetStartRowIdx()
 {
-	
+	return RIVER_START_ROWIDX - m_nLevel / 2;
+}
+
+
+int CFroggerGame::__GetTopRowIdx()
+{
+	return RIVER_TOP_ROWIDX - m_nLevel / 2;
 }

@@ -176,11 +176,25 @@ namespace PhoneDirect3DXamlAppInterop
                         }
                         m_textBox = null;
                         break;
-                    case Cocos2dEvent.GiveScore:
-                        OnGiveScore();
+
+                    case Cocos2dEvent.RateApp:
+                        OnRateApp();
                         break;
+
                     case Cocos2dEvent.ShowMyApps:
                         OnShowMyApps();
+                        break;
+
+                    case Cocos2dEvent.ShortVibrate:
+                        OnShortVibrate();
+                        break;
+
+                    case Cocos2dEvent.LongVibrate:
+                        OnLongVibrate();
+                        break;
+
+                    case Cocos2dEvent.OpenURL:
+                        OnOpenURL();
                         break;
                 }
             });
@@ -229,14 +243,30 @@ namespace PhoneDirect3DXamlAppInterop
             }
         }
 
-        async public void OnGiveScore()
+
+        async public void OnRateApp()
         {
-            await Windows.System.Launcher.LaunchUriAsync(new Uri("ms-windows-store:reviewapp?appid=" + Windows.ApplicationModel.Store.CurrentApp.AppId));//179f10e2-cb26-4795-8452-1e850e6c01c0
+            await Windows.System.Launcher.LaunchUriAsync(new Uri("ms-windows-store:reviewapp?appid=" + Windows.ApplicationModel.Store.CurrentApp.AppId));
         }
 
         async public void OnShowMyApps()
         {
             await Windows.System.Launcher.LaunchUriAsync(new Uri("ms-windows-store://publisher/?name=lfeng"));
+        }
+
+        public void OnShortVibrate()
+        {
+            Windows.Phone.Devices.Notification.VibrationDevice.GetDefault().Vibrate(TimeSpan.FromMilliseconds(80));
+        }
+
+        public void OnLongVibrate()
+        {
+            Windows.Phone.Devices.Notification.VibrationDevice.GetDefault().Vibrate(TimeSpan.FromMilliseconds(1000));
+        }
+
+        async public void OnOpenURL()
+        {
+            await Windows.System.Launcher.LaunchUriAsync(new Uri("https://lfeng1420.github.io"));
         }
     }
 }

@@ -1,484 +1,272 @@
+#include "stdafx.h"
 #include "SnakeGame.h"
 
-//相反方向
-int OPPSITE_DIRECTION[DIR_MAX] = 
+
+void CSnakeGame::Start()
 {
-	DIR_LEFT,
-	DIR_UP,
-	DIR_RIGHT,
-	DIR_DOWN,
-};
+	CGameBase::Start();
 
-
-CSnakeGame::CSnakeGame(CGameScene* pGameScene) : CSceneBase(pGameScene)
-{
-}
-
-
-CSnakeGame::~CSnakeGame()
-{
-}
-
-
-//初始化
-void CSnakeGame::Init()
-{
-	//获取在选择游戏界面设置的速度和等级
-	m_iSpeed = GET_INTVALUE("SPEED", 0);
-	m_iLevel = GET_INTVALUE("LEVEL", 0);
-
-	//默认生命数为4
-	m_iLife = GET_INTVALUE("LIFE", 4);
-
-	//初始化当前分数
-	m_iScore = 0;
-
-	//更新界面，分数、等级和生命
-	m_pGameScene->UpdateScore(m_iScore, false);
-	m_pGameScene->UpdateLevel(m_iLevel);
-	m_pGameScene->UpdateSmallBricks();
-
-	InitData();
-}
-
-
-//更新
-void CSnakeGame::Play(float dt)
-{
-	if (m_enGameState == GAMESTATE_RUNNING)
+	// Initialize snake data
+	int nCenterX = (ROW_COUNT - 1) / 2;
+	int nCenterY = (COLUMN_COUNT - 1) / 2 + SNAKE_BODY_LEN / 2;
+	m_stSnakeData.nDir = DIR_RIGHT;
+	m_stSnakeData.nMoveInterval = 0;
+	m_stSnakeData.stHeaderPos.x = nCenterX;
+	m_stSnakeData.stHeaderPos.y = nCenterY;
+	m_stSnakeData.bSpeedUpFlag = false;
+	m_stSnakeData.lsNodePos.clear();
+	for (int nIndex = 0; nIndex < SNAKE_BODY_LEN; ++nIndex)
 	{
-		//刷新标记
-		bool bNeedRefreshFlag = false;
-
-		m_fWaitRefreshTime += dt;
-		float fMaxTime = m_bImproveSpeed ? 50 : (SNAKE_MOVE_INTERVAL - 30 * m_iSpeed);
-		if (m_fWaitRefreshTime >= fMaxTime)
-		{
-			m_fWaitRefreshTime = 0;
-			SnakeMove();
-			bNeedRefreshFlag = true;
-		}
-
-		m_fAppleShowTime += dt;
-		if (m_fAppleShowTime >= APPLE_REFRESH_INTERVAL)
-		{
-			m_fAppleShowTime = 0;
-			m_bAppleState = !m_bAppleState;
-			bNeedRefreshFlag = true;
-		}
-
-		//是否需要刷新界面
-		if (!bNeedRefreshFlag)
-		{
-			return;
-		}
+		POSITION stPos = { nCenterX, --nCenterY };
+		m_stSnakeData.lsNodePos.push_back(stPos);
 	}
-	else if (m_enGameState == GAMESTATE_PASS)
-	{
-		//时间更新
-		m_fWaitRefreshTime += dt;
-		if (m_fWaitRefreshTime < GAMEPASS_REFRESH_INTERVAL)
-		{
-			return;
-		}
-		m_fWaitRefreshTime = 0;
 
-		if (m_iAddScoreCount < GAMEPASS_ADDCOUNT)
+	// Initialize apple data
+	m_stAppleData.bVisibleFlag = false;
+	m_stAppleData.nRefreshInterval = 0;
+	__RandApplePos();
+
+	// Update now
+	__UpdateAllBricksState();
+}
+
+
+void CSnakeGame::Update(float dt)
+{
+	bool bUpdateFlag = false;
+
+	switch (m_enGameStage)
+	{
+	case STAGE_FAIL:
+		UpdateBoomAnim(dt, bUpdateFlag);
+		break;
+
+	case STAGE_PASS:
 		{
-			++m_iAddScoreCount;
-			m_iScore += GAMEPASS_ADDSCORE;
-			m_pGameScene->UpdateScore(m_iScore);
+			// loop add score util the count is arrived
+			AddScoreInPassStage(dt, APPLE_ADD_SCORE);
 			return;
 		}
-		else
+		break;
+
+	case STAGE_NORMAL:
 		{
-			//更新速度和等级
-			if (++m_iSpeed > 10)
+			__UpdateSnake(dt, bUpdateFlag);
+			__UpdateApple(dt, bUpdateFlag);
+		}
+		break;
+
+	default:
+		return;
+		break;
+	}
+
+	if (bUpdateFlag)
+	{
+		__UpdateAllBricksState();
+	}
+}
+
+
+EnGameID CSnakeGame::GetGameID()
+{
+	return GAMEID_SNAKE;
+}
+
+
+void CSnakeGame::OnButtonEvent(const SEventContextButton* pButtonEvent)
+{
+	if (m_enGameStage != STAGE_NORMAL)
+	{
+		return;
+	}
+
+	if (pButtonEvent->nButtonID == BTNID_FIRE)
+	{
+		m_stSnakeData.bSpeedUpFlag = pButtonEvent->bPressedFlag;
+		return;
+	}
+
+	if (pButtonEvent->bPressedFlag 
+		&& pButtonEvent->nButtonID < BTNID_DIRMAX)
+	{
+		int nDir = BTNID_2_DIR[pButtonEvent->nButtonID];
+		bool bOppisiteDirFlag = (nDir == OPPISITE_DIR[m_stSnakeData.nDir]);
+		if (bOppisiteDirFlag)
+		{
+			// push header before the first node
+			m_stSnakeData.lsNodePos.push_front(m_stSnakeData.stHeaderPos);
+
+			// reverse
+			m_stSnakeData.lsNodePos.reverse();
+
+			// update header
+			m_stSnakeData.stHeaderPos = m_stSnakeData.lsNodePos.front();
+			m_stSnakeData.lsNodePos.pop_front();
+		}
+
+		// Update dir
+		int nBackupDir = m_stSnakeData.nDir;
+		m_stSnakeData.nDir = nDir;
+
+		// Move
+		POSITION stOldPos = m_stSnakeData.stHeaderPos;
+		bool bUpdateFlag = false;
+		__UpdateSnake(__GetSnakeMoveInterval(), bUpdateFlag, !bOppisiteDirFlag);
+		if (!EQUAL_POS(stOldPos, m_stSnakeData.stHeaderPos))
+		{
+			// Update all bricks immediately
+			__UpdateAllBricksState();
+			return;
+		}
+
+		// Recover dir
+		m_stSnakeData.nDir = nBackupDir;
+	}
+}
+
+
+void CSnakeGame::__UpdateSnake(float dt, bool& bUpdateFlag, bool bAllowGameOverFlag /*= true*/)
+{
+	m_stSnakeData.nMoveInterval += dt;
+	if (m_stSnakeData.nMoveInterval < __GetSnakeMoveInterval())
+	{
+		return;
+	}
+
+	m_stSnakeData.nMoveInterval = 0;
+	bUpdateFlag = true;
+	// Play effect
+	PlayEffect(EFFECT_NEXT);
+
+	// Update header pos
+	POSITION stHeaderPos = m_stSnakeData.stHeaderPos;
+	GetNextPos(stHeaderPos, m_stSnakeData.nDir);
+
+	// Check game over
+	if (!__CheckPosValid(stHeaderPos))
+	{
+		if (bAllowGameOverFlag)
+		{
+			GameOverWithBoomAnim(stHeaderPos);
+		}
+		return;
+	}
+
+	// Update other node
+	POSITION stNextPos = m_stSnakeData.stHeaderPos;
+	FOREACH_IN_CONTAINER(TList_SnakeNodePos, m_stSnakeData.lsNodePos, itNodePos)
+	{
+		POSITION stTempPos = *itNodePos;
+		*itNodePos = stNextPos;
+		stNextPos = stTempPos;
+	}
+
+	// Update header
+	m_stSnakeData.stHeaderPos = stHeaderPos;
+
+	// Check eat apple
+	if (EQUAL_POS(stHeaderPos, m_stAppleData.stPos))
+	{
+		m_stSnakeData.lsNodePos.push_back(stNextPos);
+		AddScore(APPLE_ADD_SCORE);
+		__RandApplePos();
+	}
+}
+
+
+void CSnakeGame::__UpdateApple(float dt, bool& bUpdateFlag)
+{
+	m_stAppleData.nRefreshInterval += dt;
+	if (m_stAppleData.nRefreshInterval < APPLE_REFRESH_INTERVAL)
+	{
+		return;
+	}
+
+	m_stAppleData.nRefreshInterval = 0;
+	m_stAppleData.bVisibleFlag = !m_stAppleData.bVisibleFlag;
+	bUpdateFlag = true;
+}
+
+
+void CSnakeGame::__RandApplePos()
+{
+	// Add valid pos
+	int nHeadBrickID = GET_BRICKIDBYPOS(m_stSnakeData.stHeaderPos);
+	vector<POSITION> vecValidPos;
+	for (int nRowIdx = 0; nRowIdx < ROW_COUNT; ++nRowIdx)
+	{
+		for (int nColIdx = 0; nColIdx < COLUMN_COUNT; ++nColIdx)
+		{
+			POSITION stPos = { nRowIdx, nColIdx };
+			if (nHeadBrickID == GET_BRICKIDBYPOS(stPos) || !__CheckPosValid(stPos))
 			{
-				m_iSpeed = 0;
-				if (++m_iLevel > 10)
-				{
-					m_iLevel = 0;
-				}
+				continue;
 			}
 
-			//更新显示
-			m_pGameScene->UpdateLevel(m_iLevel);
-			m_pGameScene->UpdateSpeed(m_iSpeed);
-
-			//重置数据
-			InitData();
-		}
-	}
-	else if (m_enGameState == GAMESTATE_OVER)
-	{
-		//时间更新
-		m_fWaitRefreshTime += dt;
-		if (m_fWaitRefreshTime < BOOM_REFRESH_INTERVAL)
-		{
-			return;
-		}
-		m_fWaitRefreshTime = 0;
-
-		if (m_iShowBoomCount < BOOM_SHOWCOUNT)
-		{
-			m_bShowBoom = !m_bShowBoom;
-			++m_iShowBoomCount;
-		}
-		else
-		{
-			//设置剩余生命
-			--m_iLife;
-			m_pGameScene->UpdateSmallBricks();
-
-			//检查是否有剩余生命，没有则返回游戏结束界面
-			if (m_iLife <= 0)
-			{
-				m_pGameScene->RunScene(SCENE_GAMEOVER);
-				return;
-			}
-
-			//重置数据
-			InitData();
+			vecValidPos.push_back(stPos);
 		}
 	}
 
-	m_pGameScene->UpdateBricks();
-}
-
-
-//获取当前Brick状态
-bool CSnakeGame::GetBrickState(int iRowIndex, int iColIndex)
-{
-	POSITION stCurPos;
-	stCurPos.m_iRowIdx = iRowIndex;
-	stCurPos.m_iColIdx = iColIndex;
-	
-	if (m_enGameState == GAMESTATE_OVER)
-	{
-		const POSITION& stHeaderPos = m_mapSnakeNodes[0];
-		int iRowStartIdx = (stHeaderPos.m_iRowIdx > ROW_NUM - 4 ? ROW_NUM - 4 : stHeaderPos.m_iRowIdx);
-		int iColStartIdx = (stHeaderPos.m_iColIdx > COLUMN_NUM - 4 ? COLUMN_NUM - 4 : stHeaderPos.m_iColIdx);
-		for (int i = iRowStartIdx; i < iRowStartIdx + 4; ++i)
-		{
-			for (int j = iColStartIdx; j < iColStartIdx + 4; ++j)
-			{
-				if (iRowIndex == i && iColIndex == j)
-				{
-					return m_bShowBoom && BOOM_STATE[i - iRowStartIdx][j - iColStartIdx];
-				}
-			}
-		}
-	}
-
-	//苹果
-	if (stCurPos == m_stApplePos)
-	{
-		return m_bAppleState;
-	}
-
-	//蛇
-	for (int i = 0; i < m_mapSnakeNodes.size(); ++i)
-	{
-		if (stCurPos == m_mapSnakeNodes[i])
-		{
-			return true;
-		}
-	}
-
-	return false;
-}
-
-
-//获取小方块序列中的方块状态
-bool CSnakeGame::GetSmallBrickState(int iRowIndex, int iColIndex)
-{
-	if (iRowIndex == 0 && iColIndex < m_iLife)
-	{
-		return true;
-	}
-
-	return false;
-}
-
-
-//获取游戏类型
-SCENE_INDEX CSnakeGame::GetSceneType()
-{
-	return SCENE_SNAKE;
-}
-
-
-void CSnakeGame::InitData()
-{
-	//初始化蛇方向
-	m_iSnakeDirection = DIR_RIGHT;
-
-	//初始化蛇身，默认有3节，0默认为头部，从头部开始创建
-	m_mapSnakeNodes.clear();
-	int iStartColIdx = COLUMN_NUM / 2 + SNAKE_DEFAULT_LEN / 2;
-	for (int i = 0; i < SNAKE_DEFAULT_LEN; ++i, --iStartColIdx)
-	{
-		POSITION& refPos = m_mapSnakeNodes[i];
-		refPos.m_iRowIdx = ROW_NUM / 2 - 1;
-		refPos.m_iColIdx = iStartColIdx;
-	}
-
-	//初始化时间
-	m_fWaitRefreshTime = 0;
-	m_fAppleShowTime = 0;
-
-	//苹果显示状态
-	m_bAppleState = false;
-
-	//游戏状态
-	m_enGameState = GAMESTATE_RUNNING;
-
-	//爆炸显示计数
-	m_iShowBoomCount = 0;
-	//爆炸显示状态
-	m_bShowBoom = true;
-
-	//分数增加次数计数
-	m_iAddScoreCount = 0;
-
-	//初始化加速标记
-	m_bImproveSpeed = false;
-
-	//随机苹果位置
-	RandApplePos();
-}
-
-
-//随机苹果位置
-void CSnakeGame::RandApplePos()
-{
-	ClearInvalidNums();
-	for (int i = 0; i < m_mapSnakeNodes.size(); ++i)
-	{
-		AddInvalidNum(m_mapSnakeNodes[i].m_iRowIdx * COLUMN_NUM + m_mapSnakeNodes[i].m_iColIdx);
-	}
-
-	int iTemp = Random(0, ROW_NUM * COLUMN_NUM);
-
-	//设置位置
-	m_stApplePos.m_iRowIdx = iTemp / COLUMN_NUM;
-	m_stApplePos.m_iColIdx = iTemp % COLUMN_NUM;
-}
-
-
-//蛇更新位置
-void CSnakeGame::SnakeMove()
-{
-	PLAY_EFFECT(EFFECT_WALL);
-
-	//记录最后一个节点位置，因为可能需要增加节点
-	int iNodeCount = m_mapSnakeNodes.size();
-	POSITION stLastPos = m_mapSnakeNodes[iNodeCount - 1];
-
-	//获取头部下个位置
-	POSITION stHeaderPos = m_mapSnakeNodes[0];
-	GetNextPos(stHeaderPos);
-
-	if (CheckGameOver(stHeaderPos))
-	{
-		//设置结束状态
-		m_enGameState = GAMESTATE_OVER;
-
-		//振动
-		m_pGameScene->OnLongVibrate();
-
-		//设置苹果显示状态
-		m_bAppleState = true;
-
-		//音效
-		PLAY_EFFECT(EFFECT_BOOM);
-		return;
-	}
-
-	//更新其他节点
-	for (int i = iNodeCount - 2; i >= 0; --i)
-	{
-		POSITION& stSrcPos = m_mapSnakeNodes[i + 1];
-		const POSITION& stDestPos = m_mapSnakeNodes[i];
-		stSrcPos.m_iRowIdx = stDestPos.m_iRowIdx;
-		stSrcPos.m_iColIdx = stDestPos.m_iColIdx;
-	}
-
-	//头部位置更新
-	m_mapSnakeNodes[0] = stHeaderPos;
-
-	//检查头部位置是否是苹果的位置
-	if (stHeaderPos == m_stApplePos)
-	{
-		//加分
-		m_iScore += SNAKE_EAT_ADD_SCORE;
-		m_pGameScene->UpdateScore(m_iScore);
-
-		//增加节点
-		m_mapSnakeNodes[iNodeCount] = stLastPos;
-
-		//检查是否通过
-		/*if (iNodeCount + 1 == SNAKE_MAX_LEN)
-		{
-			m_enGameState = GAMESTATE_PASS;
-			return;
-		}*/
-
-		//苹果不显示
-		m_pGameScene->UpdateBrick(m_stApplePos.m_iRowIdx, m_stApplePos.m_iColIdx, false, false);
-
-		//重新随机苹果位置
-		RandApplePos();
-	}
-}
-
-
-
-bool CSnakeGame::CheckGameOver(const POSITION& stHeaderPos)
-{
-	//检查位置是否有效
-	if (stHeaderPos.m_iColIdx < 0 || stHeaderPos.m_iColIdx > COLUMN_NUM - 1
-		|| stHeaderPos.m_iRowIdx < 0 || stHeaderPos.m_iRowIdx > ROW_NUM - 1)
-	{
-		return true;
-	}
-
-	for (int i = 1; i < m_mapSnakeNodes.size(); ++i)
-	{
-		if (stHeaderPos == m_mapSnakeNodes[i])
-		{
-			return true;
-		}
-	}
-
-	return false;
-}
-
-
-//改变方向
-void CSnakeGame::ChangeDirection(int iDirection)
-{
-	//如果是相同方向或者游戏不是运行中状态，则返回
-	if (m_enGameState != GAMESTATE_RUNNING || m_iSnakeDirection == iDirection)
+	if (vecValidPos.empty())
 	{
 		return;
 	}
 
-	//按钮音效
-	PLAY_EFFECT(EFFECT_CHANGE2);
+	// Random
+	std::random_shuffle(vecValidPos.begin(), vecValidPos.end());
+	m_stAppleData.nRefreshInterval = 0;
+	m_stAppleData.bVisibleFlag = true;
+	m_stAppleData.stPos = vecValidPos[0];
+}
 
-	//设置方向
-	int nOldDirection = m_iSnakeDirection;
-	m_iSnakeDirection = iDirection;
 
-	//如果是反方向
-	if (iDirection == OPPSITE_DIRECTION[nOldDirection])
+bool CSnakeGame::__CheckPosValid(const POSITION& stHeaderPos)
+{
+	if (stHeaderPos.x < 0 || stHeaderPos.x >= ROW_COUNT
+		|| stHeaderPos.y < 0 || stHeaderPos.y >= COLUMN_COUNT)
 	{
-		//转换
-		int iNodeCount = m_mapSnakeNodes.size();
-		for (int i = 0; i < iNodeCount / 2; ++i)
-		{
-			POSITION stTempPos = m_mapSnakeNodes[i];
-			m_mapSnakeNodes[i] = m_mapSnakeNodes[iNodeCount - 1 - i];
-			m_mapSnakeNodes[iNodeCount - 1 - i] = stTempPos;
-		}
+		return false;
+	}
 
-		//获取下一个位置
-		POSITION stHeaderPos = m_mapSnakeNodes[0];
-		GetNextPos(stHeaderPos);
-
-		//是否可以按照反方向移动，不能则恢复之前的方向
-		if (CheckGameOver(stHeaderPos))
+	FOREACH_IN_CONST_CONTAINER(TList_SnakeNodePos, m_stSnakeData.lsNodePos, itNode)
+	{
+		if (EQUAL_POS(stHeaderPos, *itNode))
 		{
-			m_iSnakeDirection = nOldDirection;
+			return false;
 		}
 	}
-	
-	//移动
-	SnakeMove();
 
-	//重置时间
-	m_fWaitRefreshTime = 0;
+	return true;
 }
 
 
-//左按下
-void CSnakeGame::OnLeftBtnPressed()
+void CSnakeGame::__UpdateAllBricksState()
 {
-	ChangeDirection(DIR_LEFT);
-}
-
-
-//右按下
-void CSnakeGame::OnRightBtnPressed()
-{
-	ChangeDirection(DIR_RIGHT);
-}
-
-
-//上按下
-void CSnakeGame::OnUpBtnPressed()
-{
-	ChangeDirection(DIR_UP);
-}
-
-
-//下按下
-void CSnakeGame::OnDownBtnPressed()
-{
-	ChangeDirection(DIR_DOWN);
-}
-
-
-//Fire按下
-void CSnakeGame::OnFireBtnPressed()
-{
-	if (m_enGameState != GAMESTATE_RUNNING)
+	for (int nBrickID = 0; nBrickID < ROW_COUNT * COLUMN_COUNT; ++nBrickID)
 	{
-		return;
+		UpdateBrickState(nBrickID, false);
 	}
 
-	//按钮音效
-	PLAY_EFFECT(EFFECT_CHANGE2);
-
-	m_bImproveSpeed = true;
-}
-
-
-//Fire释放
-void CSnakeGame::OnFireBtnReleased()
-{
-	if (m_enGameState != GAMESTATE_RUNNING)
+	// Draw snake
+	UpdateBrickState(GET_BRICKIDBYPOS(m_stSnakeData.stHeaderPos), true);
+	FOREACH_IN_CONST_CONTAINER(TList_SnakeNodePos, m_stSnakeData.lsNodePos, itNode)
 	{
-		return;
+		UpdateBrickState(GET_BRICKIDBYPOS(*itNode), true);
 	}
 
-	m_bImproveSpeed = false;
+	// Draw apple
+	UpdateBrickState(GET_BRICKIDBYPOS(m_stAppleData.stPos), m_stAppleData.bVisibleFlag);
+
+	// Draw boom
+	DrawBoom();
+
+	// Update immediately
+	UpdateBrickState(0, GetBrickState(0), true);
 }
 
 
-void CSnakeGame::SaveGameData()
+int CSnakeGame::__GetSnakeMoveInterval()
 {
-	
-}
-
-
-void CSnakeGame::GetNextPos(POSITION& stPos)
-{
-	switch (m_iSnakeDirection)
-	{
-	case DIR_RIGHT:
-		++stPos.m_iColIdx;
-		break;
-	case DIR_DOWN:
-		++stPos.m_iRowIdx;
-		break;
-	case DIR_LEFT:
-		--stPos.m_iColIdx;
-		break;
-	case DIR_UP:
-		--stPos.m_iRowIdx;
-		break;
-	}
+	return (m_stSnakeData.bSpeedUpFlag ? 50 : (SNAKE_MOVE_INTERVAL - m_nSpeed * 30));
 }

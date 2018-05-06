@@ -1,5 +1,4 @@
 #pragma once
-#include "BGGlobal.h"
 
 class CBarrierLayer;
 
@@ -7,24 +6,28 @@ class CVolumeLayer : public Layer
 {
 public:
 	CVolumeLayer();
-	~CVolumeLayer();
+	virtual ~CVolumeLayer();
 
-	//初始化
+	// Init
 	virtual bool init();
 
-	//更新位置
-	void updatePos();
-
+	// CREATE_FUNC macro
 	CREATE_FUNC(CVolumeLayer);
 
-private:
-	//滑动条变化
-	void onSliderValueChanged(Ref* pSender, Control::EventType enEvent);
-
-	//按钮触发
-	void onButtonEvent(Ref* pSender);
+	// Init UI
+	virtual void InitUI();
 
 private:
+	// Create UI
+	void __CreateUI();
+
+	// Slider value change
+	void __OnSliderValueChanged(Ref* pSender, Control::EventType enEvent);
+
+	// Click button
+	void __OnButtonEvent(Ref* pSender);
+
+protected:
 	enum
 	{
 		DEFAULT_HEIGHT = 150,
@@ -35,26 +38,25 @@ private:
 		X_PADDING = 25,
 	};
 
-private:
-	//滑动条
+protected:
+	// Slider
 	ControlSlider* m_pBGMSlider;
 	ControlSlider* m_pEffectSlider;
 
-	//当前值Label
+	// Label
 	Label* m_pBGMVolume;
 	Label* m_pEffetVolume;
-
-	//Label
 	Label* m_pBGMLabel;
 	Label* m_pEffectLabel;
 
-	//背景层
+	// Background layer
 	Sprite*	m_pBGSprite;
 
-	//关闭按钮
+	// Close button
 	MenuItemSprite* m_pCloseMenuItem;
+	Menu*			m_pMenu;
 
-	//阻挡层
+	// Barrier layer
 	CBarrierLayer*	m_pBarrierLayer;
 };
 

@@ -1,130 +1,91 @@
 #pragma once
-#include "SceneBase.h"
-class CFroggerGame : public CSceneBase
+#include "GameBase.h"
+
+class CFroggerGame : public CGameBase
 {
 public:
-	CFroggerGame(CGameScene* pGameScene);
-	~CFroggerGame();
+	// Start
+	virtual void Start();
 
-	//---------------------    CSceneBase    ----------------------
-	//初始化
-	void Init();
+	// Update
+	// param: dt, millisecond
+	virtual void Update(float dt);
 
-	//更新
-	void Play(float dt);
+	// Get game id
+	virtual EnGameID GetGameID();
 
-	//获取当前Brick状态
-	bool GetBrickState(int nRowIdx, int nColIdx);
-
-	//生命数
-	bool GetSmallBrickState(int nRowIdx, int nColIdx);
-
-	//获取游戏类型
-	SCENE_INDEX GetSceneType();
-
-	//左按下
-	void OnLeftBtnPressed();
-
-	//右按下
-	void OnRightBtnPressed();
-
-	//上按下
-	void OnUpBtnPressed();
-
-	//下按下
-	void OnDownBtnPressed();
-
-	//Fire按下
-	void OnFireBtnPressed();
-
-	//游戏状态
-	void SaveGameData();
-
-	//---------------------    CSceneBase    ----------------------
+	// Button event
+	virtual void OnButtonEvent(const SEventContextButton* pButtonEvent);
 
 private:
-	//更新所有河道
-	bool UpdateRivers(float dt);
+	// Init rivers
+	void __InitRivers();
 
-	//更新指定行的河道
-	void UpdateRiver(int nRowIdx);
+	// Update rivers
+	void __UpdateRivers(float dt, bool& bUpdateFlag);
 
-	//更新自己
-	bool UpdateSelf(float dt);
+	// Update self
+	void __UpdateSelf(float dt, bool& bUpdateFlag);
 
-	//初始化数据、变量等
-	void InitData();
+	// Update all bricks state
+	void __UpdateAllBricksState();
 
-	//更新游戏状态
-	void UpdateGameState();
+	// Get river update interval
+	int __GetRiverUpdateInterval();
 
-	//设置爆炸
-	bool SetBoom(float dt);
+	// Get next pos
+	bool __GetNextPos(POSITION& stPos, int nDir);
 
-private:
+	// Check game over
+	bool __CheckGameOver();
+
+	//////////////////////////////////////////////////////////////////////////
+
+	int __GetStartRowIdx();
+
+	int __GetTopRowIdx();
+
+public:
 	enum
 	{
-		RIVER_ROWTOP_INDEX = 8,		//河道最高所在行
-
-		DEFAULT_REFRESHTIME = 700,	//默认刷新时间，毫秒
-
-		SELF_REFRESHTIME = 60,		//自己刷新的时间，毫秒
-
-		RIVER_COUNT = 5,			//河道数量
-
-		GAMEPASS_COUNT = 5,			//达到该数量时游戏进入下一关
-
-		BOOM_SHOWCOUNT = 10,		//闪烁显示爆炸效果次数
-
-		BOOM_REFRESHTIME = 60,		//爆炸闪烁间隔
-
-		GAMEPASS_WAITTIME = 1000,	//通过后等待的时间
-
-		RIVER_LEN = 20,				//河道长度
+		RIVER_UPDATE_INTERVAL = 500,
+		SELF_UPDATE_INTERVAL = 100,
+		PASS_REQUIRE_COUNT = 5,
+		RIVER_COUNT = 5,
+		RIVER_COLUMN_COUNT = 20,
+		PASS_ONE_ADD_SCORE = 10,
+		RIVER_START_ROWIDX = 9,
+		UPDATE_RIVER_COUNT_MIN = 1,
+		RIVER_TOP_ROWIDX = RIVER_START_ROWIDX - 2,
 	};
-	
-	struct RIVER 
-	{
-		bool bLeft;							//是否向左移动
-
-		int iOffset;						//偏移
-
-		bool arrDefaultState[RIVER_LEN];	//默认状态
-	};
-
-	typedef map<int, RIVER> TMAP_RIVER;
 
 private:
-	TMAP_RIVER m_mapRiverData;					//河道数据
+	struct _TRiverData
+	{
+		int nRiverIdx;
+		int nRowIdx;
+		bool bLeftFlag;
+		int nOffset;
+		int nMoveInterval;
+	};
 
-	bool m_arrBrickState[ROW_NUM][COLUMN_NUM];	//Brick状态
+	struct _TSelfData
+	{
+		POSITION stPos;
+		bool bVisibleFlag;
+		int nInterval;
+		int nPassCount;
+	};
 
-	int m_iLife;								//生命数
+	typedef		list<POSITION>		TList_SuccDotPos;
 
-	int m_iSpeed;								//当前速度
+private:
+	// Self data
+	_TSelfData				m_stSelfData;
 
-	int m_iLevel;								//当前等级
+	// River data
+	_TRiverData				m_arrRiverData[RIVER_COUNT];
 
-	int m_iScore;								//当前分数
-
-	int m_iSelfRowIdx;							//自己所在的行索引
-
-	int m_iSelfColIdx;							//自己所在的列索引
-
-	float m_fSelfCurTime;						//自己下一次更新前累计时间
-
-	float m_fRiverCurTime;						//河道当前时间
-
-	int m_iPassCount;							//通过的青蛙数量
-
-	bool m_bSelfState;							//当前状态
-
-	GAME_STATE m_enGameState;					//游戏状态
-
-	int m_iShowBoomCount;						//闪烁显示爆炸效果次数
-
-	float m_fBoomCurTime;						//爆炸当前时间
-
-	float m_fPassCurTime;						//通过后当前时间
+	// Succ dot pos list
+	TList_SuccDotPos		m_lsSuccDotPos;
 };
-

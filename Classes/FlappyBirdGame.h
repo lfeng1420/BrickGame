@@ -1,123 +1,91 @@
 #pragma once
-#include "SceneBase.h"
+#include "GameBase.h"
 
-class CFlappyBirdGame : public CSceneBase
+class CFlappybirdGame : public CGameBase
 {
 public:
-	CFlappyBirdGame(CGameScene* pGameScene);
-	~CFlappyBirdGame();
+	// Start
+	virtual void Start();
 
-	//---------------------    CSceneBase    ----------------------
-	//初始化
-	void Init();
+	// Update
+	// param: dt, millisecond
+	virtual void Update(float dt);
 
-	//更新
-	void Play(float dt);
+	// Get game id
+	virtual EnGameID GetGameID();
 
-	//获取当前Brick状态
-	bool GetBrickState(int iRowIndex, int iColIndex);
-
-	//生命数
-	bool GetSmallBrickState(int iRowIndex, int iColIndex);
-
-	//获取游戏类型
-	SCENE_INDEX GetSceneType();
-	
-	//上按下
-	void OnUpBtnPressed();
-
-	//上按下
-	void OnUpBtnReleased();
-
-	//Fire按下
-	void OnFireBtnPressed();
-
-	//Fire释放
-	void OnFireBtnReleased();
-
-	//游戏状态
-	void SaveGameData();
-
-	//---------------------    CSceneBase    ----------------------
+	// Button event
+	virtual void OnButtonEvent(const SEventContextButton* pButtonEvent);
 
 private:
-	//初始化数据、变量等
-	void InitData();
+	// Pillar move
+	void __PillarMove(float dt, bool& bUpdateFlag);
 
-	//柱子移动
-	bool PillarMove(float dt);
+	// Create pillar
+	void __CreatePillar(int nIndex, int nColIdx);
 
-	//创建新柱子
-	void CreatePillar();
+	// Bird move
+	void __BirdMove(float dt, bool& bUpdateFlag);
 
-	//鸟移动
-	bool BirdMove(float dt);
+	// Update all bricks state
+	void __UpdateAllBricksState();
 
-	//更新游戏状态
-	void UpdateGameState();
+	// Update game state
+	void __UpdateGameState();
+
+	//////////////////////////////////////////////////////////////////////////
+	// Get bird move interval
+	int __GetBirdMoveInterval();
+
+	// Get pillar move interval
+	int __GetPillarMoveInterval();
+
+	// Get pillar len max
+	int __GetPillarLenMax();
 
 private:
 	enum
 	{
-		PILLAR_COLUMN_DISTANCE = 6,		//柱子之间间隔6列
-
-		PILLAR_MAXCOUNT = 3,			//柱子的最大数量
-
-		PILLAR_MAXLEN = 12,				//柱子最大长度
-
-		BIRD_DOWN_INTERVAL = 700,		//鸟移动移动时间间隔
-
-		BIRD_DOWN_ACCELERATION = 10,	//鸟下降的加速度
-
-		PILLAR_MOVE_INTERVAL = 500,		//柱子移动时间间隔
-
-		BTN_CHECK_INTERVAL = 50,		//按钮检查间隔
-
-		GAMEOVER_WAITTIME = 2000,		//游戏结束等待时间
-
-		PILLAR_PASS_ADD_SCORE = 10,		//通过一根柱子加10分
-
-		UPDATE_SPEED_NEED_SCORE = 500,	//更新速度时所需分数
+		PILLAR_COLUMN_DISTANCE = 6,
+		PILLAR_COUNT_MAX = 3,
+		PILLAR_LEN_MAX = 12,
+		BIRD_DOWN_INTERVAL = 700,
+		BIRD_DOWN_ACCELERATION = 10,
+		BIRD_UP_SPEED = 10,
+		PILLAR_MOVE_INTERVAL = 500,
+		CONTROL_INTERVAL = 50,
+		PILLAR_PASS_ADD_SCORE = 10,
+		UPDATE_SPEED_NEED_PILLAR_COUNT = 30,
+		BIRD_COLUMN_IDX = (COLUMN_COUNT - 1) / 2,
 	};
 
-
-	struct PILLAR
+	
+	struct _TPillarData
 	{
-		int m_iColIdx;			//所在列
+		int nColIdx;
+		int nLen;
+	};
 
-		int m_iLen;				//长度
+	struct _TPillarsData
+	{
+		_TPillarData arrPillarData[PILLAR_COUNT_MAX];
+		int nInterval;
+	};
+
+	struct _TBirdData
+	{
+		int nRowIdx;
+		int nInterval;
+		int nTotalInterval;
+		int nUpInterval;
+		bool bControlUpFlag;
+		int nPassPillarCount;
 	};
 
 private:
-	int m_iLife;								//生命数
+	// Pillar data
+	_TPillarsData	m_stPillarsData;
 
-	int m_iSpeed;								//当前速度
-
-	int m_iLevel;								//当前等级
-
-	int m_iScore;								//当前分数
-
-	int m_iBirdRowIdx;							//鸟所在的行
-
-	bool m_bBirdVisible;						//鸟显示状态
-
-	float m_fPillarMoveTime;					//柱子移动等待时间
-
-	float m_fBirdMoveTime;						//鸟移动等待时间
-
-	float m_fBirdTotalTime;						//等待时长
-
-	float m_fRefreshTime;						//刷新等待时间
-
-	PILLAR m_arrPillar[PILLAR_MAXCOUNT];		//柱子所在列
-
-	int m_iMoveCount;							//移动的列数计数
-
-	GAME_STATE m_enGameState;					//游戏状态
-
-	bool m_bImproveSpeed;						//加速
-
-	bool m_bCanAddScore;						//是否可以加分
-
-	int m_bUpHoldFlag;							//上键按下标记
+	// Bird data
+	_TBirdData		m_stBirdData;
 };

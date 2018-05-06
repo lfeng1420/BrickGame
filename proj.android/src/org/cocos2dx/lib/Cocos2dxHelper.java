@@ -32,9 +32,11 @@ import java.lang.Runnable;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.ApplicationInfo;
 import android.content.res.AssetManager;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Vibrator;
 import android.preference.PreferenceManager.OnActivityResultListener;
@@ -390,17 +392,54 @@ public class Cocos2dxHelper {
     	editor.commit();
     }
     
-    public static void OnShortVibrate()
+    public static void Vibrate(int nInterval)
 	{
 		Vibrator vibrator = (Vibrator)sActivity.getSystemService(Context.VIBRATOR_SERVICE);
-		vibrator.vibrate(80);
+		vibrator.vibrate(nInterval);
 	}
     
-    public static void OnLongVibrate()
-	{
-		Vibrator vibrator = (Vibrator)sActivity.getSystemService(Context.VIBRATOR_SERVICE);
-		vibrator.vibrate(1000);
-	}
+  	public static void RateApp()
+  	{
+  		try
+  		{
+  			Context context = Cocos2dxActivity.getContext();
+  			Intent intent = new Intent(Intent.ACTION_VIEW);
+  			intent.setData(Uri.parse("market://details?id=" + context.getPackageName()));
+  			context.startActivity(intent);
+  		}
+  		catch(Exception e)
+  		{
+  			e.printStackTrace();
+  		}
+  	}
+  	
+  	public static void ShowMyApps()
+  	{
+  		try
+  		{
+  			Context context = Cocos2dxActivity.getContext();
+  			Uri uri = Uri.parse("market://search?q=pub:lfeng1420");
+  			Intent intent = new Intent(Intent.ACTION_VIEW, uri);
+  			context.startActivity(intent);
+  		}
+  		catch(Exception e)
+  		{
+  			e.printStackTrace();
+  		}
+  	}
+  	
+  	public static void OpenURL(String strUrl)
+  	{
+  		try 
+  		{  
+  	       Uri uri = Uri.parse(strUrl);
+  	       Intent it = new Intent(Intent.ACTION_VIEW, uri);  
+  	       sActivity.startActivity(it);  
+  	   }  
+  	   catch(Exception e) {  
+  	       //e.printStackTrace();  
+  	   }
+  	}
 	
 	// ===========================================================
 	// Inner and Anonymous Classes

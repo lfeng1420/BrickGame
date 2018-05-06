@@ -1,132 +1,96 @@
 #pragma once
-#include "BGGlobal.h"
-#include "SceneBase.h"
+#include "GameBase.h"
 
-class CHitBrickGame : public CSceneBase
+class CHitBrickGame : public CGameBase
 {
 public:
-	CHitBrickGame(CGameScene* pScene, bool bSpecialMode = false);
-	~CHitBrickGame();
+	// Start
+	virtual void Start();
 
+	// Update
+	// param: dt, millisecond
+	virtual void Update(float dt);
 
-	////////////////////////////////// CSceneBase ////////////////////////////////////////
-	//初始化
-	virtual void Init();
+	// Get game id
+	virtual EnGameID GetGameID();
 
-	//更新
-	virtual void Play(float dt);
-
-	//获取当前Brick状态
-	virtual bool GetBrickState(int iRowIndex, int iColIndex);
-
-	//获取小方块序列中的方块状态
-	virtual bool GetSmallBrickState(int iRowIndex, int iColIndex);
-
-	//获取游戏类型
-	virtual SCENE_INDEX GetSceneType();
-
-	//左按下
-	virtual void OnLeftBtnPressed();
-
-	//左释放
-	virtual void OnLeftBtnReleased();
-
-	//右按下
-	virtual void OnRightBtnPressed();
-
-	//右释放
-	virtual void OnRightBtnReleased();
-
-	//Fire按下
-	virtual void OnFireBtnPressed();
-
-	//Fire释放
-	virtual void OnFireBtnReleased();
+	// Button event
+	virtual void OnButtonEvent(const SEventContextButton* pButtonEvent);
 
 private:
-	//初始化数据
-	void initData();
+	// Init bricks
+	void __InitBricks();
 
-	//移动
-	bool bricksMoveDown(float dt);
+	// Update bricks
+	void __UpdateBricks(float dt, bool& bUpdateFlag);
 
-	//随机状态
-	bool randState();
+	// Update bullets
+	void __UpdateBullets(float dt, bool& bUpdateFlag);
 
-	//检查结束
-	void updateGameState();
+	// Self move
+	void __SelfMove(float dt, bool& bUpdateFlag);
 
-	//射击方块
-	bool fireBricks(float dt);
+	// Self fire
+	void __SelfFire(float dt, bool& bUpdateFlag);
 
-	//我方移动
-	bool selfMove(float dt);
+	// Draw self
+	void __DrawSelf(int nNewColIdx);
 
-	//子弹移动
-	bool bulletsMove(float dt);
+	// Update game stage
+	bool __CheckGameOver();
 
-	//单个子弹移动
-	bool checkBullet(const POSITION& stPos);
+	//////////////////////////////////////////////////////////////////////////
+	//
+	int __GetBricksMoveInterval();
 
-	//加分数
-	void addScore();
+	//
+	int __GetBulletMoveInterval();
+
+	//
+	int __GetControlFirenterval();
 
 private:
-	enum VALID_BTN
-	{
-		VBTN_LEFT,
-		VBTN_RIGHT,
-		VBTN_FIRE,
-		VBTN_MAX,
-	};
-
 	enum
 	{
-		GAMEOVER_WAIT_INTERVAL = 1500,		//游戏结束等待时间
-
-		GAMEPASS_WAIT_INTERVAL = 1500,		//游戏通过等待时间
-
-		BOOM_SHOWCOUNT = 16,				//闪烁显示爆炸效果次数
-
-		BRICKS_MOVE_INTERVAL = 1500,		//方块移动时间间隔
-
-		MOVE_CHECK_INTERVAL = 70,			//按钮检查时间间隔
-
-		FIRE_CHECK_INTERVAL = 120,			//射击按钮检查时间间隔
-
-		BULLET_MOVE_INTERVAL = 70,			//子弹移动时间
+		BRICKS_MOVE_INTERVAL = 2000,
+		CONTROL_MOVE_INTERVAL = 70,
+		CONTROL_FIRE_INTERVAL = 160,
+		BULLET_MOVE_INTERVAL = 70,
+		SELF_ROW_INDEX = (ROW_COUNT - 2),
+		HIT_BRICK_ADD_SCORE = 10,
+		PASS_HIT_BRICK_COUNT = 300,
 	};
 
-	typedef list<POSITION>	TLIST_POS;
-	typedef TLIST_POS::iterator	TLIST_POS_ITER;
+	typedef list<POSITION>	TList_BulletPos;
+
+	struct _TBulletData
+	{
+		TList_BulletPos lsPos;
+		int nMoveInterval;
+	};
+
+	struct _TSelfData
+	{
+		int nFireInterval;
+		int nMoveInterval;
+		int nColIdx;
+		int nHitBrickCount;
+		int nDir;
+		bool bFireFlag;
+	};
+
+	struct _TBricksData
+	{
+		int nMoveInterval;
+	};
 
 private:
-	bool m_arrBrick[ROW_NUM][COLUMN_NUM];		//方块状态序列
+	// Bullet data
+	_TBulletData	m_stBulletData;
 
-	POSITION m_stSelfPos;						//我方所在位置
+	// Self data
+	_TSelfData		m_stSelfData;
 
-	bool m_arrBtnPressFlag[DIR_MAX];			//按钮按下标记
-
-	GAME_STATE	m_enGameState;					//游戏状态
-
-	float m_fWaitTime;							//等待时间
-
-	float m_fFireBtnTime;						//发射等待时间
-
-	float m_fSelfMoveTime;						//移动等待时间
-
-	TLIST_POS m_lsBullets;						//子弹列表
-
-	float m_fBulletMoveTime;					//子弹移动等待时间
-
-	bool m_bSpecialMode;						//特殊模式
-
-	int m_iSpeed;								//速度
-
-	int m_iLevel;								//关卡
-
-	int m_iScore;								//分数
-
-	int m_iLife;								//生命
+	// Bricks data
+	_TBricksData	m_stBricksData;
 };
-

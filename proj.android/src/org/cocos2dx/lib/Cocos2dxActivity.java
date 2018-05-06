@@ -25,7 +25,6 @@ package org.cocos2dx.lib;
 
 import org.cocos2dx.lib.Cocos2dxHelper.Cocos2dxHelperListener;
 
-import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
@@ -34,12 +33,7 @@ import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Message;
-import android.view.Display;
-import android.view.View;
 import android.view.ViewGroup;
-import android.view.Window;
-import android.view.WindowManager;
-import android.util.DisplayMetrics;
 import android.util.Log;
 import android.widget.FrameLayout;
 import android.preference.PreferenceManager.OnActivityResultListener;
@@ -79,7 +73,7 @@ public abstract class Cocos2dxActivity extends Activity implements Cocos2dxHelpe
 	// Constructors
 	// ===========================================================
 	
-	@SuppressLint("NewApi") @Override
+	@Override
 	protected void onCreate(final Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
@@ -94,15 +88,6 @@ public abstract class Cocos2dxActivity extends Activity implements Cocos2dxHelpe
     	if (mVideoHelper == null) {
     		mVideoHelper = new Cocos2dxVideoHelper(this, mFrameLayout);
 		}
-    	
-    	if (android.os.Build.VERSION.SDK_INT > 18)
-    	{
-    		Window window = getWindow();
-    		window.setFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS, WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
-    		window.setFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION, WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION);
-    	}
-    	
-    	hideBottomUIMenu();
 	}
 	
 	// ===========================================================
@@ -119,8 +104,6 @@ public abstract class Cocos2dxActivity extends Activity implements Cocos2dxHelpe
 
 		Cocos2dxHelper.onResume();
 		this.mGLSurfaceView.onResume();
-		
-		hideBottomUIMenu();
 	}
 
 	@Override
@@ -224,84 +207,6 @@ public abstract class Cocos2dxActivity extends Activity implements Cocos2dxHelpe
       Log.d(TAG, "isEmulator=" + isEmulator);
       return isEmulator;
    }
-   
-   
-   @SuppressLint("NewApi")
-   private void hideSystemUI()
-   {
-	   this.mGLSurfaceView.setSystemUiVisibility(Cocos2dxGLSurfaceView.SYSTEM_UI_FLAG_LAYOUT_STABLE 
-               | Cocos2dxGLSurfaceView.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-               | Cocos2dxGLSurfaceView.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-               | Cocos2dxGLSurfaceView.SYSTEM_UI_FLAG_HIDE_NAVIGATION // hide nav bar
-               | Cocos2dxGLSurfaceView.SYSTEM_UI_FLAG_FULLSCREEN // hide status bar
-               | Cocos2dxGLSurfaceView.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
-   }
-   
-   
-   /**
-    * Òþ²ØÐéÄâ°´¼ü£¬²¢ÇÒÈ«ÆÁ
-    */
-   @SuppressLint("NewApi")
-   protected void hideBottomUIMenu() {
-       //Òþ²ØÐéÄâ°´¼ü£¬²¢ÇÒÈ«ÆÁ
-       if (Build.VERSION.SDK_INT > 11 && Build.VERSION.SDK_INT < 19) { // lower api
-           View v = this.getWindow().getDecorView();
-           v.setSystemUiVisibility(View.GONE);
-       } else if (Build.VERSION.SDK_INT >= 19) {
-           //for new api versions.
-           View decorView = getWindow().getDecorView();
-           int uiOptions = View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                           | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY 
-                           | View.SYSTEM_UI_FLAG_FULLSCREEN;
-           decorView.setSystemUiVisibility(uiOptions);
-       }
-   }
-   
-   
-   /**
-    * Òþ²ØÐéÄâ°´¼ü£¬²¢ÇÒÈ«ÆÁ
-    */
-   @SuppressLint("NewApi")
-   protected void hideBottomUIMenu2() {
-       //Òþ²ØÐéÄâ°´¼ü£¬²¢ÇÒÈ«ÆÁ
-       if (Build.VERSION.SDK_INT > 11 && Build.VERSION.SDK_INT < 19) { // lower api
-           //View v = this.getWindow().getDecorView();
-    	   this.mGLSurfaceView.setSystemUiVisibility(Cocos2dxGLSurfaceView.GONE);
-       } else if (Build.VERSION.SDK_INT >= 19) {
-           //for new api versions.
-           //View decorView = getWindow().getDecorView();
-           int uiOptions = Cocos2dxGLSurfaceView.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                           | Cocos2dxGLSurfaceView.SYSTEM_UI_FLAG_IMMERSIVE_STICKY 
-                           | Cocos2dxGLSurfaceView.SYSTEM_UI_FLAG_FULLSCREEN;
-           this.mGLSurfaceView.setSystemUiVisibility(uiOptions);
-       }
-   }
-   
-   
-   @SuppressLint("NewApi")
-   public static boolean IsNavBarExist()
-   {
-	   WindowManager windowManager = sContext.getWindowManager();
-	   Display d = windowManager.getDefaultDisplay();
-	   
-	   DisplayMetrics realDisplayMetrics = new DisplayMetrics();
-	   if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1)
-	   {
-		   d.getRealMetrics(realDisplayMetrics);
-	   }
-	   
-	   int nRealHeight = realDisplayMetrics.heightPixels;
-	   int nRealWidth = realDisplayMetrics.widthPixels;
-	   
-	   DisplayMetrics displayMetrics = new DisplayMetrics();
-	   d.getMetrics(displayMetrics);
-	   
-	   int nDisplayHeight = displayMetrics.heightPixels;
-	   int nDisplayWidth = displayMetrics.widthPixels;
-	   
-	   return (nRealWidth - nDisplayWidth) > 0 || (nRealHeight - nDisplayHeight) > 0;
-   }
-   
 
 	// ===========================================================
 	// Inner and Anonymous Classes

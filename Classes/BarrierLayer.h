@@ -1,20 +1,11 @@
 #pragma once
-#include "BGGlobal.h"
 
-class CBarrierLayer : public Layer
+class CBarrierLayer : public LayerColor
 {
 public:
-	CBarrierLayer();
-	~CBarrierLayer();
+	// Init
+	bool init();
 
-	virtual bool init();
-
-	//设置触摸激活标记
-	void SetListenerEnabled(bool bEnabledFlag);
-
+	// CREATE_FUNC macro
 	CREATE_FUNC(CBarrierLayer);
-
-private:
-	//Listener
-	EventListenerTouchOneByOne* m_pListener;
 };

@@ -7,34 +7,41 @@ $(call import-add-path,$(LOCAL_PATH)/../../cocos2d/external)
 $(call import-add-path,$(LOCAL_PATH)/../../cocos2d/cocos)
 
 LOCAL_MODULE := lfeng
-LOCAL_CFLAGS += -DCOCOS2D_DEBUG=1
 
 LOCAL_MODULE_FILENAME := liblfeng
 
 LOCAL_SRC_FILES := hellocpp/main.cpp \
                    ../../Classes/AppDelegate.cpp \
-					../../Classes/BGGlobal.cpp \
-					../../Classes/ChooseGame.cpp \
-					../../Classes/FlappyBirdGame.cpp \
+                   ../../Classes/AddBrickGame.cpp \
+					../../Classes/BarrierLayer.cpp \
+					../../Classes/DataManager.cpp \
+					../../Classes/EventEngine.cpp \
+					../../Classes/FlappybirdGame.cpp \
 					../../Classes/FroggerGame.cpp \
-					../../Classes/GameOver.cpp \
+					../../Classes/GameBase.cpp \
+					../../Classes/GameLogic.cpp \
+					../../Classes/GameManager.cpp \
 					../../Classes/GameScene.cpp \
-					../../Classes/GeneralManager.cpp \
+					../../Classes/GameSceneEx.cpp \
+					../../Classes/HitBrickGame.cpp \
 					../../Classes/LoadScene.cpp \
 					../../Classes/MatchGame.cpp \
+					../../Classes/MyListView.cpp \
+					../../Classes/OverGame.cpp \
 					../../Classes/PinballGame.cpp \
-					../../Classes/RacingGame.cpp \
-					../../Classes/SceneBase.cpp \
+					../../Classes/PinballGameEx.cpp \
+					../../Classes/RaceGame.cpp \
+					../../Classes/SelectGame.cpp \
+					../../Classes/SetupScene.cpp \
+					../../Classes/SetupSceneEx.cpp \
 					../../Classes/SnakeGame.cpp \
+					../../Classes/stdafx.cpp \
 					../../Classes/TankGame.cpp \
 					../../Classes/TetrisGame.cpp \
-					../../Classes/AddBrickGame.cpp \
-					../../Classes/SetupLayer.cpp \
-					../../Classes/HitBrickGame.cpp \
-					../../Classes/BarrierLayer.cpp \
-					../../Classes/VolumeLayer.cpp 
-					
-					
+					../../Classes/TetrisGameEx.cpp \
+					../../Classes/TimerManager.cpp \
+					../../Classes/VolumeLayer.cpp \
+					../../Classes/VolumeLayerEx.cpp
 
 LOCAL_C_INCLUDES := $(LOCAL_PATH)/../../Classes
 LOCAL_C_INCLUDES += $(LOCAL_PATH)/../../cocos2d/cocos/ui 
@@ -48,7 +55,7 @@ LOCAL_WHOLE_STATIC_LIBRARIES += cocosdenshion_static
 # LOCAL_WHOLE_STATIC_LIBRARIES += spine_static
  LOCAL_WHOLE_STATIC_LIBRARIES += cocostudio_static
 # LOCAL_WHOLE_STATIC_LIBRARIES += cocos_network_static
-LOCAL_WHOLE_STATIC_LIBRARIES += cocos_extension_static
+ LOCAL_WHOLE_STATIC_LIBRARIES += cocos_extension_static
 
 
 include $(BUILD_SHARED_LIBRARY)
@@ -61,4 +68,4 @@ $(call import-module,audio/android)
 # $(call import-module,editor-support/spine)
  $(call import-module,editor-support/cocostudio)
 # $(call import-module,network)
-$(call import-module,extensions)
+ $(call import-module,extensions)

@@ -35,8 +35,11 @@ public enum class Cocos2dEvent
     ShowKeyboard,
     HideKeyboard,
     TerminateApp,
-	GiveScore,
+	RateApp,
 	ShowMyApps,
+	ShortVibrate,
+	LongVibrate,
+	OpenURL,
 };
 
 

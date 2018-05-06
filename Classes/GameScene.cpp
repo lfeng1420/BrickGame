@@ -1,818 +1,780 @@
+#include "stdafx.h"
 #include "GameScene.h"
-#include "GameOver.h"
-#include "GeneralManager.h"
-#include "ChooseGame.h"
-#include "RacingGame.h"
-#include "FroggerGame.h"
-#include "TankGame.h"
-#include "SnakeGame.h"
-#include "MatchGame.h"
-#include "PinballGame.h"
-#include "TetrisGame.h"
-#include "FlappyBirdGame.h"
-#include "HitBrickGame.h"
-#include "AddBrickGame.h"
-#include "SetupLayer.h"
-#include "AppDelegate.h"
-#include "CCApplication.h"
-
+#include "SetupScene.h"
+#include "SetupSceneEx.h"
 #if(CC_TARGET_PLATFORM == CC_PLATFORM_ANDROID)
-#include "platform/android/jni/JniHelper.h"
-#include <jni.h>
-#endif
 #include "base/CCGameController.h"
-
-
-//控制按钮最大缩放倍数
-const float FLOAT_CONTROLLER_SCALE_MAX = 1.0f;
-const float FLOAT_CONTROLLER_LAND_SCALE_MAX = 1.5f;
-
-CGameScene::CGameScene() : m_iSceneIndex(SCENE_GAMEOVER), m_nTipType(TIPS_INVALID), m_nRecordBtnIdx(BTN_DIRMAX), m_iBgColor(0), 
-							m_lfClickExitTime(0), //m_lfClickSndTime(0), m_lfClickResetTime(0), m_lfClickStartTime(0),
-							m_oBrickSize(Size::ZERO), m_oNumSize(Size::ZERO), m_pSetupLayer(nullptr), m_pTipsLabel(nullptr), 
-							m_pPortNode(nullptr), m_pPauseSpr(nullptr), m_pPauseSprLand(nullptr), m_pLandNode(nullptr), 
-							m_visibleSize(Size::ZERO), m_bPauseFlag(false), m_pStartBtn(nullptr), m_pStartBtnLand(nullptr), 
-							m_pSoundBtn(nullptr), m_pSoundBtnLand(nullptr), m_pBgLayer(nullptr), m_bOldSoundState(false),
-							m_oControllerCenterPos(Vec2::ZERO), m_oControllerLandCenterPos(Vec2::ZERO), 
-							m_oControllerCenterSize(Size::ZERO), m_oControllerLandCenterSize(Size::ZERO)
-{
-	for (int nRowIdx = 0; nRowIdx < ROW_NUM; ++nRowIdx)
-	{
-		for (int nColIdx = 0; nColIdx < COLUMN_NUM; ++nColIdx)
-		{
-			m_pArrBrick[nRowIdx][nColIdx] = nullptr;
-			m_pArrBrickLand[nRowIdx][nColIdx] = nullptr;
-		}
-	}
-
-	for (int nRowIdx = 0; nRowIdx < 4; ++nRowIdx)
-	{
-		for (int nColIdx = 0; nColIdx < 4; ++nColIdx)
-		{
-			m_pArrSmallBrick[nRowIdx][nColIdx] = nullptr;
-			m_pArrSmallBrickLand[nRowIdx][nColIdx] = nullptr;
-		}
-	}
-
-	for (int nIdx = 0; nIdx < 2; ++nIdx)
-	{
-		m_pArrSpeed[nIdx] = nullptr;
-		m_pArrSpeedLand[nIdx] = nullptr;
-		m_pArrLevel[nIdx] = nullptr;
-		m_pArrLevelLand[nIdx] = nullptr;
-	}
-
-	for (int nIdx = 0; nIdx < 6; ++nIdx)
-	{
-		m_pArrScore[nIdx] = nullptr;
-		m_pArrScoreLand[nIdx] = nullptr;
-		m_pArrHighScore[nIdx] = nullptr;
-		m_pArrHighScoreLand[nIdx] = nullptr;
-	}
-}
+#endif
 
 
 CGameScene::~CGameScene()
 {
-	for (int i = 0; i < m_mapGameObj.size(); ++i)
-	{
-		CC_SAFE_DELETE(m_mapGameObj[i]);
-	}
+	g_oEventEngine.RemoveHandler(this);
 }
 
 
-Scene* CGameScene::CreateScene()
+cocos2d::Scene* CGameScene::CreateScene(const TGameSceneContext* pContext/* = nullptr*/)
 {
 	auto scene = Scene::create();
-	auto layer = CGameScene::create();
+	auto layer = CGameScene::create(pContext);
 	scene->addChild(layer);
 	return scene;
 }
 
 
+cocos2d::LayerColor* CGameScene::create(const TGameSceneContext* pContext /*= nullptr*/)
+{
+	CGameScene* pLayer = new CGameScene();
+	if (pLayer == nullptr)
+	{
+		return nullptr;
+	}
+	
+	// First step
+	pLayer->ImportContextFirst(pContext);
+
+	// init
+	if (!pLayer->init())
+	{
+		delete pLayer;
+		return nullptr;
+	}
+
+	// Last step
+	pLayer->ImportContextLast(pContext);
+
+	pLayer->autorelease();
+	return pLayer;
+}
+
+
 bool CGameScene::init()
 {
-	CC_RETURN_FALSE_IF(!LayerColor::initWithColor(Color4B::BLACK));
+	bool bNightFlag = GET_BOOLVALUE("NIGHTMODE", false);
+	if (!LayerColor::initWithColor(bNightFlag ? Color4B::BLACK : Color4B::WHITE))
+	{
+		return false;
+	}
 
-	//初始化变量，获取数据等
-	InitData();
+	// Subscribe event
+	g_oEventEngine.AddHandler(EVENT_DATA_UPDATE, this);
+	g_oEventEngine.AddHandler(EVENT_BRICKSTATE_UPDATE, this);
+	g_oEventEngine.AddHandler(EVENT_GAME_OVER, this);
+	g_oEventEngine.AddHandler(EVENT_PLAY_BGM, this);
+	g_oEventEngine.AddHandler(EVENT_PLAY_EFFECT, this);
+	g_oEventEngine.AddHandler(EVENT_VIBRATE, this);
 
-	//初始化背景
-	InitBgLayer();
+	// Init ui
+	InitUI();
 
-	//UI初始化
-	InitPortUI();
-
-	//横向UI初始化
-	InitLandUI();
-
-	//初始化控制器
-	InitPortController();
-
-	//横向控制器
-	InitLandController();
-
-	//根据右手模式是否开启调整位置
-	ChangeControllerPos();
-
-	//初始化方块
-	InitBrick();
-
-	//按键监听
-	CreateKeyListener();
-
-	//创建游戏对象
-	CreateGameObj();
-
-	//开始场景
-	RunScene(SCENE_GAMEOVER);
-
-	//播放音效
-	PLAY_BGMUSIC(BGM_START, true);
-
-	//帧更新
-	this->scheduleUpdate();
+	// Create key listener
+	__CreateKeyListener();
 
 	return true;
 }
 
 
-void CGameScene::InitData()
+void CGameScene::OnEvent(int nEventID, const char* pContext, int nLen)
 {
-	m_visibleSize = Director::getInstance()->getVisibleSize();
+	switch (nEventID)
+	{
+	case EVENT_DATA_UPDATE:
+		__OnGameDataUpdate(pContext, nLen);
+		break;
+
+	case EVENT_BRICKSTATE_UPDATE:
+		__OnBrickStateUpdate(pContext, nLen);
+
+	case EVENT_PLAY_BGM:
+		__OnBGMUpdate(pContext, nLen);
+		break;
+
+	case EVENT_PLAY_EFFECT:
+		__OnPlayEffect(pContext, nLen);
+		break;
+
+	case EVENT_GAME_OVER:
+		__OnGameOver(pContext, nLen);
+		break;
+
+	case EVENT_VIBRATE:
+		__OnVibrate(pContext, nLen);
+		break;
+
+	default:
+		break;
+	}
 }
 
 
-//初始化Brick
-void CGameScene::InitBrick()
+bool CGameScene::OnVote(int nEventID, char* pContext, int nLen)
 {
-	bool arrBrick[ROW_NUM][COLUMN_NUM] =
-	{
-		false, false, false, false, false, false, false, false, false, false, false, false, false, false,
-		false, false, true, true, true, true, true, false, false, false, false, false, false, false,
-		false, false, false, true, false, false, false, true, false, false, false, false, false, false,
-		false, false, false, true, true, true, true, false, false, false, false, false, false, false,
-		false, false, false, true, false, false, false, true, false, false, false, false, false, false,
-		false, false, true, true, true, true, true, false, false, false, false, false, false, false,
-		false, false, false, false, false, false, false, false, false, false, false, false, false, false,
-		false, false, false, true, true, false, false, true, true, true, true, true, false, false,
-		false, false, false, false, true, false, false, false, false, false, false, true, false, false,
-		false, false, false, false, true, false, false, true, true, true, true, true, false, false,
-		false, false, false, false, true, false, false, true, false, false, false, false, false, false,
-		false, false, false, false, true, false, false, true, false, false, false, true, false, false,
-		false, false, false, true, true, true, false, true, true, true, true, true, false, false,
-		false, false, false, false, false, false, false, false, false, false, false, false, false, false,
-		false, false, false, false, false, false, false, true, true, true, true, false, false, false,
-		false, false, false, false, false, false, true, false, false, false, false, false, false, false,
-		false, false, false, false, false, false, true, false, false, false, true, true, false, false,
-		false, false, false, false, false, false, true, false, false, false, false, true, false, false,
-		false, false, false, false, false, false, false, true, true, true, true, false, false, false,
-		false, false, false, false, false, false, false, false, false, false, false, false, false, false,
-	};
+	return true;
+}
 
-	Size brickSize = GetBrickSize(false);
 
-	float fCurY = m_visibleSize.height;
-	for (int i = 0; i < ROW_NUM; ++i)
+void CGameScene::update(float dt)
+{
+	if (m_pPauseSpr->isVisible())
 	{
-		float fCurX = 0;
-		for (int j = 0; j < COLUMN_NUM; ++j)
+		return;
+	}
+
+	SEventContextFrameUpdate stContext = { dt * 1000 };
+	g_oEventEngine.FireEvent(EVENT_FRAME_UPDATE, (const char*)&stContext, sizeof(stContext));
+}
+
+
+void CGameScene::ImportContextFirst(const TGameSceneContext* pContext)
+{
+	// Init game data
+	m_stGameData.nCurScore = -1;
+	m_stGameData.nMaxScore = -1;
+	m_stGameData.nLevel = -1;
+	m_stGameData.nSpeed = -1;
+
+	// Bricks state
+	if (pContext != nullptr)
+	{
+		memcpy(m_arrBrickState, pContext->arrBrickState, sizeof(m_arrBrickState));
+		memcpy(m_arrSmallBrickState, pContext->arrSmallBrickState, sizeof(m_arrSmallBrickState));
+	}
+	else
+	{
+		INIT_BOOL_ARRAY(m_arrSmallBrickState);
+		memcpy(m_arrBrickState, DEFAULT_SHAPE, sizeof(m_arrBrickState));
+	}
+}
+
+
+void CGameScene::ImportContextLast(const TGameSceneContext* pContext)
+{
+	// Update pause sprite state
+	bool bPauseFlag = ((pContext != nullptr) ? pContext->bPauseFlag : false);
+	m_pPauseSpr->setVisible(bPauseFlag);
+
+	// Init playing bgm flag
+	m_bPlayingBGMFlag = false;
+
+	// Update start button
+	if (pContext != nullptr)
+	{
+		m_pStartBtn->setSelectedIndex(pContext->uiStartBtnIdx);
+		m_bPlayingBGMFlag = pContext->bPlayingBGMFlag;
+	}
+
+	// Update data
+	if (pContext != nullptr)
+	{
+		__OnGameDataUpdate((const char*)&pContext->stGameData, sizeof(pContext->stGameData));
+	}
+	else
+	{
+		SEventContextDataUpdate stDataInit = { 0, 0, 0, 0 };
+		__OnGameDataUpdate((const char*)&stDataInit, sizeof(stDataInit));
+
+		// Start over game
+		SEventContextGameStart stContext = { GAMEID_OVER, 0, 0, 0, 0 };
+		g_oEventEngine.FireEvent(EVENT_GAME_START, (const char*)&stContext, sizeof(stContext));
+	}
+
+	if (bPauseFlag)
+	{
+		return;
+	}
+
+	// Update per frame
+	scheduleUpdate();
+
+	// Play BGM
+	SEventPlayBGM stBGM = { true, true };
+	if (g_oEventEngine.FireVote(EVENT_PLAY_BGM, (char*)&stBGM, sizeof(stBGM)))
+	{
+		__PlayBGM(true, true);
+	}
+}
+
+
+void CGameScene::InitUI()
+{
+	float fLeftX = 0;
+	float fTopY = 0;
+	__InitAllBricks(fLeftX, fTopY);
+	float fBottomY = 0;
+	__InitBottomMenu(fBottomY);
+	__InitController(fTopY, fBottomY);
+	__InitRightUI(fLeftX, fTopY);
+	__ApplyRightHandMode();
+
+	// Tips
+	__InitTips();
+}
+
+
+void CGameScene::UpdateLevelOrSpeed(Vector<Sprite*> vecSpr, int& nOldVal, int nNewVal)
+{
+	if (nOldVal == nNewVal)
+	{
+		return;
+	}
+
+	char szSpriteName[10] = { 0 };
+	Sprite* pFirstSpr = vecSpr.at(0);
+	Sprite* pSecSpr = vecSpr.at(1);
+	if (pFirstSpr == nullptr || pSecSpr == nullptr)
+	{
+		return;
+	}
+
+	if (nNewVal < 10)
+	{
+		sprintf(szSpriteName, "%d.png", nNewVal);
+		pSecSpr->setSpriteFrame(CGlobalFunc::GetSpriteNameWithMode(szSpriteName));
+		pFirstSpr->setVisible(false);
+		pSecSpr->setVisible(true);
+		float fPosX = pFirstSpr->getPositionX();
+		Size sprSize = GET_CONTENTSIZE(pSecSpr);
+		pSecSpr->setPositionX(fPosX + sprSize.width * 0.5f + LEVEL_SPEED_NUM_PADDING * 0.5f);
+	}
+	else
+	{
+		pFirstSpr->setSpriteFrame(CGlobalFunc::GetSpriteNameWithMode("1.png"));
+		pFirstSpr->setVisible(true);
+		pSecSpr->setSpriteFrame(CGlobalFunc::GetSpriteNameWithMode("0.png"));
+		pSecSpr->setVisible(true);
+		float fPosX = pFirstSpr->getPositionX();
+		Size sprSize = GET_CONTENTSIZE(pSecSpr);
+		pSecSpr->setPositionX(fPosX + sprSize.width + LEVEL_SPEED_NUM_PADDING);
+	}
+
+	// Update value
+	nOldVal = nNewVal;
+}
+
+
+bool CGameScene::AdjustClickBtnID(Vec2 pos, int& nBtnID)
+{
+	//ֻ���������
+	if (nBtnID >= BTNID_DIRMAX)
+	{
+		return true;
+	}
+
+	Vec2 dis = pos - m_oControllerCenterPos;
+	float fFactor = dis.y / dis.x;
+	if (fFactor >= 1 || fFactor <= -1)
+	{
+		nBtnID = dis.y > 1e-6 ? BTNID_UP : BTNID_DOWN;
+		return true;
+	}
+
+	if (fFactor < 1 && fFactor >= -1)
+	{
+		nBtnID = dis.x > 1e-6 ? BTNID_RIGHT : BTNID_LEFT;
+		return true;
+	}
+
+	nBtnID = -1;
+	return false;
+}
+
+
+void CGameScene::__OnGameOver(const char* pContext, int nLen)
+{
+	if (m_pPauseSpr->isVisible())
+	{
+		m_pStartBtn->activate();
+	}
+
+	// Recover start button state
+	m_pStartBtn->setSelectedIndex(0);
+}
+
+
+void CGameScene::__OnGameDataUpdate(const char* pContext, int nLen)
+{
+	if (nLen != sizeof(SEventContextDataUpdate))
+	{
+		return;
+	}
+
+	const SEventContextDataUpdate* pDataUpdate = (const SEventContextDataUpdate*)pContext;
+	// Update score
+	__UpdateScore(m_vecScoreSpr, m_stGameData.nCurScore, pDataUpdate->nCurScore);
+	
+	// Update max score
+	__UpdateScore(m_vecMaxScoreSpr, m_stGameData.nMaxScore, pDataUpdate->nMaxScore);
+
+	// Update level
+	UpdateLevelOrSpeed(m_vecLevelSpr, m_stGameData.nLevel, pDataUpdate->nLevel);
+	
+	// Update speed
+	UpdateLevelOrSpeed(m_vecSpeedSpr, m_stGameData.nSpeed, pDataUpdate->nSpeed);
+}
+
+
+void CGameScene::__OnBrickStateUpdate(const char* pContext, int nLen)
+{
+	if (nLen != sizeof(SEventContextBrickStateUpdate))
+	{
+		return;
+	}
+
+	const SEventContextBrickStateUpdate* pStateUpdate = (const SEventContextBrickStateUpdate*)pContext;
+	// Update bricks
+	FOREACH_IN_CONST_CONTAINER (TMap_BrickState, pStateUpdate->mapUpdateBricks, itBricks)
+	{
+		int nBrickID = itBricks->first;
+		bool bStateFlag = itBricks->second;
+		bool& bSrcStateFlag = (pStateUpdate->bSmallBrickFlag) ? m_arrSmallBrickState[nBrickID] : m_arrBrickState[nBrickID];
+		if (bSrcStateFlag != bStateFlag)
 		{
-			bool bFlag = arrBrick[i][j];
-			m_arrBrickState[i][j] = bFlag;
-			Sprite* pSpr = CREATE_SPRITEWITHNAME(GetSpriteNameByMode(bFlag ? "black.png" : "empty.png"));
-			pSpr->setPosition(fCurX + brickSize.width * 1.0f / 2, fCurY - brickSize.height * 1.0f / 2);
-			pSpr->setTag(i * ROW_NUM + j);
-			m_pPortNode->addChild(pSpr);
+			Sprite* pSpr = (pStateUpdate->bSmallBrickFlag) ? m_vecSmallBrickSpr.at(nBrickID) : m_vecBrickSpr.at(nBrickID);
+			if (pSpr != nullptr)
+			{
+				bSrcStateFlag = bStateFlag;
+				const char* szDestFrameName = CGlobalFunc::GetSpriteNameWithMode(bStateFlag ? "black.png" : "empty.png");
+				pSpr->setSpriteFrame(szDestFrameName);
+			}
+		}
+	}
+}
 
-			m_pArrBrick[i][j] = pSpr;
+
+void CGameScene::__OnBGMUpdate(const char* pContext, int nLen)
+{
+	if (nLen != sizeof(SEventPlayBGM))
+	{
+		return;
+	}
+
+	const SEventPlayBGM* pBGMusic = (const SEventPlayBGM*)pContext;
+	__PlayBGM(pBGMusic->bPlayFlag, pBGMusic->bLoopFlag);
+}
+
+
+void CGameScene::__OnPlayEffect(const char* pContext, int nLen)
+{
+	if (nLen != sizeof(SEventPlayEffect))
+	{
+		return;
+	}
+
+	const SEventPlayEffect* pPlayEffect = (const SEventPlayEffect*)pContext;
+	__PlayEffect(pPlayEffect->szSound);
+}
+
+
+void CGameScene::__OnVibrate(const char* pContext, int nLen)
+{
+	if (nLen != sizeof(SEventVibrate))
+	{
+		return;
+	}
+
+	const SEventVibrate* pEvent = (const SEventVibrate*)pContext;
+	log("Vibrate bShortFlag=%d", pEvent->bShortFlag);
+	if (pEvent->bShortFlag)
+	{
+		CGlobalFunc::ShortVibrate();
+	}
+	else
+	{
+		CGlobalFunc::LongVibrate();
+	}
+}
+
+
+void CGameScene::__InitAllBricks(float& fLeftX, float& fTopY)
+{
+	Size visibleSize = GET_VISIBLESIZE();
+	Size brickSize = Size::ZERO;
+	fTopY = visibleSize.height;
+	fLeftX = 0;
+
+	for (int nRowIdx = 0; nRowIdx < ROW_COUNT; ++nRowIdx)
+	{
+		float fCurX = GET_INTVALUE("BRICKS_OFFSET", 0);
+		for (int nColIdx = 0; nColIdx < COLUMN_COUNT; ++nColIdx)
+		{
+			int nBrickID = GET_BRICKID(nRowIdx, nColIdx);
+
+			// Create sprite
+			Sprite* pSpr = CREATE_SPRITEWITHNAME(CGlobalFunc::GetSpriteNameWithMode(m_arrBrickState[nBrickID] ? "black.png" : "empty.png"));
+			if (brickSize.equals(Size::ZERO))
+			{
+				brickSize = GET_CONTENTSIZE(pSpr);
+			}
+			pSpr->setPosition(fCurX + brickSize.width * 0.5f, fTopY - brickSize.height * 0.5f);
+			pSpr->setTag(nBrickID);
+			this->addChild(pSpr);
+			m_vecBrickSpr.pushBack(pSpr);
+
 			fCurX += brickSize.width;
+			fLeftX = max(fLeftX, fCurX);
 		}
 
-		fCurY -= brickSize.height;
-	}
-
-	float fScale = m_visibleSize.width / ROW_NUM * 1.0f / brickSize.width;
-	float fCurX = m_visibleSize.width;
-	brickSize = GetBrickSize(true);
-	for (int i = 0; i < ROW_NUM; ++i)
-	{
-		fCurY = m_visibleSize.height / 2 + COLUMN_NUM * brickSize.height / 2.0f;
-		for (int j = 0; j < COLUMN_NUM; ++j)
-		{
-			bool bFlag = arrBrick[i][j];
-			Sprite* pSpr = CREATE_SPRITEWITHNAME(GetSpriteNameByMode(bFlag ? "black.png" : "empty.png"));
-			pSpr->setScale(fScale);
-			pSpr->setPosition(fCurX - brickSize.width * 0.5f, fCurY - brickSize.height * 0.5f);
-			pSpr->setTag(i * ROW_NUM + j);
-			m_pLandNode->addChild(pSpr);
-
-			m_pArrBrickLand[i][j] = pSpr;
-			fCurY -= brickSize.height;
-		}
-		fCurX -= brickSize.width;
+		fTopY -= brickSize.height;
 	}
 }
 
 
-//初始化UI:分数、等级等
-void CGameScene::InitPortUI()
+void CGameScene::__InitController(float fTopY, float fBottomY)
 {
-	//图片缩放
-	float fSpriteScale = 0.38f;
-	string numZeroName = GetSpriteNameByMode("0.png");
+	float fBtnInnerPadding = CONTROLLER_INNER_PADDING;
+	float fControllerPadding = 10;
+	const float CONTROLLER_SCALE_MAX = 1.0f;
 
-	//纵向层
-	m_pPortNode = Node::create();
-	this->addChild(m_pPortNode);
-	bool bVisible = GET_BOOLVALUE("PORTRAIT", true);
-	m_pPortNode->setVisible(bVisible);
-
-	//分数
-	Size brickSize = GetBrickSize(false);
-	auto pScore = CREATE_SPRITEWITHNAME(GetSpriteNameByMode("score.png"));
-	pScore->setScale(fSpriteScale);
-	Size scoreSize = GET_CONTENTSIZE(pScore) * fSpriteScale;
-	float fCurX = (m_visibleSize.width - COLUMN_NUM * brickSize.width) / 2 + COLUMN_NUM * brickSize.width;
-	float fCurY = m_visibleSize.height - scoreSize.height * 3 / 2;
-	pScore->setPosition(fCurX, fCurY + scoreSize.height / 2);
-	m_pPortNode->addChild(pScore);
-
-	//分数Sprite序列
-	Size numSize = GetNumSize();
-	float fTempX = fCurX - NUM_PADDING * 2.5f - numSize.width * 3;
-	fCurY -= numSize.height * 1.3f;
-	for (int i = 0; i < 6; ++i)
+	// Up button
+	string strBtn0Name = CGlobalFunc::GetSpriteNameWithMode("btn_0.png");
+	string strBtn1Name = CGlobalFunc::GetSpriteNameWithMode("btn_1.png");
+	Button* pUpBtn = Button::create(strBtn0Name, strBtn1Name, "", Widget::TextureResType::PLIST);
+	Size btnSize = GET_CONTENTSIZE(pUpBtn);
+	float fControlBtnScale = (fTopY - fBottomY - fControllerPadding * 2) / (2 * btnSize.height);
+	if (fControlBtnScale > CONTROLLER_SCALE_MAX)
 	{
-		m_pArrScore[i] = CREATE_SPRITEWITHNAME(numZeroName);
-		m_pArrScore[i]->setPosition(fTempX + numSize.width * 0.5f, fCurY + numSize.height * 0.5f);
-		m_pPortNode->addChild(m_pArrScore[i]);
-
-		fTempX += numSize.width + NUM_PADDING;
+		fControlBtnScale = CONTROLLER_SCALE_MAX;
+		fControllerPadding = (fTopY - fBottomY - CONTROLLER_SCALE_MAX * btnSize.height * 2) * 0.5f;
 	}
+	pUpBtn->setScale(fControlBtnScale);
+	pUpBtn->addTouchEventListener(CC_CALLBACK_2(CGameScene::__OnButtonEvent, this, BTNID_UP));
+	pUpBtn->setCustomHighlightFlag(true);
+	Size upBtnSize = btnSize * fControlBtnScale;
 
-	//最高分
-	auto pHighScore = CREATE_SPRITEWITHNAME(GetSpriteNameByMode("hiscore.png"));
-	pHighScore->setScale(fSpriteScale);
-	Size highScoreSize = GET_CONTENTSIZE(pHighScore) * fSpriteScale;
-	fCurY -= highScoreSize.height * 1.5f;
-	pHighScore->setPosition(fCurX, fCurY + highScoreSize.height * 0.5f);
-	m_pPortNode->addChild(pHighScore);
+	// Right button
+	Button* pRightBtn = Button::create(strBtn0Name, strBtn1Name, "", Widget::TextureResType::PLIST);
+	pRightBtn->setScale(fControlBtnScale);
+	pRightBtn->setRotation(90);
+	pRightBtn->addTouchEventListener(CC_CALLBACK_2(CGameScene::__OnButtonEvent, this, BTNID_RIGHT));
+	pRightBtn->setCustomHighlightFlag(true);
+	Size rightBtnSize = GET_CONTENTSIZE(pRightBtn) * fControlBtnScale;
 
-	//最高分Sprite序列
-	fCurY -= numSize.height * 1.3f;
-	fTempX = fCurX - NUM_PADDING * 2.5f - numSize.width * 3;
-	for (int i = 0; i < 6; ++i)
-	{
-		m_pArrHighScore[i] = CREATE_SPRITEWITHNAME(numZeroName);
-		m_pArrHighScore[i]->setPosition(fTempX + numSize.width * 0.5f, fCurY + numSize.height * 0.5f);
-		m_pPortNode->addChild(m_pArrHighScore[i]);
+	// Down button
+	Button* pDownBtn = Button::create(strBtn0Name, strBtn1Name, "", Widget::TextureResType::PLIST);
+	pDownBtn->setScale(fControlBtnScale);
+	pDownBtn->setRotation(180);
+	pDownBtn->addTouchEventListener(CC_CALLBACK_2(CGameScene::__OnButtonEvent, this, BTNID_DOWN));
+	pDownBtn->setCustomHighlightFlag(true);
+	Size downBtnSize = GET_CONTENTSIZE(pDownBtn) * fControlBtnScale;
 
-		fTempX += numSize.width + NUM_PADDING;
-	}
+	// Left button
+	Button* pLeftBtn = Button::create(strBtn0Name, strBtn1Name, "", Widget::TextureResType::PLIST);
+	pLeftBtn->setScale(fControlBtnScale);
+	pLeftBtn->setRotation(-90);
+	pLeftBtn->addTouchEventListener(CC_CALLBACK_2(CGameScene::__OnButtonEvent, this, BTNID_LEFT));
+	pLeftBtn->setCustomHighlightFlag(true);
+	Size leftBtnSize = GET_CONTENTSIZE(pLeftBtn) * fControlBtnScale;
 
-	//小方块序列
-	float fBrickScale = 0.7f;
-	float fPadding = 2;
-	fCurY -= numSize.height * 0.5f;
-	for (int i = 0; i < 4; ++i)
-	{
-		for (int j = 0; j < 4; ++j)
-		{
-			float fX = fCurX + (brickSize.height * fBrickScale + fPadding) * (j - 1.5f);
-			m_pArrSmallBrick[i][j] = CREATE_SPRITEWITHNAME(GetSpriteNameByMode("empty.png"));
-			m_pArrSmallBrick[i][j]->setScale(fBrickScale);
-			m_pArrSmallBrick[i][j]->setPosition(fX, fCurY - brickSize.height * fBrickScale / 2);
-			m_pPortNode->addChild(m_pArrSmallBrick[i][j]);
-		}
+	//Fire button
+	Button* pFireBtn = Button::create(CGlobalFunc::GetSpriteNameWithMode("fire_0.png"), CGlobalFunc::GetSpriteNameWithMode("fire_1.png"), "", Widget::TextureResType::PLIST);
+	pFireBtn->addTouchEventListener(CC_CALLBACK_2(CGameScene::__OnButtonEvent, this, BTNID_FIRE));
+	Size fireBtnSize = pFireBtn->getContentSize();
 
-		fCurY -= brickSize.height * fBrickScale + fPadding;
-	}
+	// Set position
+	Size visibleSize = GET_VISIBLESIZE();
+	fTopY -= fControllerPadding;
+	pLeftBtn->setPosition(Vec2(upBtnSize.height * 0.6f + fBtnInnerPadding, fTopY - upBtnSize.height));
+	pRightBtn->setPosition(Vec2(upBtnSize.height * 1.6f - fBtnInnerPadding, fTopY - upBtnSize.height));
+	pDownBtn->setPosition(Vec2(upBtnSize.height * 1.1f, fTopY - upBtnSize.height * 1.5f + fBtnInnerPadding));
+	pUpBtn->setPosition(Vec2(upBtnSize.height * 1.1f, fTopY - upBtnSize.height * 0.5f - fBtnInnerPadding));
+	pFireBtn->setPosition(Vec2(visibleSize.width - fireBtnSize.width * 0.8f, fTopY - upBtnSize.height));
 
-	//速度Label
-	auto pSpeed = CREATE_SPRITEWITHNAME(GetSpriteNameByMode("speed.png"));
-	pSpeed->setScale(fSpriteScale);
-	Size speedSize = GET_CONTENTSIZE(pSpeed);
-	fCurY -= speedSize.height;
-	pSpeed->setPosition(fCurX, fCurY + speedSize.height / 2);
-	m_pPortNode->addChild(pSpeed);
-	//速度
-	fCurY -= numSize.height;
-	m_pArrSpeed[0] = CREATE_SPRITEWITHNAME(numZeroName);
-	m_pArrSpeed[0]->setPosition(fCurX, fCurY + numSize.height / 2);
-	m_pPortNode->addChild(m_pArrSpeed[0]);
+	// Center pos and area size
+	m_oControllerCenterPos = Vec2(upBtnSize.height * 1.1f, fTopY - upBtnSize.height);
+	m_oControllerCenterSize = Size(upBtnSize.width, upBtnSize.width);
 
-	m_pArrSpeed[1] = CREATE_SPRITEWITHNAME(numZeroName);
-	m_pArrSpeed[1]->setPosition(fCurX, fCurY + numSize.height / 2);
-	m_pPortNode->addChild(m_pArrSpeed[1]);
-	m_pArrSpeed[1]->setVisible(false);
+	this->addChild(pLeftBtn);
+	this->addChild(pRightBtn);
+	this->addChild(pDownBtn);
+	this->addChild(pUpBtn);
+	this->addChild(pFireBtn);
 
-	//等级
-	fCurY -= numSize.height + NUM_PADDING * 10;
-	m_pArrLevel[0] = CREATE_SPRITEWITHNAME(numZeroName);
-	m_pArrLevel[0]->setPosition(fCurX, fCurY + numSize.height / 2);
-	m_pPortNode->addChild(m_pArrLevel[0]);
-
-	m_pArrLevel[1] = CREATE_SPRITEWITHNAME(numZeroName);
-	m_pArrLevel[1]->setPosition(fCurX, fCurY + numSize.height / 2);
-	m_pPortNode->addChild(m_pArrLevel[1]);
-	m_pArrLevel[1]->setVisible(false);
-
-	//等级
-	auto pLevel = CREATE_SPRITEWITHNAME(GetSpriteNameByMode("level.png"));
-	pLevel->setScale(fSpriteScale);
-	Size levelSize = GET_CONTENTSIZE(pLevel);
-	fCurY -= levelSize.height;
-	pLevel->setPosition(fCurX, fCurY + levelSize.height / 2);
-	m_pPortNode->addChild(pLevel);
-
-	//暂停图标
-	//float fPauseScale = fSpriteScale - 0.04f;
-	m_pPauseSpr = CREATE_SPRITEWITHNAME(GetSpriteNameByMode("tea.png"));
-	m_pPauseSpr->setScale(fSpriteScale);
-	Size pauseSize = GET_CONTENTSIZE(m_pPauseSpr) * fSpriteScale;
-	fCurY -= pauseSize.height;
-	m_pPauseSpr->setPosition(fCurX, fCurY + pauseSize.height / 2);
-	m_pPortNode->addChild(m_pPauseSpr);
-
-	//默认非暂停状态
-	m_pPauseSpr->setVisible(m_bPauseFlag);
+	// Add all buttons to vector
+	// Order: BTNID_RIGHT -> BTNID_DOWN -> BTNID_LEFT -> BTNID_UP -> BTNID_FIRE
+	m_vecDirBtn.pushBack(pRightBtn);
+	m_vecDirBtn.pushBack(pDownBtn);
+	m_vecDirBtn.pushBack(pLeftBtn);
+	m_vecDirBtn.pushBack(pUpBtn);
+	m_vecDirBtn.pushBack(pFireBtn);
 }
 
 
-void CGameScene::InitLandUI()
+void CGameScene::__InitBottomMenu(float& fBottomY)
 {
-	//横向层
-	m_pLandNode = Node::create();
-	this->addChild(m_pLandNode);
-	bool bVisible = GET_BOOLVALUE("PORTRAIT", true);
-	m_pLandNode->setVisible(!bVisible);
-
-	//图片缩放
-	float fSpriteScale = 0.35f;
-	string numZeroName = GetSpriteNameByMode("0.png");
-
-	//Y位置
-	Size brickSize = GetBrickSize(true);
-	float fUIPadding = (m_visibleSize.height - brickSize.width * COLUMN_NUM) * 0.5f;
-	float fCurY = fUIPadding + brickSize.width * COLUMN_NUM;
-
-	//分数
-	auto pScore = CREATE_SPRITEWITHNAME(GetSpriteNameByMode("score.png"));
-	pScore->setRotation(90);
-	pScore->setScale(fSpriteScale);
-	Size scoreSize = GET_CONTENTSIZE(pScore) * fSpriteScale;
-	float fCurX = m_visibleSize.width - scoreSize.height * 1.4f;
-	pScore->setPosition(fCurX + scoreSize.height * 0.5f, fCurY + fUIPadding * 0.5f);
-	m_pLandNode->addChild(pScore);
-
-	//分数Sprite序列
-	Size numSize = GetNumSize();
-	fCurX -= numSize.height + 5;
-	for (int i = 0; i < 6; ++i)
-	{
-		Sprite* pSpr = CREATE_SPRITEWITHNAME(numZeroName);
-		pSpr->setRotation(90);
-		pSpr->setPosition(fCurX + numSize.height * 0.5f, fCurY + fUIPadding * 0.5f - (numSize.width + NUM_PADDING) * (i - 2.5f));
-		m_pLandNode->addChild(pSpr);
-		m_pArrScoreLand[i] = pSpr;
-	}
-
-	//最高分
-	auto pHighScore = CREATE_SPRITEWITHNAME(GetSpriteNameByMode("hiscore.png"));
-	pHighScore->setScale(fSpriteScale);
-	pHighScore->setRotation(90);
-	Size highScoreSize = GET_CONTENTSIZE(pHighScore) * fSpriteScale;
-	fCurX -= highScoreSize.height * 1.4f;
-	pHighScore->setPosition(fCurX + highScoreSize.height * 0.5f, fCurY + fUIPadding * 0.5f);
-	m_pLandNode->addChild(pHighScore);
-
-	//最高分Sprite序列
-	fCurX -= numSize.height + 5;
-	for (int i = 0; i < 6; ++i)
-	{
-		Sprite* pSpr = CREATE_SPRITEWITHNAME(numZeroName);
-		pSpr->setRotation(90);
-		pSpr->setPosition(fCurX + numSize.height * 0.5f, fCurY + fUIPadding * 0.5f - (numSize.width + NUM_PADDING) * (i - 2.5f));
-		m_pLandNode->addChild(pSpr);
-		m_pArrHighScoreLand[i] = pSpr;
-	}
-
-	//小方块序列
-	fCurX = m_visibleSize.width - brickSize.width * 0.5f;
-	float fBrickScale = 0.75f;
-	float fBrickPadding = 2;
-	float fSmallBrickWidth = GetBrickSize(true).width * fBrickScale;
-	float fSmallBrickHeight = GetBrickSize(true).height * fBrickScale;
-	for (int i = 0; i < 4; ++i)
-	{
-		for (int j = 0; j < 4; ++j)
-		{
-			Sprite* pSpr = CREATE_SPRITEWITHNAME(GetSpriteNameByMode("empty.png"));
-			pSpr->setScale(fBrickScale);
-			pSpr->setPosition(fCurX - fSmallBrickWidth * 0.5f, fUIPadding * 0.5f - (fSmallBrickHeight + fBrickPadding) * (j - 1.5f));
-			m_pLandNode->addChild(pSpr);
-
-			m_pArrSmallBrickLand[i][j] = pSpr;
-		}
-
-		fCurX -= fSmallBrickWidth + fBrickPadding;
-	}
-
-
-	//速度
-	fCurX -= brickSize.width + 20;
-	m_pArrSpeedLand[0] = CREATE_SPRITEWITHNAME(numZeroName);
-	m_pArrSpeedLand[0]->setPosition(fCurX + numSize.height * 0.5f, fUIPadding * 0.5f + numSize.width * 2.2f);
-	m_pArrSpeedLand[0]->setRotation(90);
-	m_pLandNode->addChild(m_pArrSpeedLand[0]);
-
-	m_pArrSpeedLand[1] = CREATE_SPRITEWITHNAME(numZeroName);
-	m_pArrSpeedLand[1]->setPosition(fCurX + numSize.height * 0.5f, fUIPadding * 0.5f + numSize.width * 2.2f);
-	m_pArrSpeedLand[1]->setRotation(90);
-	m_pLandNode->addChild(m_pArrSpeedLand[1]);
-	m_pArrSpeedLand[1]->setVisible(false);
-
-	//关卡
-	m_pArrLevelLand[0] = CREATE_SPRITEWITHNAME(numZeroName);
-	m_pArrLevelLand[0]->setPosition(fCurX + numSize.height * 0.5f, fUIPadding * 0.5f - numSize.width * 2.2f);
-	m_pArrLevelLand[0]->setRotation(90);
-	m_pLandNode->addChild(m_pArrLevelLand[0]);
-
-	m_pArrLevelLand[1] = CREATE_SPRITEWITHNAME(numZeroName);
-	m_pArrLevelLand[1]->setPosition(fCurX + numSize.height * 0.5f, fUIPadding * 0.5f - numSize.width * 2.2f);
-	m_pArrLevelLand[1]->setRotation(90);
-	m_pLandNode->addChild(m_pArrLevelLand[1]);
-	m_pArrLevelLand[1]->setVisible(false);
-
-	//暂停图标
-	m_pPauseSprLand = CREATE_SPRITEWITHNAME(numZeroName);
-	m_pPauseSprLand->setScale(fSpriteScale);
-	m_pPauseSprLand->setRotation(90);
-	Size pauseSize = GET_CONTENTSIZE(m_pPauseSprLand) * fSpriteScale;
-	m_pPauseSprLand->setPosition(m_visibleSize.width / 4.2f, fUIPadding * 0.5f);
-	m_pLandNode->addChild(m_pPauseSprLand);
-
-	//默认非暂停状态
-	m_pPauseSprLand->setVisible(m_bPauseFlag);
-}
-
-void CGameScene::InitPortController()
-{
-	//开始
-	Sprite* pPlaySpr = CREATE_SPRITEWITHNAME(GetSpriteNameByMode("play.png"));
-	Sprite* pPauseSpr = CREATE_SPRITEWITHNAME(GetSpriteNameByMode("pause.png"));
 	float fSpriteScale = 0.4f;
+	Size visibleSize = GET_VISIBLESIZE();
+
+	// Start button
+	Sprite* pPlaySpr = CREATE_SPRITEWITHNAME(CGlobalFunc::GetSpriteNameWithMode("play.png"));
+	Sprite* pPauseSpr = CREATE_SPRITEWITHNAME(CGlobalFunc::GetSpriteNameWithMode("pause.png"));
 	m_pStartBtn = MenuItemToggle::createWithCallback(
-		CC_CALLBACK_1(CGameScene::OnButtonClick, this, BTN_START),
+		CC_CALLBACK_1(CGameScene::__OnClickButton, this, BTNID_START),
 		MenuItemSprite::create(pPlaySpr, pPlaySpr, nullptr),
 		MenuItemSprite::create(pPauseSpr, pPauseSpr, nullptr),
 		nullptr
-		);
+	);
 	m_pStartBtn->setScale(fSpriteScale);
 	Size startBtnSize = m_pStartBtn->getContentSize() * fSpriteScale;
 
-	//获取声音状态
-	Sprite* pSndOnSpr = CREATE_SPRITEWITHNAME(GetSpriteNameByMode("sound_on.png"));
-	Sprite* pSndOffSpr = CREATE_SPRITEWITHNAME(GetSpriteNameByMode("sound_off.png"));
-	bool bSoundState = GET_BOOLVALUE("SOUND", true);
+	// Sound button
+	Sprite* pSndOnSpr = CREATE_SPRITEWITHNAME(CGlobalFunc::GetSpriteNameWithMode("sound_on.png"));
+	Sprite* pSndOffSpr = CREATE_SPRITEWITHNAME(CGlobalFunc::GetSpriteNameWithMode("sound_off.png"));
 	auto pSoundOnMenu = MenuItemSprite::create(
 		pSndOnSpr,
 		pSndOnSpr,
 		nullptr
-		);
+	);
 	auto pSoundOffMenu = MenuItemSprite::create(
 		pSndOffSpr,
 		pSndOffSpr,
 		nullptr
-		);
-
-	//声音开关
+	);
 	m_pSoundBtn = MenuItemToggle::createWithCallback(
-		CC_CALLBACK_1(CGameScene::OnButtonClick, this, BTN_SOUND),
-		bSoundState ? pSoundOnMenu : pSoundOffMenu,
-		bSoundState ? pSoundOffMenu : pSoundOnMenu,
+		CC_CALLBACK_1(CGameScene::__OnClickButton, this, BTNID_SOUND),
+		pSoundOnMenu , pSoundOffMenu,
 		nullptr
-		);
+	);
 	m_pSoundBtn->setScale(fSpriteScale);
+	m_pSoundBtn->setSelectedIndex(GET_BOOLVALUE("SOUND", true) ? 0 : 1);
 	Size soundBtnSize = m_pSoundBtn->getContentSize() * fSpriteScale;
+	// Bottom y
+	fBottomY = soundBtnSize.height * 1.3f;
 
-	//重置
-	Sprite* pResetSpr = CREATE_SPRITEWITHNAME(GetSpriteNameByMode("reset.png"));
-	auto resetBtn = MenuItemSprite::create(
+	// Reset button
+	Sprite* pResetSpr = CREATE_SPRITEWITHNAME(CGlobalFunc::GetSpriteNameWithMode("reset.png"));
+	m_pResetBtn = MenuItemSprite::create(
 		pResetSpr,
 		pResetSpr,
-		CC_CALLBACK_1(CGameScene::OnButtonClick, this, BTN_RESET)
-		);
-	resetBtn->setScale(fSpriteScale);
-	Size resetBtnSize = resetBtn->getContentSize() * fSpriteScale;
+		CC_CALLBACK_1(CGameScene::__OnClickButton, this, BTNID_RESET)
+	);
+	m_pResetBtn->setScale(fSpriteScale);
+	Size resetBtnSize = m_pResetBtn->getContentSize() * fSpriteScale;
 
-	//额外功能
-	Sprite* pStarSpr = CREATE_SPRITEWITHNAME(GetSpriteNameByMode("setup.png"));
-	auto extremeBtn = MenuItemSprite::create(
+	// Setup button
+	Sprite* pStarSpr = CREATE_SPRITEWITHNAME(CGlobalFunc::GetSpriteNameWithMode("setup.png"));
+	m_pSetupBtn = MenuItemSprite::create(
 		pStarSpr,
 		pStarSpr,
-		CC_CALLBACK_1(CGameScene::OnButtonClick, this, BTN_GIVESCORE)
-		);
-	extremeBtn->setScale(fSpriteScale);
-	Size themeBtnSize = extremeBtn->getContentSize() * fSpriteScale;
+		CC_CALLBACK_1(CGameScene::__OnClickButton, this, BTNID_SETUP)
+	);
+	m_pSetupBtn->setScale(fSpriteScale);
+	Size setupBtnSize = m_pSetupBtn->getContentSize() * fSpriteScale;
 
-	//底部按钮高度
-	//fHeight = (fTopPosY - soundBtnSize.height) / 2 + soundBtnSize.height / 2;
-	//按钮间距
-	float fBtnPadding = soundBtnSize.width * 1.2f;
-
-	//位置
+	// Bottom button horizontal padding
+	float fHorizonalPadding = (visibleSize.width - startBtnSize.width - soundBtnSize.width - resetBtnSize.width - setupBtnSize.width) / 5;
 	float fSmallBtnTopHeight = soundBtnSize.height * 1.3f;
-#if CC_TARGET_PLATFORM == CC_PLATFORM_ANDROID
-	if (CGeneralManager::getInstance()->CheckAndroidNavBarExist())
-	{
-		fSmallBtnTopHeight = soundBtnSize.height * 1.65f;
-	}
-#endif
 	float fSmallBtnCenterHeight = fSmallBtnTopHeight - soundBtnSize.height / 3.1f;
-	m_pSoundBtn->setPosition(m_visibleSize.width / 2 - fBtnPadding / 2 - soundBtnSize.width / 2, fSmallBtnCenterHeight);
-	m_pStartBtn->setPosition(m_visibleSize.width / 2 - fBtnPadding * 3 / 2 - soundBtnSize.width - startBtnSize.width / 2, fSmallBtnCenterHeight);
-	resetBtn->setPosition(m_visibleSize.width / 2 + fBtnPadding / 2 + resetBtnSize.width / 2, fSmallBtnCenterHeight);
-	extremeBtn->setPosition(m_visibleSize.width / 2 + fBtnPadding * 3 / 2 + resetBtnSize.width + themeBtnSize.width / 2, fSmallBtnCenterHeight);
-
-	auto menu = Menu::create(m_pStartBtn, m_pSoundBtn, resetBtn, extremeBtn, nullptr);
+	m_pStartBtn->setPosition(fHorizonalPadding + startBtnSize.width  * 0.5f, fSmallBtnCenterHeight);
+	m_pSoundBtn->setPosition(fHorizonalPadding * 2 + startBtnSize.width + soundBtnSize.width  * 0.5f, fSmallBtnCenterHeight);
+	m_pResetBtn->setPosition(fHorizonalPadding * 3 + startBtnSize.width + soundBtnSize.width + resetBtnSize.width * 0.5f, fSmallBtnCenterHeight);
+	m_pSetupBtn->setPosition(visibleSize.width - fHorizonalPadding - setupBtnSize.width * 0.5f, fSmallBtnCenterHeight);
+	// Menu
+	auto menu = Menu::create(m_pStartBtn, m_pSoundBtn, m_pResetBtn, m_pSetupBtn, nullptr);
 	menu->setPosition(Vec2::ZERO);
-	m_pPortNode->addChild(menu);
+	this->addChild(menu);
+}
 
 
-	//剩余高度，用于调整控制按钮位置
-	float fHeight = m_visibleSize.height - GetBrickSize(false).height * ROW_NUM;
-
-	//按钮缩放大小
-	fBtnPadding = 2.0f;
-	float fControllerPadding = 10;
-	m_fPortBtnScale = (fHeight - fSmallBtnTopHeight - fControllerPadding * 2) * 1.0f / 2 / BTN_HEIGHT;
-	//log("fBtnScale=%f  fRemainHeight=%f", fBtnScale, fHeight - fSmallBtnTopHeight);
+void CGameScene::__InitRightUI(float fLeftX, float fBottomY)
+{
+	float fSpriteScale = 0.38f;
+	float fSmallBrickScale = 0.7f;
+	int nSmallBrickPadding = 2;
+	int nNumSprPadding = 1;
+	Size visibleSize = GET_VISIBLESIZE();
+	float fCenterX = fLeftX + (visibleSize.width - fLeftX) * 0.5f;
+	float fTopY = visibleSize.height;
+	string strZeroSprName = CGlobalFunc::GetSpriteNameWithMode("0.png");
 	
-	//重新调整间距
-	if (m_fPortBtnScale > FLOAT_CONTROLLER_SCALE_MAX)
+	// Score label
+	Sprite* pScoreSpr = CREATE_SPRITEWITHNAME(CGlobalFunc::GetSpriteNameWithMode("score.png"));
+	Size scoreSize = GET_CONTENTSIZE(pScoreSpr) * fSpriteScale;
+	pScoreSpr->setScale(fSpriteScale);
+	pScoreSpr->setPosition(fCenterX, fTopY - scoreSize.height);
+	fTopY -= scoreSize.height * 1.5f;
+	this->addChild(pScoreSpr);
+	m_vecMiscSpr.pushBack(pScoreSpr);
+
+	// Score num sprite
+	Size numSize = Size::ZERO;
+	float fTempX = fLeftX;
+	for (int nIndex = 0; nIndex < SCORE_NUM_COUNT; ++nIndex)
 	{
-		m_fPortBtnScale = FLOAT_CONTROLLER_SCALE_MAX;
-		fControllerPadding = (fHeight - fSmallBtnTopHeight - FLOAT_CONTROLLER_SCALE_MAX * BTN_HEIGHT * 2) / 2;
-		//log("fControllerPadding=%f", fControllerPadding);
+		Sprite* pSpr = CREATE_SPRITEWITHNAME(strZeroSprName);
+		if (numSize.equals(Size::ZERO))
+		{
+			numSize = GET_CONTENTSIZE(pSpr);
+			fTopY -= numSize.height * 0.3f;
+			fTempX = fCenterX - nNumSprPadding * 2.5f - numSize.width * 3;
+		}
+		pSpr->setPosition(fTempX + numSize.width * 0.5f, fTopY - numSize.height * 0.5f);
+		this->addChild(pSpr);
+		m_vecScoreSpr.pushBack(pSpr);
+
+		fTempX += numSize.width + nNumSprPadding;
+	}
+	fTopY -= numSize.height;
+
+	// Max score label
+	Sprite* pMaxScoreSpr = CREATE_SPRITEWITHNAME(CGlobalFunc::GetSpriteNameWithMode("hiscore.png"));
+	Size maxScoreSize = GET_CONTENTSIZE(pMaxScoreSpr) * fSpriteScale;
+	pMaxScoreSpr->setPosition(fCenterX, fTopY - maxScoreSize.height);
+	pMaxScoreSpr->setScale(fSpriteScale);
+	fTopY -= maxScoreSize.height * 1.5f;
+	this->addChild(pMaxScoreSpr);
+	m_vecMiscSpr.pushBack(pMaxScoreSpr);
+
+	// Max score num sprite
+	fTopY -= numSize.height * 0.3f;
+	fTempX = fCenterX - nNumSprPadding * 2.5f - numSize.width * 3;
+	for (int nIndex = 0; nIndex < SCORE_NUM_COUNT; ++nIndex)
+	{
+		Sprite* pSpr = CREATE_SPRITEWITHNAME(strZeroSprName);
+		pSpr->setPosition(fTempX + numSize.width * 0.5f, fTopY - numSize.height * 0.5f);
+		this->addChild(pSpr);
+		m_vecMaxScoreSpr.pushBack(pSpr);
+
+		fTempX += numSize.width + nNumSprPadding;
+	}
+	fTopY -= numSize.height + numSize.height * 0.5f;
+
+	// Small bricks
+	Size smallBrickSize = Size::ZERO;
+	for (int nRowIdx = 0; nRowIdx < SMALL_BRICK_ROW_COUNT; ++nRowIdx)
+	{
+		for (int nColIdx = 0; nColIdx < SMALL_BRICK_COLUMN_COUNT; ++nColIdx)
+		{
+			int nSmallBrickID = GET_SMALLBRICKID(nRowIdx, nColIdx);
+			const char* szSprName = m_arrSmallBrickState[nSmallBrickID] ? "black.png" : "empty.png";
+			Sprite* pSpr = CREATE_SPRITEWITHNAME(CGlobalFunc::GetSpriteNameWithMode(szSprName));
+			if (smallBrickSize.equals(Size::ZERO))
+			{
+				smallBrickSize = GET_CONTENTSIZE(pSpr) * fSmallBrickScale;
+				fTopY -= (nSmallBrickPadding + smallBrickSize.height * 0.7f);
+			}
+			if (nColIdx == 0)
+			{
+				fTempX = fCenterX - nNumSprPadding * 1.5f - smallBrickSize.width * 2;
+			}
+			// Calc position
+			pSpr->setScale(fSmallBrickScale);
+			pSpr->setPosition(fTempX + smallBrickSize.width * 0.5f, fTopY - smallBrickSize.height * 0.5f);
+			this->addChild(pSpr);
+			m_vecSmallBrickSpr.pushBack(pSpr);
+
+			fTempX += smallBrickSize.width + nSmallBrickPadding;
+		}
+
+		fTopY -= (smallBrickSize.height + nSmallBrickPadding);
 	}
 
-	float fTopPosY = fHeight - fControllerPadding;
+	// Speed label
+	fTopY -= numSize.height * 0.5f;
+	Sprite* pSpeedSpr = CREATE_SPRITEWITHNAME(CGlobalFunc::GetSpriteNameWithMode("speed.png"));
+	Size speedSize = GET_CONTENTSIZE(pSpeedSpr) * fSpriteScale;
+	fTopY -= speedSize.height * 1.5f;
+	pSpeedSpr->setScale(fSpriteScale);
+	pSpeedSpr->setPosition(fCenterX, fTopY + speedSize.height * 0.5f);
+	this->addChild(pSpeedSpr);
+	m_vecMiscSpr.pushBack(pSpeedSpr);
 
-	//上
-	string strBtn0Name = GetSpriteNameByMode("btn_0.png");
-	string strBtn1Name = GetSpriteNameByMode("btn_1.png");
-	m_pPortUpBtn = Button::create(strBtn0Name, strBtn1Name, "", Widget::TextureResType::PLIST);
-	m_pPortUpBtn->setScale(m_fPortBtnScale);
-	m_pPortUpBtn->addTouchEventListener(CC_CALLBACK_2(CGameScene::OnButtonEvent, this, BTN_UP));
-	m_pPortUpBtn->setTag(BTNTAG_PORT_UP);
-	m_pPortUpBtn->setCustomHighlightFlag(true);
-	Size upBtnSize = m_pPortUpBtn->getContentSize() * m_fPortBtnScale;
+	// Speed num sprite
+	fTopY -= numSize.height * 0.8f;
+	fTempX = fCenterX - numSize.width - LEVEL_SPEED_NUM_PADDING * 0.5f;
+	for (int nIndex = 0; nIndex < SPEED_NUM_COUNT; ++nIndex)
+	{
+		Sprite* pSpr = CREATE_SPRITEWITHNAME(strZeroSprName);
+		pSpr->setPosition(fTempX + numSize.width * 0.5f, fTopY - numSize.height * 0.5f);
+		this->addChild(pSpr);
+		m_vecSpeedSpr.pushBack(pSpr);
+		fTempX += numSize.width + LEVEL_SPEED_NUM_PADDING;
+	}
+	fTopY -= numSize.height * 1.8f;
 
-	//右
-	m_pPortRightBtn = Button::create(strBtn0Name, strBtn1Name, "", Widget::TextureResType::PLIST);
-	m_pPortRightBtn->setScale(m_fPortBtnScale);
-	m_pPortRightBtn->setRotation(90);
-	m_pPortRightBtn->addTouchEventListener(CC_CALLBACK_2(CGameScene::OnButtonEvent, this, BTN_RIGHT));
-	m_pPortRightBtn->setTag(BTNTAG_PORT_RIGHT);
-	m_pPortRightBtn->setCustomHighlightFlag(true);
-	Size rightBtnSize = m_pPortRightBtn->getContentSize() * m_fPortBtnScale;
+	// Level num sprite
+	fTempX = fCenterX - numSize.width - LEVEL_SPEED_NUM_PADDING * 0.5f;
+	for (int nIndex = 0; nIndex < SPEED_NUM_COUNT; ++nIndex)
+	{
+		Sprite* pSpr = CREATE_SPRITEWITHNAME(strZeroSprName);
+		pSpr->setPosition(fTempX + numSize.width * 0.5f, fTopY - numSize.height * 0.5f);
+		this->addChild(pSpr);
+		m_vecLevelSpr.pushBack(pSpr);
+		fTempX += numSize.width + LEVEL_SPEED_NUM_PADDING;
+	}
+	fTopY -= numSize.height * 1.3f;
 
-	//下
-	m_pPortDownBtn = Button::create(strBtn0Name, strBtn1Name, "", Widget::TextureResType::PLIST);
-	m_pPortDownBtn->setScale(m_fPortBtnScale);
-	m_pPortDownBtn->setRotation(180);
-	m_pPortDownBtn->addTouchEventListener(CC_CALLBACK_2(CGameScene::OnButtonEvent, this, BTN_DOWN));
-	m_pPortDownBtn->setTag(BTNTAG_PORT_DOWN);
-	m_pPortDownBtn->setCustomHighlightFlag(true);
-	Size downBtnSize = m_pPortDownBtn->getContentSize() * m_fPortBtnScale;
+	// Level label
+	Sprite* pLevelSpr = CREATE_SPRITEWITHNAME(CGlobalFunc::GetSpriteNameWithMode("level.png"));
+	Size levelSize = GET_CONTENTSIZE(pLevelSpr) * fSpriteScale;
+	fTopY -= levelSize.height * 1.5f;
+	pLevelSpr->setScale(fSpriteScale);
+	pLevelSpr->setPosition(fCenterX, fTopY + levelSize.height * 0.5f);
+	this->addChild(pLevelSpr);
+	m_vecMiscSpr.pushBack(pLevelSpr);
 
-	//左
-	m_pPortLeftBtn = Button::create(strBtn0Name, strBtn1Name, "", Widget::TextureResType::PLIST);
-	m_pPortLeftBtn->setScale(m_fPortBtnScale);
-	m_pPortLeftBtn->setRotation(-90);
-	m_pPortLeftBtn->addTouchEventListener(CC_CALLBACK_2(CGameScene::OnButtonEvent, this, BTN_LEFT));
-	m_pPortLeftBtn->setTag(BTNTAG_PORT_LEFT);
-	m_pPortLeftBtn->setCustomHighlightFlag(true);
-	Size leftBtnSize = m_pPortLeftBtn->getContentSize() * m_fPortBtnScale;
-
-	//Fire
-	m_pPortFireBtn = Button::create(GetSpriteNameByMode("fire_0.png"), GetSpriteNameByMode("fire_1.png"), "", Widget::TextureResType::PLIST);
-	m_pPortFireBtn->addTouchEventListener(CC_CALLBACK_2(CGameScene::OnButtonEvent, this, BTN_FIRE));
-	Size fireBtnSize = m_pPortFireBtn->getContentSize();
-
-	//设置位置
-	m_pPortLeftBtn->setPosition(Vec2(upBtnSize.height * 0.6f + fBtnPadding, fTopPosY - upBtnSize.height));
-	m_pPortRightBtn->setPosition(Vec2(upBtnSize.height * 1.6f - fBtnPadding, fTopPosY - upBtnSize.height));
-	m_pPortDownBtn->setPosition(Vec2(upBtnSize.height * 1.1f, fTopPosY - upBtnSize.height * 1.5f + fBtnPadding));
-	m_pPortUpBtn->setPosition(Vec2(upBtnSize.height * 1.1f, fTopPosY - upBtnSize.height * 0.5f - fBtnPadding));
-	m_pPortFireBtn->setPosition(Vec2(m_visibleSize.width - fireBtnSize.width * 0.8f, fTopPosY - upBtnSize.height));
-
-	//中心位置
-	m_oControllerCenterPos = Vec2(upBtnSize.height * 1.1f, fTopPosY - upBtnSize.height);
-	m_oControllerCenterSize = Size(upBtnSize.width, upBtnSize.width);
-
-	m_pPortNode->addChild(m_pPortLeftBtn);
-	m_pPortNode->addChild(m_pPortRightBtn);
-	m_pPortNode->addChild(m_pPortDownBtn);
-	m_pPortNode->addChild(m_pPortUpBtn);
-	m_pPortNode->addChild(m_pPortFireBtn);
+	// Pause sprite
+	m_pPauseSpr = CREATE_SPRITEWITHNAME(CGlobalFunc::GetSpriteNameWithMode("tea.png"));
+	Size pauseSize = GET_CONTENTSIZE(m_pPauseSpr) * fSpriteScale;
+	m_pPauseSpr->setScale(fSpriteScale);
+	m_pPauseSpr->setPosition(fCenterX, fBottomY + pauseSize.height * 0.5f);
+	this->addChild(m_pPauseSpr);
 }
 
 
-void CGameScene::InitLandController()
+void CGameScene::__InitTips()
 {
-	//开始
-	Sprite* pPlaySpr = CREATE_SPRITEWITHNAME(GetSpriteNameByMode("play.png"));
-	Sprite* pPauseSpr = CREATE_SPRITEWITHNAME(GetSpriteNameByMode("pause.png"));
-	float fSpriteScale = 0.4f;
-	m_pStartBtnLand = MenuItemToggle::createWithCallback(
-		CC_CALLBACK_1(CGameScene::OnButtonClick, this, BTN_START),
-		MenuItemSprite::create(pPlaySpr, pPlaySpr, nullptr),
-		MenuItemSprite::create(pPauseSpr, pPauseSpr, nullptr),
-		nullptr
-		);
-	m_pStartBtnLand->setScale(fSpriteScale);
-	m_pStartBtnLand->setRotation(90);
-	Size startBtnSize = m_pStartBtnLand->getContentSize() * fSpriteScale;
-
-	//获取声音状态
-	Sprite* pSndOnSpr = CREATE_SPRITEWITHNAME(GetSpriteNameByMode("sound_on.png"));
-	Sprite* pSndOffSpr = CREATE_SPRITEWITHNAME(GetSpriteNameByMode("sound_off.png"));
-	bool bSoundState = GET_BOOLVALUE("SOUND", true);
-	auto pSoundOnMenu = MenuItemSprite::create(
-		pSndOnSpr,
-		pSndOnSpr,
-		nullptr
-		);
-	auto pSoundOffMenu = MenuItemSprite::create(
-		pSndOffSpr,
-		pSndOffSpr,
-		nullptr
-		);
-
-	//声音开关
-	m_pSoundBtnLand = MenuItemToggle::createWithCallback(
-		CC_CALLBACK_1(CGameScene::OnButtonClick, this, BTN_SOUND),
-		bSoundState ? pSoundOnMenu : pSoundOffMenu,
-		bSoundState ? pSoundOffMenu : pSoundOnMenu,
-		nullptr
-		);
-	m_pSoundBtnLand->setScale(fSpriteScale);
-	m_pSoundBtnLand->setRotation(90);
-	Size soundBtnSize = m_pSoundBtnLand->getContentSize() * fSpriteScale;
-
-	//重置
-	Sprite* pResetSpr = CREATE_SPRITEWITHNAME(GetSpriteNameByMode("reset.png"));
-	auto resetBtn = MenuItemSprite::create(
-		pResetSpr,
-		pResetSpr,
-		CC_CALLBACK_1(CGameScene::OnButtonClick, this, BTN_RESET)
-		);
-	resetBtn->setScale(fSpriteScale);
-	resetBtn->setRotation(90);
-	Size resetBtnSize = resetBtn->getContentSize() * fSpriteScale;
-
-	//额外功能
-	Sprite* pStarSpr = CREATE_SPRITEWITHNAME(GetSpriteNameByMode("setup.png"));
-	auto extremeBtn = MenuItemSprite::create(
-		pStarSpr,
-		pStarSpr,
-		CC_CALLBACK_1(CGameScene::OnButtonClick, this, BTN_GIVESCORE)
-		);
-	extremeBtn->setScale(fSpriteScale);
-	extremeBtn->setRotation(90);
-	Size extremeBtnSize = extremeBtn->getContentSize() * fSpriteScale;
-
-	//位置
-	float fPosX = startBtnSize.height * 0.8f;
-#if CC_TARGET_PLATFORM == CC_PLATFORM_ANDROID
-	if (CGeneralManager::getInstance()->CheckAndroidNavBarExist())
+	Size visibleSize = GET_VISIBLESIZE();
+	m_pTipsLabel = Label::createWithSystemFont("123", FONT_NAME, TIPS_LABEL_SIZE);
+	Color3B color = GET_BOOLVALUE("NIGHTMODE", false) ? Color3B::WHITE : Color3B::BLACK;
+	m_pTipsLabel->setColor(color);
+	m_pTipsLabel->setOpacity(0);
+	if (GET_BOOLVALUE("PORTRAIT", true))
 	{
-		fPosX = startBtnSize.height * 1.1f;
+		m_pTipsLabel->setPosition(visibleSize.width * 0.5f, visibleSize.height * 0.5f);
 	}
-#endif
-	float fBrickBottomHeight = (m_visibleSize.height - COLUMN_NUM * GetBrickSize(true).width) * 0.5f;
-	float fBrickTopHeight = fBrickBottomHeight + COLUMN_NUM * GetBrickSize(true).width;
-	float fUpPadding = (m_visibleSize.height - fBrickTopHeight - startBtnSize.width - soundBtnSize.width) / 3.0f;
-	float fDownPadding = (fBrickBottomHeight - resetBtnSize.width - extremeBtnSize.width) / 3.0f;
-
-	m_pStartBtnLand->setPosition(fPosX, m_visibleSize.height - fUpPadding - startBtnSize.width * 0.5f);
-	m_pSoundBtnLand->setPosition(fPosX, fBrickTopHeight + fUpPadding + soundBtnSize.width * 0.5f);
-	resetBtn->setPosition(fPosX, fBrickBottomHeight - fDownPadding - resetBtnSize.width * 0.5f);
-	extremeBtn->setPosition(fPosX, fDownPadding + extremeBtnSize.width * 0.5f);
-
-	auto menu = Menu::create(m_pStartBtnLand, m_pSoundBtnLand, resetBtn, extremeBtn, nullptr);
-	menu->setPosition(Vec2::ZERO);
-	m_pLandNode->addChild(menu);
-
-	//重新调整间距
-	string strBtn0Name = GetSpriteNameByMode("btn_0.png");
-	string strBtn1Name = GetSpriteNameByMode("btn_1.png");
-	Sprite* pSampleBtn = CREATE_SPRITEWITHNAME(strBtn0Name);
-	m_oSampleBtnSize = GET_CONTENTSIZE(pSampleBtn);
-	m_fLandBtnScale = (fBrickBottomHeight - 40) / m_oSampleBtnSize.height / 2.0f;
-	if (m_fLandBtnScale > FLOAT_CONTROLLER_SCALE_MAX)
+	else
 	{
-		m_fLandBtnScale = FLOAT_CONTROLLER_SCALE_MAX;
+		m_pTipsLabel->setPosition(visibleSize.height * 0.5f, visibleSize.width * 0.5f);
 	}
-	m_oSampleBtnSize = m_oSampleBtnSize * m_fLandBtnScale;
 
-	//间距
-	float fBtnPadding = 2.0f;
-	float fHeightPadding = (fBrickBottomHeight - m_oSampleBtnSize.height * 2 - fBtnPadding * 2) * 0.5f;
-
-	//左
-	m_pLandLeftBtn = Button::create(strBtn0Name, strBtn1Name, "", Widget::TextureResType::PLIST);
-	m_pLandLeftBtn->setScale(m_fLandBtnScale);
-	m_pLandLeftBtn->addTouchEventListener(CC_CALLBACK_2(CGameScene::OnButtonEvent, this, BTN_LEFT));
-	m_pLandLeftBtn->setTag(BTNTAG_LAND_LEFT);
-	m_pLandLeftBtn->setCustomHighlightFlag(true);
-
-	//上
-	m_pLandUpBtn = Button::create(strBtn0Name, strBtn1Name, "", Widget::TextureResType::PLIST);
-	m_pLandUpBtn->setRotation(90);
-	m_pLandUpBtn->setScale(m_fLandBtnScale);
-	m_pLandUpBtn->addTouchEventListener(CC_CALLBACK_2(CGameScene::OnButtonEvent, this, BTN_UP));
-	m_pLandUpBtn->setTag(BTNTAG_LAND_UP);
-	m_pLandUpBtn->setCustomHighlightFlag(true);
-
-	//右
-	m_pLandRightBtn = Button::create(strBtn0Name, strBtn1Name, "", Widget::TextureResType::PLIST);
-	m_pLandRightBtn->setScale(m_fLandBtnScale);
-	m_pLandRightBtn->setRotation(180);
-	m_pLandRightBtn->addTouchEventListener(CC_CALLBACK_2(CGameScene::OnButtonEvent, this, BTN_RIGHT));
-	m_pLandRightBtn->setTag(BTNTAG_LAND_RIGHT);
-	m_pLandRightBtn->setCustomHighlightFlag(true);
-
-	//下
-	m_pLandDownBtn = Button::create(strBtn0Name, strBtn1Name, "", Widget::TextureResType::PLIST);
-	m_pLandDownBtn->setScale(m_fLandBtnScale);
-	m_pLandDownBtn->setRotation(270);
-	m_pLandDownBtn->addTouchEventListener(CC_CALLBACK_2(CGameScene::OnButtonEvent, this, BTN_DOWN));
-	m_pLandDownBtn->setTag(BTNTAG_LAND_DOWN);
-	m_pLandDownBtn->setCustomHighlightFlag(true);
-
-	//Fire
-	float fFireScale = 1.0f;
-	m_pLandFireBtn = Button::create(GetSpriteNameByMode("fire_0.png"), GetSpriteNameByMode("fire_1.png"), "", Widget::TextureResType::PLIST);
-	m_pLandFireBtn->setScale(fFireScale);
-	m_pLandFireBtn->setRotation(90);
-	Size fireBtnSize = GET_CONTENTSIZE(m_pLandFireBtn) * fFireScale;
-	m_pLandFireBtn->addTouchEventListener(CC_CALLBACK_2(CGameScene::OnButtonEvent, this, BTN_FIRE));
-
-	//设置位置
-	float fTopCenterY = m_oSampleBtnSize.height + fBrickTopHeight + fHeightPadding;
-	m_pLandLeftBtn->setPosition(Vec2(m_visibleSize.width * 0.38f, fTopCenterY + m_oSampleBtnSize.height * 0.5f - fBtnPadding));
-	m_pLandRightBtn->setPosition(Vec2(m_visibleSize.width * 0.38f, fTopCenterY - m_oSampleBtnSize.height * 0.5f + fBtnPadding));
-	m_pLandDownBtn->setPosition(Vec2(m_visibleSize.width * 0.38f - m_oSampleBtnSize.height * 0.5f + fBtnPadding, fTopCenterY));
-	m_pLandUpBtn->setPosition(Vec2(m_visibleSize.width * 0.38f + m_oSampleBtnSize.height * 0.5f - fBtnPadding, fTopCenterY));
-	m_pLandFireBtn->setPosition(Vec2(m_visibleSize.width * 0.38f, fBrickBottomHeight * 0.5f));
-
-	//中心位置
-	m_oControllerLandCenterPos = Vec2(m_visibleSize.width * 0.38f, fTopCenterY);
-	m_oControllerLandCenterSize = Size(m_oSampleBtnSize.width, m_oSampleBtnSize.width);
-
-	m_pLandNode->addChild(m_pLandLeftBtn);
-	m_pLandNode->addChild(m_pLandRightBtn);
-	m_pLandNode->addChild(m_pLandDownBtn);
-	m_pLandNode->addChild(m_pLandUpBtn);
-	m_pLandNode->addChild(m_pLandFireBtn);
+	this->addChild(m_pTipsLabel);
 }
 
 
-Size CGameScene::GetBrickSize(bool bLandVisible)
+void CGameScene::__ApplyRightHandMode()
 {
-	if (m_oBrickSize.equals(Size::ZERO))
+	if (!GET_BOOLVALUE("RHMODE", false))
 	{
-		Sprite* pSpr = CREATE_SPRITEWITHNAME("empty.png");
-		m_oBrickSize = GET_CONTENTSIZE(pSpr);
+		return;
 	}
 
-	if (bLandVisible)
-	{
-		return m_oBrickSize * (m_visibleSize.width / ROW_NUM * 1.0f / m_oBrickSize.width);
-	}
+	Button* pRightBtn = m_vecDirBtn.at(BTNID_RIGHT);
+	RETURN_IF_NULLPTR(pRightBtn);
+	Button* pDownBtn = m_vecDirBtn.at(BTNID_DOWN);
+	RETURN_IF_NULLPTR(pDownBtn);
+	Button* pLeftBtn = m_vecDirBtn.at(BTNID_LEFT);
+	RETURN_IF_NULLPTR(pLeftBtn);
+	Button* pUpBtn = m_vecDirBtn.at(BTNID_UP);
+	RETURN_IF_NULLPTR(pUpBtn);
+	Button* pFireBtn = m_vecDirBtn.at(BTNID_FIRE);
+	RETURN_IF_NULLPTR(pFireBtn);
 
-	return m_oBrickSize;
+	Size btnSize = GET_CONTENTSIZE(pUpBtn);
+	Size visibleSize = GET_VISIBLESIZE();
+
+	// Update position
+	float fExternPadding = 10.0f;
+	float fControllerCenterX = (visibleSize.width - pUpBtn->getPositionX() - fExternPadding);
+	pFireBtn->setPositionX(visibleSize.width - pFireBtn->getPositionX() - fExternPadding);
+	pDownBtn->setPositionX(fControllerCenterX);
+	pUpBtn->setPositionX(fControllerCenterX);
+	pLeftBtn->setPositionX(fControllerCenterX - btnSize.height * 0.5f + CONTROLLER_INNER_PADDING);
+	pRightBtn->setPositionX(fControllerCenterX + btnSize.height * 0.5f - CONTROLLER_INNER_PADDING);
+	m_oControllerCenterPos.x = fControllerCenterX;
 }
 
 
-Size CGameScene::GetNumSize()
-{
-	if (m_oNumSize.equals(Size::ZERO))
-	{
-		Sprite* pSpr = CREATE_SPRITEWITHNAME("0.png");
-		m_oNumSize = GET_CONTENTSIZE(pSpr);
-	}
-
-	return m_oNumSize;
-}
-
-
-//创建按键监听器
-void CGameScene::CreateKeyListener()
+void CGameScene::__CreateKeyListener()
 {
 	auto keyListener = EventListenerKeyboard::create();
 	keyListener->onKeyPressed = [&](EventKeyboard::KeyCode keyCode, Event* event)
@@ -820,31 +782,31 @@ void CGameScene::CreateKeyListener()
 		if (EventKeyboard::KeyCode::KEY_A == keyCode)
 		{
 			//log("A Pressed");
-			OnButtonPressed(BTN_LEFT);
+			__OnButtonPressed(BTNID_LEFT);
 		}
 		else if (EventKeyboard::KeyCode::KEY_D == keyCode)
 		{
 			//log("D Pressed");
-			OnButtonPressed(BTN_RIGHT);
+			__OnButtonPressed(BTNID_RIGHT);
 		}
 		else if (EventKeyboard::KeyCode::KEY_S == keyCode)
 		{
 			//log("S Pressed");
-			OnButtonPressed(BTN_DOWN);
+			__OnButtonPressed(BTNID_DOWN);
 		}
 		else if (EventKeyboard::KeyCode::KEY_W == keyCode)
 		{
 			//log("W Pressed");
-			OnButtonPressed(BTN_UP);
+			__OnButtonPressed(BTNID_UP);
 		}
 		else if (EventKeyboard::KeyCode::KEY_K == keyCode)
 		{
 			//log("K Pressed");
-			OnButtonPressed(BTN_FIRE);
+			__OnButtonPressed(BTNID_FIRE);
 		}
 		else if (EventKeyboard::KeyCode::KEY_SPACE == keyCode)
 		{
-			OnButtonClick(nullptr, BTN_START);
+			m_pStartBtn->activate();
 		}
 	};
 
@@ -853,67 +815,80 @@ void CGameScene::CreateKeyListener()
 		if (EventKeyboard::KeyCode::KEY_A == keyCode)
 		{
 			//log("A Released");
-			OnButtonReleased(BTN_LEFT);
+			__OnButtonReleased(BTNID_LEFT);
 		}
 		else if (EventKeyboard::KeyCode::KEY_D == keyCode)
 		{
 			//log("D Released");
-			OnButtonReleased(BTN_RIGHT);
+			__OnButtonReleased(BTNID_RIGHT);
 		}
 		else if (EventKeyboard::KeyCode::KEY_S == keyCode)
 		{
 			//log("S Released");
-			OnButtonReleased(BTN_DOWN);
+			__OnButtonReleased(BTNID_DOWN);
 		}
 		else if (EventKeyboard::KeyCode::KEY_W == keyCode)
 		{
 			//log("W Released");
-			OnButtonReleased(BTN_UP);
+			__OnButtonReleased(BTNID_UP);
 		}
 		else if (EventKeyboard::KeyCode::KEY_K == keyCode)
 		{
 			//log("K Released");
-			OnButtonReleased(BTN_FIRE);
+			__OnButtonReleased(BTNID_FIRE);
 		}
 		else if (EventKeyboard::KeyCode::KEY_RETURN == keyCode ||
 			EventKeyboard::KeyCode::KEY_ESCAPE == keyCode ||
 			EventKeyboard::KeyCode::KEY_BACKSPACE == keyCode)
 		{
-			LaunchQuitRoutine();
+			if (m_pTipsLabel->getOpacity() != 0)
+			{
+#if CC_TARGET_PLATFORM == CC_PLATFORM_WP8
+				GLView::sharedOpenGLView()->QuitGame();
+#else
+				Director::getInstance()->end();
+#endif
+				return;
+			}
+
+			m_pTipsLabel->setString(CGlobalFunc::GetString(STRID_QUIT));
+			m_pTipsLabel->runAction(Sequence::create(FadeIn::create(0.5f), DelayTime::create(1.0f), FadeOut::create(0.5f), nullptr));
 		}
 	};
 
 	_eventDispatcher->addEventListenerWithSceneGraphPriority(keyListener, this);
 
 
-	// 手柄处理
+	// �ֱ�����
+#if (CC_TARGET_PLATFORM == CC_PLATFORM_ANDROID)
+	m_enLeftBtnID = BTNID_MAX;
+	m_enRightBtnID = BTNID_MAX;
 	auto eventController = EventListenerController::create();
 	eventController->onKeyUp = [&](Controller* pController, int nKey, Event* pEvent)
 	{
-		log("%s: nKey=%d", __FUNCTION__, nKey);
 		switch (nKey)
 		{
 		case Controller::BUTTON_DPAD_UP:
-			OnButtonReleased(BTN_UP);
+			__OnButtonReleased(BTNID_UP);
 			break;
 
 		case Controller::BUTTON_DPAD_DOWN:
-			OnButtonReleased(BTN_DOWN);
+			__OnButtonReleased(BTNID_DOWN);
 			break;
 
 		case Controller::BUTTON_DPAD_RIGHT:
-			OnButtonReleased(BTN_RIGHT);
+			__OnButtonReleased(BTNID_RIGHT);
 			break;
 
 		case Controller::BUTTON_DPAD_LEFT:
-			OnButtonReleased(BTN_LEFT);
+			__OnButtonReleased(BTNID_LEFT);
 			break;
 
 		case Controller::BUTTON_A:
 		case Controller::BUTTON_B:
 		case Controller::BUTTON_X:
 		case Controller::BUTTON_Y:
-			OnButtonReleased(BTN_FIRE);
+			__OnButtonReleased(BTNID_FIRE);
 			break;
 
 		default:
@@ -923,40 +898,48 @@ void CGameScene::CreateKeyListener()
 
 	eventController->onKeyDown = [&](Controller* pController, int nKey, Event* pEvent)
 	{
-		log("%s: nKey=%d", __FUNCTION__, nKey);
 		switch (nKey)
 		{
 		case Controller::BUTTON_DPAD_UP:
-			OnButtonPressed(BTN_UP);
+			__OnButtonPressed(BTNID_UP);
 			break;
 
 		case Controller::BUTTON_DPAD_DOWN:
-			OnButtonPressed(BTN_DOWN);
+			__OnButtonPressed(BTNID_DOWN);
 			break;
 
 		case Controller::BUTTON_DPAD_RIGHT:
-			OnButtonPressed(BTN_RIGHT);
+			__OnButtonPressed(BTNID_RIGHT);
 			break;
 
 		case Controller::BUTTON_DPAD_LEFT:
-			OnButtonPressed(BTN_LEFT);
+			__OnButtonPressed(BTNID_LEFT);
 			break;
 
 		case Controller::BUTTON_START:
 		case Controller::AXIS_RIGHT_TRIGGER:
-			OnButtonClick(nullptr, BTN_START);
+			m_pStartBtn->activate();
 			break;
 
 		case Controller::BUTTON_SELECT:
 		case Controller::AXIS_LEFT_TRIGGER:
-			OnButtonClick(nullptr, BTN_RESET);
+			__OnClickResetBtn();
 			break;
 
 		case Controller::BUTTON_A:
+			__OnButtonPressed(BTNID_FIRE);
+			break;
+
 		case Controller::BUTTON_B:
+			__OnClickSoundBtn();
+			break;
+
 		case Controller::BUTTON_X:
+			__OnClickResetBtn();
+			break;
+
 		case Controller::BUTTON_Y:
-			OnButtonPressed(BTN_FIRE);
+			__OnClickSetupBtn();
 			break;
 
 		default:
@@ -966,7 +949,53 @@ void CGameScene::CreateKeyListener()
 
 	eventController->onAxisEvent = [&](Controller* pController, int nKey, Event* pEvent)
 	{
-		log("onAxisEvent nKey=%d", nKey);
+		EnButtonID enBtnID = BTNID_MAX;
+		bool bLeftFlag = (nKey == Controller::JOYSTICK_LEFT_X || Controller::JOYSTICK_LEFT_Y == nKey);
+		const Controller::KeyStatus& stKeyStatus = pController->getKeyStatus(nKey);
+		if (nKey == Controller::JOYSTICK_LEFT_X
+			|| nKey == Controller::JOYSTICK_RIGHT_X)
+		{
+			if (stKeyStatus.value < -0.5f)
+			{
+				enBtnID = BTNID_LEFT;
+			}
+			else if (stKeyStatus.value > 0.5f)
+			{
+				enBtnID = BTNID_RIGHT;
+			}
+			else
+			{
+				enBtnID = BTNID_MAX;
+			}
+		}
+		else if (nKey == Controller::JOYSTICK_LEFT_Y
+			|| nKey == Controller::JOYSTICK_RIGHT_Y)
+		{
+			if (stKeyStatus.value < -0.5f)
+			{
+				enBtnID = BTNID_UP;
+			}
+			else if (stKeyStatus.value > 0.5f)
+			{
+				enBtnID = BTNID_DOWN;
+			}
+			else
+			{
+				enBtnID = BTNID_MAX;
+			}
+		}
+
+		EnButtonID& enCurBtnID = (bLeftFlag ? m_enLeftBtnID : m_enRightBtnID);
+		if (enCurBtnID != enBtnID)
+		{
+			if (enCurBtnID != BTNID_MAX)
+			{
+				__OnButtonReleased(enCurBtnID);
+			}
+
+			enCurBtnID = enBtnID;
+			__OnButtonPressed(enCurBtnID);
+		}
 	};
 
 	eventController->onConnected = [&](Controller* pController, Event* pEvent)
@@ -980,169 +1009,42 @@ void CGameScene::CreateKeyListener()
 
 	_eventDispatcher->addEventListenerWithSceneGraphPriority(eventController, this);
 	Controller::startDiscoveryController();
+#endif
 }
 
 
-void CGameScene::update(float dt)
+void CGameScene::__OnClickButton(Ref* pSender, int nBtnID)
 {
-//	if (m_fClickLoveTime >= 0)
-//	{
-//		m_fClickLoveTime += dt * 1000;
-//		if (m_fClickLoveTime > CHANGEBG_INTERVAL)
-//		{
-//			m_fClickLoveTime = -1;
-//#if CC_TARGET_PLATFORM == CC_PLATFORM_WP8 
-//			GLView::sharedOpenGLView()->OnGiveScore();
-//#endif
-//
-//#if CC_TARGET_PLATFORM == CC_PLATFORM_ANDROID
-//			JniMethodInfo minfo;
-//			bool bFuncExistFlag = JniHelper::getStaticMethodInfo(minfo, "org/cocos2dx/cpp/AppActivity", "GiveScore", "()V");
-//			//log("bFuncExistFlag=%d", bFuncExistFlag);
-//			if (bFuncExistFlag)
-//			{
-//				minfo.env->CallStaticVoidMethod(minfo.classID, minfo.methodID);
-//			}
-//#endif
-//		}
-//	}
+	// Vibrate
+	CGlobalFunc::ShortVibrate();
 
-	m_mapGameObj[m_iSceneIndex]->Play(dt * 1000);
-}
-
-
-//创建各个游戏对象
-void CGameScene::CreateGameObj()
-{
-	//游戏结束
-	CGameOver* pGameOver = new CGameOver(this);
-	m_mapGameObj[SCENE_GAMEOVER] = pGameOver;
-
-	//选择游戏
-	CChooseGame* pChooseGame = new CChooseGame(this);
-	m_mapGameObj[SCENE_CHOOSEGAME] = pChooseGame;
-
-	//坦克大战
-	CTankGame* pTankGame = new CTankGame(this);
-	m_mapGameObj[SCENE_TANK] = pTankGame;
-
-	//赛车
-	CRacingGame* pRacingGame = new CRacingGame(this);
-	m_mapGameObj[SCENE_RACING] = pRacingGame;
-
-	//贪吃蛇
-	CSnakeGame* pSnakeGame = new CSnakeGame(this);
-	m_mapGameObj[SCENE_SNAKE] = pSnakeGame;
-
-	//匹配
-	CMatchGame* pMatchGame = new CMatchGame(this);
-	m_mapGameObj[SCENE_MATCH] = pMatchGame;
-
-	//青蛙过河
-	CFroggerGame* pFroggerGame = new CFroggerGame(this);
-	m_mapGameObj[SCENE_FROGGER] = pFroggerGame;
-
-	//弹球
-	CPinballGame* pPinballGame = new CPinballGame(this, false);
-	m_mapGameObj[SCENE_PINBALL] = pPinballGame;
-
-	//俄罗斯方块
-	CTetrisGame* pTetrisGame = new CTetrisGame(this, false);
-	m_mapGameObj[SCENE_TETRIS] = pTetrisGame;
-
-	//FlappyBird
-	CFlappyBirdGame* pFlappyBirdGame = new CFlappyBirdGame(this);
-	m_mapGameObj[SCENE_FLAPPYBIRD] = pFlappyBirdGame;
-
-	//俄罗斯方块2
-	CTetrisGame* pTetrisGame2 = new CTetrisGame(this, true);
-	m_mapGameObj[SCENE_TETRIS2] = pTetrisGame2;
-
-	//弹球2
-	CPinballGame* pPinballGame2 = new CPinballGame(this, true);
-	m_mapGameObj[SCENE_PINBALL2] = pPinballGame2;
-
-	//打砖块
-	CHitBrickGame* pHitBrickGame = new CHitBrickGame(this);
-	m_mapGameObj[SCENE_HITBRICK] = pHitBrickGame;
-
-	//加砖块
-	CAddBrickGame* pAddBrickGame = new CAddBrickGame(this);
-	m_mapGameObj[SCENE_ADDBRICK] = pAddBrickGame;
-}
-
-
-//更新单个Brick状态
-void CGameScene::UpdateBrick(int iRowIndex, int iColIndex, bool bSmallBrickFlag, bool bShowFlag)
-{
-	Sprite* pLandBrick = GetBrickSprite(iRowIndex, iColIndex, bSmallBrickFlag, true);
-	Sprite* pBrick = GetBrickSprite(iRowIndex, iColIndex, bSmallBrickFlag, false);
-	if (pLandBrick == nullptr || pBrick == nullptr)
+	switch (nBtnID)
 	{
-		return;
-	}
+	case BTNID_START:
+		__OnClickStartBtn();
+		break;
 
-	if (!bSmallBrickFlag)
-	{
-		//更新状态记录
-		m_arrBrickState[iRowIndex][iColIndex] = bShowFlag;
-	}
+	case BTNID_SOUND:
+		__OnClickSoundBtn();
+		break;
 
-	//设置显示或隐藏状态
-	if (bShowFlag)
-	{
-		string strBlackName = GetSpriteNameByMode("black.png");
-		pBrick->setSpriteFrame(strBlackName);
-		pLandBrick->setSpriteFrame(strBlackName);
-	}
-	else
-	{
-		string strEmptyName = GetSpriteNameByMode("empty.png");
-		pBrick->setSpriteFrame(strEmptyName);
-		pLandBrick->setSpriteFrame(strEmptyName);
+	case BTNID_RESET:
+		__OnClickResetBtn();
+		break;
+
+	case BTNID_SETUP:
+		__OnClickSetupBtn();
+		break;
+
+	default:
+		break;
 	}
 }
 
 
-//更新所有Brick状态
-void CGameScene::UpdateBricks( int iStartRowIdx /*= -1*/, int iStartColIdx /*= -1*/, int iEndRowIdx /*= -1*/, int iEndColIdx /*= -1*/ )
+void CGameScene::__OnButtonEvent(Ref* pSender, Widget::TouchEventType enType, int nBtnID)
 {
-	//边界检查
-	iEndRowIdx = (iEndRowIdx > ROW_NUM ? ROW_NUM : iEndRowIdx);
-	iEndColIdx = (iEndColIdx > COLUMN_NUM ? COLUMN_NUM : iEndColIdx);
-
-	for (int i = (iStartRowIdx == -1 ? 0 : iStartRowIdx); i < (iEndRowIdx == -1 ? ROW_NUM : iEndRowIdx); ++i)
-	{
-		for (int j = (iStartColIdx == -1 ? 0 : iStartColIdx); j < (iEndColIdx == -1 ? COLUMN_NUM : iEndColIdx); ++j)
-		{
-			bool bState = m_mapGameObj[m_iSceneIndex]->GetBrickState(i, j);
-			if (m_arrBrickState[i][j] != bState)
-			{
-				UpdateBrick(i, j, false, bState);
-			}
-		}
-	}
-}
-
-
-//重置所有Brick
-void CGameScene::ResetBricks()
-{
-	for (int i = 0; i < ROW_NUM; ++i)
-	{
-		for (int j = 0; j < COLUMN_NUM; ++j)
-		{
-			UpdateBrick(i, j, false, false);
-		}
-	}
-}
-
-
-//按钮响应
-void CGameScene::OnButtonEvent(Ref* pSender, Widget::TouchEventType enType, int iBtnIndex)
-{
-	//如果暂停，则不响应按钮事件
-	if (m_bPauseFlag)
+	if (m_pPauseSpr != nullptr && m_pPauseSpr->isVisible())
 	{
 		return;
 	}
@@ -1153,1051 +1055,240 @@ void CGameScene::OnButtonEvent(Ref* pSender, Widget::TouchEventType enType, int 
 	switch (enType)
 	{
 	case Widget::TouchEventType::BEGAN:
+	{
+		//log("-----------------\n[BEGAN]  nBtnID=%d", nBtnID);
+		oPos = pButton->getTouchBeganPosition();
+		int nOldBtnID = nBtnID;
+		if (!AdjustClickBtnID(oPos, nBtnID))
 		{
-			//log("-----------------\nORIGIN  iBtnIndex=%d", iBtnIndex);
-			oPos = pButton->getTouchBeganPosition();
-			int nOldBtnIdx = iBtnIndex;
-			if (!AdjustClickIndex(oPos, iBtnIndex))
-			{
-				return;
-			}
-
-			//如果上一次的按钮记录有效，且此时按下的按钮与上一次的不相同，则释放上一次的按钮
-			if (m_nRecordBtnIdx < BTN_INVALID && iBtnIndex != m_nRecordBtnIdx)
-			{
-				//Release
-				OnButtonReleased(m_nRecordBtnIdx);
-			}
-			m_nRecordBtnIdx = iBtnIndex;
-
-
-			//log("BEGAN  iBtnIndex=%d", iBtnIndex);
-			OnButtonPressed(iBtnIndex);
+			return;
 		}
-		break;
+
+		// Record relation
+		//log("m_mapBtnRelation[%d]=%d", nOldBtnID, nBtnID);
+		m_mapBtnRelation[nOldBtnID] = nBtnID;
+		__OnButtonPressed(nBtnID);
+	}
+	break;
 
 	case Widget::TouchEventType::MOVED:
+		//log("-----------------\n[MOVED]  nBtnID=%d", nBtnID);
 		break;
 
 	case Widget::TouchEventType::ENDED:
 	case Widget::TouchEventType::CANCELED:
+	{
+		// log("-----------------\n[ENDED/CANCELED]  nBtnID=%d", nBtnID);
+		oPos = pButton->getTouchEndPosition();
+
+		// Get relation
+		TMap_BtnRelation::iterator itBtnRelation = m_mapBtnRelation.find(nBtnID);
+		if (itBtnRelation != m_mapBtnRelation.end())
 		{
-			oPos = pButton->getTouchEndPosition();
-			if (!AdjustClickIndex(oPos, iBtnIndex))
-			{
-				return;
-			}
-
-			//如果上一次的按钮记录有效，且此时释放的按钮与上一次的不相同，则释放上一次的按钮
-			if (m_nRecordBtnIdx != BTN_INVALID && iBtnIndex != m_nRecordBtnIdx)
-			{
-				//Release
-				OnButtonReleased(m_nRecordBtnIdx);
-			}
-
-			//重置
-			m_nRecordBtnIdx = BTN_INVALID;
-
-			//log("RELEASE  iBtnIndex=%d", iBtnIndex);
-			OnButtonReleased(iBtnIndex);
+			//log("RELEASE %d", itBtnRelation->second);
+			__OnButtonReleased(itBtnRelation->second);
+			m_mapBtnRelation.erase(itBtnRelation);
 		}
-		break;
+
+		__OnButtonReleased(nBtnID);
+	}
+	break;
 	}
 }
 
 
-bool CGameScene::AdjustClickIndex(Vec2 pos, int& nIndex)
+void CGameScene::__ExportContext(TGameSceneContext* pContext)
 {
-	//只处理方向键
-	if (nIndex >= BTN_DIRMAX)
-	{
-		return true;
-	}
-
-	if (m_pLandNode->isVisible())
-	{
-		Vec2 dis = pos - m_oControllerLandCenterPos;
-		float fFactor = dis.x / dis.y;
-		if (fFactor >= 1 || fFactor <= -1)
-		{
-			nIndex = dis.x > 1e-6 ? BTN_UP : BTN_DOWN;
-			return true;
-		}
-
-		if (fFactor < 1 && fFactor >= -1)
-		{
-			nIndex = dis.y > 1e-6 ? BTN_LEFT : BTN_RIGHT;
-			return true;
-		}
-	}
-	else
-	{
-		Vec2 dis = pos - m_oControllerCenterPos;
-		float fFactor = dis.y / dis.x;
-		if (fFactor >= 1 || fFactor <= -1)
-		{
-			nIndex = dis.y > 1e-6 ? BTN_UP : BTN_DOWN;
-			return true;
-		}
-
-		if (fFactor < 1 && fFactor >= -1)
-		{
-			nIndex = dis.x > 1e-6 ? BTN_RIGHT : BTN_LEFT;
-			return true;
-		}
-	}
-
-	nIndex = -1;
-	return false;
+	memcpy(pContext->arrBrickState, m_arrBrickState, sizeof(m_arrBrickState));
+	memcpy(pContext->arrSmallBrickState, m_arrSmallBrickState, sizeof(m_arrSmallBrickState));
+	pContext->stGameData = m_stGameData;
+	pContext->bPauseFlag = m_pPauseSpr->isVisible();
+	pContext->uiStartBtnIdx = m_pStartBtn->getSelectedIndex();
+	pContext->bPlayingBGMFlag = m_bPlayingBGMFlag;
 }
 
 
-//按钮按下
-void CGameScene::OnButtonPressed(int iBtnIndex)
+void CGameScene::__UpdateScore(Vector<Sprite*>& vecSpr, int& nOldScore, int nNewScore)
 {
-	if (m_iSceneIndex <= SCENE_CHOOSEGAME)
-	{
-		//按钮音效
-		PLAY_EFFECT(EFFECT_CHANGE2);
-	}
-
-	//振动
-	OnShortVibrate();
-
-	switch (iBtnIndex)
-	{
-	case BTN_DOWN:
-		{
-			m_mapGameObj[m_iSceneIndex]->OnDownBtnPressed();
-		}
-		break;
-
-	case BTN_LEFT:
-		m_mapGameObj[m_iSceneIndex]->OnLeftBtnPressed();
-		break;
-
-	case BTN_RIGHT:
-		m_mapGameObj[m_iSceneIndex]->OnRightBtnPressed();
-		break;
-
-	case BTN_UP:
-		m_mapGameObj[m_iSceneIndex]->OnUpBtnPressed();
-		break;
-
-	case BTN_FIRE:
-		m_mapGameObj[m_iSceneIndex]->OnFireBtnPressed();
-		break;
-	}
-
-	UpdateBtnState(iBtnIndex, true);
-}
-
-
-//按钮释放
-void CGameScene::OnButtonReleased(int iBtnIndex)
-{
-	switch (iBtnIndex)
-	{
-	case BTN_DOWN:
-		m_mapGameObj[m_iSceneIndex]->OnDownBtnReleased();
-		break;
-
-	case BTN_LEFT:
-		m_mapGameObj[m_iSceneIndex]->OnLeftBtnReleased();
-		break;
-
-	case BTN_RIGHT:
-		m_mapGameObj[m_iSceneIndex]->OnRightBtnReleased();
-		break;
-
-	case BTN_UP:
-		m_mapGameObj[m_iSceneIndex]->OnUpBtnReleased();
-		break;
-
-	case BTN_FIRE:
-		m_mapGameObj[m_iSceneIndex]->OnFireBtnReleased();
-		break;
-	}
-
-	UpdateBtnState(iBtnIndex, false);
-}
-
-
-//按钮按下 iBtnIndex 对应BTN_INDEX索引
-void CGameScene::OnButtonClick(Ref* pSender, int iBtnIndex)
-{
-	double lfCurTime = GetMillSecond();
-
-	switch (iBtnIndex)
-	{
-		case BTN_START:
-		{
-			//play effect
-			PLAY_EFFECT(EFFECT_CHANGE2);
-
-			if (m_iSceneIndex <= SCENE_CHOOSEGAME)
-			{
-				m_mapGameObj[m_iSceneIndex]->OnStart();
-			}
-			else
-			{
-				m_bPauseFlag = !m_bPauseFlag;
-				m_pPauseSpr->setVisible(m_bPauseFlag);
-				m_pPauseSprLand->setVisible(m_bPauseFlag);
-				ChangePlayState(!m_bPauseFlag);
-
-				//如果暂停，则停止更新
-				if (m_bPauseFlag)
-				{
-					this->unscheduleUpdate();
-				}
-				else
-				{
-					this->scheduleUpdate();
-				}
-			}
-		}
-		break;
-
-		case BTN_SOUND:
-		{
-			bool bState = !GET_BOOLVALUE("SOUND", true);
-			SET_BOOLVALUE("SOUND", bState);
-			
-			//更新声音设置
-			m_pSetupLayer->UpdateSingleMenu(MENU_SOUND);
-
-			//设置声音按钮状态
-			bool bPortVisible = GET_BOOLVALUE("PORTRAIT", true);
-			if (bPortVisible)
-			{
-				int nIndex = m_pSoundBtn->getSelectedIndex();
-				m_pSoundBtnLand->setSelectedIndex(nIndex);
-			}
-			else
-			{
-				int nIndex = m_pSoundBtnLand->getSelectedIndex();
-				m_pSoundBtn->setSelectedIndex(nIndex);
-			}
-
-			if (bState)
-			{
-				PLAY_EFFECT(EFFECT_SOUNDON);
-				if (m_iSceneIndex <= SCENE_CHOOSEGAME)
-				{
-					PLAY_BGMUSIC(BGM_START, true);
-				}
-			}
-			else
-			{
-				//PLAY_EFFECT(EFFECT_SOUNDOFF);
-				PAUSE_BGMUSIC();
-			}
-		}
-		break;
-
-		case BTN_RESET:
-		{
-			PLAY_EFFECT(EFFECT_CHANGE2);
-
-			//如果暂停了，则恢复更新
-			if (m_bPauseFlag)
-			{
-				m_bPauseFlag = false;
-				m_pPauseSpr->setVisible(false);
-				this->scheduleUpdate();
-			}
-
-			if (m_iSceneIndex > SCENE_CHOOSEGAME)
-			{
-				if (m_iSceneIndex == SCENE_TETRIS || m_iSceneIndex == SCENE_TETRIS2)
-				{
-					//保存数据
-					m_mapGameObj[m_iSceneIndex]->SaveGameData();
-				}
-
-				RunScene(SCENE_GAMEOVER);
-			}
-		}
-		break;
-		case BTN_GIVESCORE:
-		{
-			PLAY_EFFECT(EFFECT_CHANGE2);
-
-			//隐藏横竖屏界面
-			m_pLandNode->setVisible(false);
-			m_pPortNode->setVisible(false);
-			//显示设置界面
-			m_pSetupLayer->setVisible(true);
-
-			//记录声音状态
-			m_bOldSoundState = GET_BOOLVALUE("SOUND", true);
-
-			//暂停
-			this->unscheduleUpdate();
-		}
-		break;
-	}
-}
-
-
-void CGameScene::ChangePlayState(bool bPlay)
-{
-	m_pStartBtn->setSelectedIndex(bPlay ? 1 : 0);
-	m_pStartBtnLand->setSelectedIndex(bPlay ? 1 : 0);
-}
-
-
-Sprite* CGameScene::GetBrickSprite(int nRowIdx, int nColIdx, bool bSmallFlag, bool bLandFlag)
-{
-	if ((bSmallFlag && (nRowIdx >= 4 || nRowIdx < 0 || nColIdx >= 4 || nColIdx < 0))
-		|| (!bSmallFlag && (nRowIdx >= ROW_NUM || nRowIdx < 0 || nColIdx >= COLUMN_NUM || nColIdx < 0)))
-	{
-		return nullptr;
-	}
-
-	if (!bLandFlag)
-	{
-		if (bSmallFlag)
-		{
-			return m_pArrSmallBrick[nRowIdx][nColIdx];
-		}
-		else
-		{
-			return m_pArrBrick[nRowIdx][nColIdx];
-		}
-	}
-	else
-	{
-		if (bSmallFlag)
-		{
-			return m_pArrSmallBrickLand[nRowIdx][nColIdx];
-		}
-		else
-		{
-			return m_pArrBrickLand[nRowIdx][nColIdx];
-		}
-	}
-}
-
-
-void CGameScene::ShowTips(int nTipType)
-{
-	//如果相同则不显示
-	if (m_nTipType == nTipType)
+	if (nOldScore == nNewScore)
 	{
 		return;
 	}
 
-	m_nTipType = nTipType;
-	int nStrID = STRNAME_MAX;
-	switch (m_nTipType)
-	{
-	case TIPS_EXIT:
-	{
-		nStrID = STRNAME_QUIT;
-	}
-	break;
+	// Old score string
+	char szOldScore[64] = { 0 };
+	sprintf(szOldScore, "%06d", nOldScore);
 
-	case TIPS_SAVEOPEN:
-	{
-		nStrID = STRNAME_RECOVERON;
-	}
-	break;
+	// New score string
+	char szScore[64] = { 0 };
+	sprintf(szScore, "%06d", nNewScore);
 
-	case TIPS_SAVECLOSE:
+	// Check difference, then update sprite
+	char szSpriteName[64] = { 0 };
+	for (int nIndex = 0; szScore[nIndex] != 0 && szOldScore[nIndex] != 0; ++nIndex)
 	{
-		nStrID = STRNAME_RECOVEROFF;
+		if (szOldScore[nIndex] == szScore[nIndex])
+		{
+			continue;
+		}
+
+		sprintf(szSpriteName, "%c.png", szScore[nIndex]);
+		Sprite* pSpr = vecSpr.at(nIndex);
+		if (pSpr != nullptr)
+		{
+			pSpr->setSpriteFrame(CGlobalFunc::GetSpriteNameWithMode(szSpriteName));
+		}
 	}
-	break;
-	case TIPS_SAVEOK:
+
+	// Update score
+	nOldScore = nNewScore;
+}
+
+
+void CGameScene::__OnButtonPressed(int nButtonID)
+{
+	// Play effect
+	__PlayEffect(EFFECT_CHANGE);
+
+	// Vibrate
+	CGlobalFunc::ShortVibrate();
+
+	Button* pBtn = m_vecDirBtn.at(nButtonID);
+	if (pBtn != nullptr)
 	{
-		nStrID = STRNAME_SAVEOK;
+		pBtn->forceSetHighlighted(true);
 	}
-	break;
-	case TIPS_SAVEFAIL:
+
+	SEventContextButton stButtonEvent = { nButtonID, true };
+	g_oEventEngine.FireEvent(EVENT_BUTTON, (const char*)&stButtonEvent, sizeof(stButtonEvent));
+}
+
+
+void CGameScene::__OnButtonReleased(int nButtonID)
+{
+	Button* pBtn = m_vecDirBtn.at(nButtonID);
+	if (pBtn != nullptr)
 	{
-		nStrID = STRNAME_SAVEFAIL;
+		pBtn->forceSetHighlighted(false);
 	}
-	break;
-	default:
+
+	SEventContextButton stButtonEvent = { nButtonID, false };
+	g_oEventEngine.FireEvent(EVENT_BUTTON, (const char*)&stButtonEvent, sizeof(stButtonEvent));
+
+}
+
+
+void CGameScene::__OnClickStartBtn()
+{
+	// If pause, start update per frame
+	bool bPauseFlag = m_pPauseSpr->isVisible();
+	if (bPauseFlag)
+	{
+		m_pPauseSpr->setVisible(false);
+		scheduleUpdate();
 		return;
-		break;
 	}
 
-	int nLangID = (CCApplication::getInstance()->getCurrentLanguage() != LanguageType::CHINESE);
-	string strName = CGeneralManager::getInstance()->GetStringByID(nLangID, nStrID);
-	if (m_pTipsLabel == nullptr)
+	bool bClickPauseFlag = (m_pStartBtn->getSelectedIndex() == 0);
+	if (bClickPauseFlag)
 	{
-		m_pTipsLabel = Label::createWithSystemFont(strName, FONT_NAME, 36);
-		m_pTipsLabel->setPosition(m_visibleSize.width / 2, m_visibleSize.height / 2);
-		m_pTipsLabel->setRotation(90);
-		this->addChild(m_pTipsLabel, 999);
+		m_pPauseSpr->setVisible(true);
+		unscheduleUpdate();
+		return;
 	}
-	else
+
+	SEventContextButton stContext = { BTNID_START, true };
+	if (!g_oEventEngine.FireVote(EVENT_BUTTON, (char*)&stContext, sizeof(stContext)))
 	{
-		m_pTipsLabel->setString(strName);
+		// Recover button state
+		m_pStartBtn->setSelectedIndex(0);
+		return;
 	}
 
-	//设置颜色
-	bool bNightMode = GET_BOOLVALUE("NIGHTMODE", false);
-	m_pTipsLabel->setColor(bNightMode ? Color3B::WHITE : Color3B::BLACK);
+	if (stContext.nButtonID != BTNID_START)
+	{
+		// Recover button state
+		m_pStartBtn->setSelectedIndex(0);
+	}
 
-	//横竖屏
+	// Fire event
+	SEventContextButton stExecContext = { BTNID_START, true };
+	g_oEventEngine.FireEvent(EVENT_BUTTON, (const char*)&stExecContext, sizeof(stExecContext));
+}
+
+
+void CGameScene::__OnClickSoundBtn()
+{
+	bool bState = !GET_BOOLVALUE("SOUND", true);
+	SET_BOOLVALUE("SOUND", bState);
+	// Play effect
+	__PlayEffect(bState ? EFFECT_SOUNDON : EFFECT_SOUNDOFF);
+	// Update button
+	m_pSoundBtn->setSelectedIndex(bState ? 0 : 1);
+
+	if (!bState)
+	{
+		__PlayBGM(false);
+		return;
+	}
+	
+	SEventPlayBGM stBGM = { true, true };
+	if (g_oEventEngine.FireVote(EVENT_PLAY_BGM, (char*)&stBGM, sizeof(stBGM)))
+	{
+		// BGM
+		__PlayBGM(true);
+	}
+}
+
+
+void CGameScene::__OnClickResetBtn()
+{
+	SEventContextButton stContext = { BTNID_RESET, true };
+	if (g_oEventEngine.FireVote(EVENT_BUTTON, (char*)&stContext, sizeof(stContext)))
+	{
+		g_oEventEngine.FireEvent(EVENT_BUTTON, (const char*)&stContext, sizeof(stContext));
+	}
+}
+
+
+void CGameScene::__OnClickSetupBtn()
+{
+	// Stop update
+	unscheduleUpdate();
+
+	// Export context
+	TGameSceneContext stContext;
+	__ExportContext(&stContext);
+
 	bool bPortraitFlag = GET_BOOLVALUE("PORTRAIT", true);
-	float fRotation = bPortraitFlag ? 0 : 90;
-	m_pTipsLabel->setRotation(fRotation);
-
-	//先停止所有动作
-	m_pTipsLabel->stopAllActions();
-	//m_pTipSpr->setVisible(true);
-	m_pTipsLabel->runAction(
-		Sequence::create(FadeIn::create(0.5f), DelayTime::create(1.5f), FadeOut::create(0.5f), CallFunc::create(CC_CALLBACK_0(CGameScene::ClearTipsRecord, this)), nullptr)
-		);
+	REPLACE_SCENE(bPortraitFlag ? CSetupScene::CreateScene(&stContext) : CSetupSceneEx::CreateScene(&stContext));
 }
 
 
-void CGameScene::ChangeColorMode()
+void CGameScene::__PlayEffect(const char* szEffect)
 {
-	//背景
-	bool bNightMode = GET_BOOLVALUE("NIGHTMODE", false);
-	m_pBgLayer->setVisible(!bNightMode);
-
-	//所有方块更新
-	for (int nRowIdx = 0; nRowIdx < ROW_NUM; ++nRowIdx)
+	bool bState = GET_BOOLVALUE("SOUND", true);
+	if (bState)
 	{
-		for (int nColIdx = 0; nColIdx < COLUMN_NUM; ++nColIdx)
-		{
-			UpdateBrick(nRowIdx, nColIdx, false, m_arrBrickState[nRowIdx][nColIdx]);
-		}
-	}
-
-
-	Vector<Node*> vecNode = m_pLandNode->getChildren();
-	for (int nIdx = 0; nIdx < vecNode.size(); ++nIdx)
-	{
-		Node* pNode = vecNode.at(nIdx);
-		Sprite* pSprite = dynamic_cast<Sprite *>(pNode);
-		if (pSprite != nullptr && pSprite->getTag() < 0)
-		{
-			ChangeSprite(pSprite, bNightMode);
-			continue;
-		}
-
-		//菜单
-		Menu* pMenu = dynamic_cast<Menu *>(pNode);
-		if (pMenu != nullptr)
-		{
-			Vector<Node*> vecMenu = pMenu->getChildren();
-			for (int i = 0; i < vecMenu.size(); ++i)
-			{
-				MenuItemSprite* pMenuItemSpr = dynamic_cast<MenuItemSprite*>(vecMenu.at(i));
-				if (pMenuItemSpr != nullptr)
-				{
-					ChangeMenuItemSprite(pMenuItemSpr, bNightMode);
-				}
-
-				MenuItemToggle* pMenuItemToggle = dynamic_cast<MenuItemToggle*>(vecMenu.at(i));
-				if (pMenuItemToggle != nullptr)
-				{
-					ChangeMenuItemToggle(pMenuItemToggle, bNightMode);
-				}
-			}
-		}
-
-		//按钮
-		Button* pButton = dynamic_cast<Button*>(pNode);
-		if (pButton != nullptr)
-		{
-			ChangeButton(pButton, bNightMode);
-		}
-	}
-
-	vecNode.clear();
-	vecNode = m_pPortNode->getChildren();
-	for (int nIdx = 0; nIdx < vecNode.size(); ++nIdx)
-	{
-		Node* pNode = vecNode.at(nIdx);
-		Sprite* pSprite = dynamic_cast<Sprite *>(pNode);
-		if (pSprite != nullptr && pSprite->getTag() < 0)
-		{
-			ChangeSprite(pSprite, bNightMode);
-			continue;
-		}
-
-		//菜单
-		Menu* pMenu = dynamic_cast<Menu *>(pNode);
-		if (pMenu != nullptr)
-		{
-			Vector<Node*> vecMenu = pMenu->getChildren();
-			for (int i = 0; i < vecMenu.size(); ++i)
-			{
-				MenuItemSprite* pMenuItemSpr = dynamic_cast<MenuItemSprite*>(vecMenu.at(i));
-				if (pMenuItemSpr != nullptr)
-				{
-					ChangeMenuItemSprite(pMenuItemSpr, bNightMode);
-				}
-
-				MenuItemToggle* pMenuItemToggle = dynamic_cast<MenuItemToggle*>(vecMenu.at(i));
-				if (pMenuItemToggle != nullptr)
-				{
-					ChangeMenuItemToggle(pMenuItemToggle, bNightMode);
-				}
-			}
-		}
-
-		//按钮
-		Button* pButton = dynamic_cast<Button*>(pNode);
-		if (pButton != nullptr)
-		{
-			ChangeButton(pButton, bNightMode);
-		}
+		PLAY_EFFECT(szEffect);
 	}
 }
 
 
-void CGameScene::SaveTetrisRecord()
+void CGameScene::__PlayBGM(bool bPlayFlag, bool bLoopFlag /*= true*/)
 {
-	if (m_iSceneIndex != SCENE_TETRIS && m_iSceneIndex != SCENE_TETRIS2)
+	if (!bPlayFlag)
 	{
-		//提示
-		ShowTips(CGameScene::TIPS_SAVEFAIL);
+		m_bPlayingBGMFlag = false;
+		PAUSE_BGMUSIC();
 		return;
 	}
 
-	//保存
-	m_mapGameObj[m_iSceneIndex]->SaveGameData();
-	ShowTips(CGameScene::TIPS_SAVEOK);
-	return;
-}
-
-
-void CGameScene::GiveRate()
-{
-#if CC_TARGET_PLATFORM == CC_PLATFORM_WP8 
-	GLView::sharedOpenGLView()->OnGiveScore();
-
-#elif CC_TARGET_PLATFORM == CC_PLATFORM_WINRT
-	GLViewImpl* pGLView = static_cast<GLViewImpl*>(DIRECTOR_INSTANCE()->getOpenGLView());
-	pGLView->OnGiveScore();
-
-#elif CC_TARGET_PLATFORM == CC_PLATFORM_ANDROID
-	JniMethodInfo minfo;
-	bool bFuncExistFlag = JniHelper::getStaticMethodInfo(minfo, "org/cocos2dx/cpp/AppActivity", "OnGiveScore", "()V");
-	if (bFuncExistFlag)
+	bool bState = GET_BOOLVALUE("SOUND", true);
+	if (bState && !m_bPlayingBGMFlag)
 	{
-		minfo.env->CallStaticVoidMethod(minfo.classID, minfo.methodID);
-	}
-#endif
-}
-
-
-void CGameScene::ShowMyApps()
-{
-#if CC_TARGET_PLATFORM == CC_PLATFORM_WP8 
-	GLView::sharedOpenGLView()->OnShowMyApps();
-#elif CC_TARGET_PLATFORM == CC_PLATFORM_WINRT
-	GLViewImpl* pGLView = static_cast<GLViewImpl*>(DIRECTOR_INSTANCE()->getOpenGLView());
-	pGLView->OnShowMyApps();
-
-#elif CC_TARGET_PLATFORM == CC_PLATFORM_ANDROID
-	JniMethodInfo minfo;
-	bool bFuncExistFlag = JniHelper::getStaticMethodInfo(minfo, "org/cocos2dx/cpp/AppActivity", "OnShowMyApps", "()V");
-	if (bFuncExistFlag)
-	{
-		minfo.env->CallStaticVoidMethod(minfo.classID, minfo.methodID);
-	}
-#endif
-}
-
-
-void CGameScene::OnShortVibrate()
-{
-	if (GET_INTVALUE("VIBRATION", 0) == 0)
-	{
-		return;
-	}
-
-#if CC_TARGET_PLATFORM == CC_PLATFORM_WP8 
-	GLView::sharedOpenGLView()->OnShortVibrate();
-
-#elif CC_TARGET_PLATFORM == CC_PLATFORM_ANDROID
-	JniMethodInfo minfo;
-	bool bFuncExistFlag = JniHelper::getStaticMethodInfo(minfo, "org/cocos2dx/lib/Cocos2dxHelper", "OnShortVibrate", "()V");
-	if (bFuncExistFlag)
-	{
-		minfo.env->CallStaticVoidMethod(minfo.classID, minfo.methodID);
-		minfo.env->DeleteLocalRef(minfo.classID);
-	}
-#endif
-}
-
-
-void CGameScene::OnLongVibrate()
-{
-	if (GET_INTVALUE("VIBRATION", 0) == 0)
-	{
-		return;
-	}
-
-#if CC_TARGET_PLATFORM == CC_PLATFORM_WP8
-	GLView::sharedOpenGLView()->OnLongVibrate();
-
-#elif CC_TARGET_PLATFORM == CC_PLATFORM_ANDROID
-	JniMethodInfo minfo;
-	bool bFuncExistFlag = JniHelper::getStaticMethodInfo(minfo, "org/cocos2dx/lib/Cocos2dxHelper", "OnLongVibrate", "()V");
-	if (bFuncExistFlag)
-	{
-		minfo.env->CallStaticVoidMethod(minfo.classID, minfo.methodID);
-		minfo.env->DeleteLocalRef(minfo.classID);
-	}
-#endif
-}
-
-
-bool CGameScene::CheckSetupLayerVisible()
-{
-	return m_pSetupLayer->isVisible();
-}
-
-
-void CGameScene::QuitSetupLayer()
-{
-	m_pSetupLayer->setVisible(false);
-
-	bool bPortVisible = GET_BOOLVALUE("PORTRAIT", true);
-	m_pPortNode->setVisible(bPortVisible);
-	m_pLandNode->setVisible(!bPortVisible);
-
-	//声音按钮状态处理
-	bool bSoundState = GET_BOOLVALUE("SOUND", true);
-	int nIndex = m_pSoundBtn->getSelectedIndex();
-	if (m_bOldSoundState != bSoundState)
-	{
-		nIndex = ((nIndex == 1) ? 0 : 1);
-		m_pSoundBtn->setSelectedIndex(nIndex);
-		m_pSoundBtnLand->setSelectedIndex(nIndex);
-	}
-
-	//恢复
-	if (!m_bPauseFlag)
-	{
-		this->scheduleUpdate();
+		m_bPlayingBGMFlag = true;
+		PLAY_BGMUSIC(BGM_START, bLoopFlag);
 	}
 }
 
-
-//显示新场景
-void CGameScene::RunScene(int iSceneIndex)
-{
-	//log("Old Scene: %d   Current Scene: %d", m_iSceneIndex, iSceneIndex);
-	m_iSceneIndex = iSceneIndex;
-	m_mapGameObj[m_iSceneIndex]->Init();
-
-	//Change the play button state
-	ChangePlayState(m_iSceneIndex > SCENE_CHOOSEGAME);
-}
-
-
-//更新分数显示
-void CGameScene::UpdateScore(int iScore, bool bPlayEffect)
-{
-	if (bPlayEffect)
-	{
-		PLAY_EFFECT(EFFECT_ADD);
-	}
-
-	//log("Current Score: %d", iScore);
-
-	char arrNum[7] = {'\0'};
-	sprintf(arrNum, "%06d", iScore);
-
-	char szSprName[20] = {'\0'};
-	for (int i = 0; i < 6; ++i)
-	{
-		sprintf(szSprName, "%c.png", arrNum[i]);
-		string strName = GetSpriteNameByMode(szSprName);
-		m_pArrScore[i]->setSpriteFrame(strName);
-		m_pArrScoreLand[i]->setSpriteFrame(strName);
-	}
-
-	UpdateHighScore(m_iSceneIndex - 2, iScore);
-}
-
-
-//更新最高分显示
-void CGameScene::UpdateHighScore(int iGameIdx, int iHighScore)
-{
-	if (iGameIdx < 0)
-	{
-		return;
-	}
-
-	int iRecordHighScore = CGeneralManager::getInstance()->GetHighScore(iGameIdx);
-	if (iRecordHighScore > iHighScore)
-	{
-		iHighScore = iRecordHighScore;
-	}
-	else if (iRecordHighScore < iHighScore)
-	{
-		CGeneralManager::getInstance()->SetHighScore(iGameIdx, iHighScore);
-	}
-	
-	char arrNum[7] = { '\0' };
-	sprintf(arrNum, "%06d", iHighScore);
-	char szName[20] = {'\0'};
-	for (int i = 0; i < 6; ++i)
-	{
-		sprintf(szName, "%c.png", arrNum[i]);
-		string strName = GetSpriteNameByMode(szName);
-		m_pArrHighScore[i]->setSpriteFrame(strName);
-		m_pArrHighScoreLand[i]->setSpriteFrame(strName);
-	}
-}
-
-
-//更新等级显示
-void CGameScene::UpdateLevel(int iLevel)
-{
-	//log("Current Level: %d", iLevel);
-	
-	//获取中心位置
-	Size brickSize = GetBrickSize(true);
-	Size numSize = GetNumSize();
-	float fCenterPosX = (m_visibleSize.width - COLUMN_NUM * brickSize.width) * 0.5f + COLUMN_NUM * brickSize.width;
-	float fCenterPosY = (m_visibleSize.height - brickSize.width * COLUMN_NUM) * 0.5f * 0.5f - numSize.width * 2.2f;
-	if (iLevel == 10)
-	{
-		string strName = GetSpriteNameByMode("1.png");
-		m_pArrLevel[0]->setSpriteFrame(strName);
-		m_pArrLevel[0]->setPositionX(fCenterPosX - numSize.width * 0.5f);
-		m_pArrLevel[1]->setPositionX(fCenterPosX + numSize.width * 0.5f);
-		m_pArrLevel[1]->setVisible(true);
-
-		m_pArrLevelLand[0]->setSpriteFrame(strName);
-		m_pArrLevelLand[0]->setPositionY(fCenterPosY + numSize.width * 0.5f);
-		m_pArrLevelLand[1]->setPositionY(fCenterPosY - numSize.width * 0.5f);
-		m_pArrLevelLand[1]->setVisible(true);
-	}
-	else
-	{
-		if (m_pArrLevel[1]->isVisible())
-		{
-			m_pArrLevel[1]->setVisible(false);
-			m_pArrLevel[0]->setPositionX(fCenterPosX);
-
-			m_pArrLevelLand[1]->setVisible(false);
-			m_pArrLevelLand[0]->setPositionY(fCenterPosY);
-		}
-		
-		char szName[20] = { '\0' };
-		sprintf(szName, "%d.png", iLevel);
-		string strName = GetSpriteNameByMode(szName);
-		m_pArrLevel[0]->setSpriteFrame(strName);
-		m_pArrLevelLand[0]->setSpriteFrame(strName);
-	}
-}
-
-
-//更新速度显示
-void CGameScene::UpdateSpeed(int iSpeed)
-{
-	//log("Current Speed: %d", iSpeed);
-	
-	//获取中心位置
-	Size brickSize = GetBrickSize(true);
-	Size numSize = GetNumSize();
-	float fCenterPosX = (m_visibleSize.width - COLUMN_NUM * brickSize.width) * 0.5f + COLUMN_NUM * brickSize.width;
-	float fCenterPosY = (m_visibleSize.height - brickSize.width * COLUMN_NUM) * 0.5f * 0.5f + numSize.width * 2.2f;
-	if (iSpeed == 10)
-	{
-		string strName = GetSpriteNameByMode("1.png");
-		m_pArrSpeed[0]->setSpriteFrame(strName);
-		m_pArrSpeed[0]->setPositionX(fCenterPosX - numSize.width * 0.5f);
-		m_pArrSpeed[1]->setPositionX(fCenterPosX + numSize.width * 0.5f);
-		m_pArrSpeed[1]->setVisible(true);
-
-		m_pArrSpeedLand[0]->setSpriteFrame(strName);
-		m_pArrSpeedLand[0]->setPositionY(fCenterPosY + numSize.width * 0.5f);
-		m_pArrSpeedLand[1]->setPositionY(fCenterPosY - numSize.width * 0.5f);
-		m_pArrSpeedLand[1]->setVisible(true);
-	}
-	else
-	{
-		if (m_pArrSpeed[1]->isVisible())
-		{
-			m_pArrSpeed[1]->setVisible(false);
-			m_pArrSpeed[0]->setPositionX(fCenterPosX);
-
-			m_pArrSpeedLand[1]->setVisible(false);
-			m_pArrSpeedLand[0]->setPositionY(fCenterPosY);
-		}
-
-		char szName[20] = {'\0'};
-		sprintf(szName, "%d.png", iSpeed);
-		string strName = GetSpriteNameByMode(szName);
-		m_pArrSpeed[0]->setSpriteFrame(strName);
-		m_pArrSpeedLand[0]->setSpriteFrame(strName);
-	}
-}
-
-
-//更新小方块序列
-void CGameScene::UpdateSmallBricks()
-{
-	for (int i = 0; i < 4; ++i)
-	{
-		for (int j = 0; j < 4; ++j)
-		{
-			bool bState = m_mapGameObj[m_iSceneIndex]->GetSmallBrickState(i, j);
-			UpdateBrick(i, j, true, bState);
-		}
-	}
-}
-
-
-//重置所有小Brick
-void CGameScene::ResetSmallBricks()
-{
-	for (int i = 0; i < 4; ++i)
-	{
-		for (int j = 0; j < 4; ++j)
-		{
-			UpdateBrick(i, j, true, false);
-		}
-	}
-}
-
-
-void CGameScene::ChangeSprite(Sprite* pSprite, bool bNightMode)
-{
-	string strName = pSprite->getSpriteFrameName();
-	strName = CGeneralManager::getInstance()->GetSpriteName(strName, bNightMode);
-	pSprite->setSpriteFrame(strName);
-}
-
-
-void CGameScene::ChangeMenuItemSprite(MenuItemSprite* pMenuItemSpr, bool bNightMode)
-{
-	Sprite* pSprite = dynamic_cast<Sprite*>(pMenuItemSpr->getNormalImage());
-	if (pSprite != nullptr)
-	{
-		ChangeSprite(pSprite, bNightMode);
-	}
-
-	pSprite = dynamic_cast<Sprite*>(pMenuItemSpr->getSelectedImage());
-	if (pSprite != nullptr)
-	{
-		ChangeSprite(pSprite, bNightMode);
-	}
-
-	pSprite = dynamic_cast<Sprite*>(pMenuItemSpr->getDisabledImage());
-	if (pSprite != nullptr)
-	{
-		ChangeSprite(pSprite, bNightMode);
-	}
-}
-
-
-void CGameScene::ChangeMenuItemToggle(MenuItemToggle* pMenuItemToggle, bool bNightMode)
-{
-	Vector<MenuItem*> vecMenuItem = pMenuItemToggle->getSubItems();
-	for (int i = 0; i < vecMenuItem.size(); ++i)
-	{
-		MenuItemSprite* pMenuItemSpr = dynamic_cast<MenuItemSprite*>(vecMenuItem.at(i));
-		if (pMenuItemSpr != nullptr)
-		{
-			ChangeMenuItemSprite(pMenuItemSpr, bNightMode);
-		}
-	}
-}
-
-
-void CGameScene::ChangeButton(Button* pButton, bool bNightMode)
-{
-	string strName = pButton->getNormalName();
-	int nIndex = strName.find(bNightMode ? ".png" : "_night");
-	if (nIndex != string::npos)
-	{
-		string strNew = strName.substr(0, nIndex) + (bNightMode ? "_night.png" : ".png");
-		//log("Normal  %s->%s", strName.c_str(), strNew.c_str());
-		pButton->loadTextureNormal(strNew, TextureResType::PLIST);
-	}
-
-	strName = pButton->getClickedName();
-	nIndex = strName.find(bNightMode ? ".png" : "_night");
-	if (nIndex != string::npos)
-	{
-		string strNew = strName.substr(0, nIndex) + (bNightMode ? "_night.png" : ".png");
-		//log("Clicked  %s->%s", strName.c_str(), strNew.c_str());
-		pButton->loadTexturePressed(strNew, TextureResType::PLIST);
-	}
-
-	strName = pButton->getDisabledName();
-	nIndex = strName.find(bNightMode ? ".png" : "_night");
-	if (nIndex != string::npos)
-	{
-		string strNew = strName.substr(0, nIndex) + (bNightMode ? "_night.png" : ".png");
-		//log("Disabled  %s->%s", strName.c_str(), strNew.c_str());
-		pButton->loadTextureDisabled(strNew, TextureResType::PLIST);
-	}
-}
-
-
-std::string CGameScene::GetSpriteNameByMode(const char* szName)
-{
-	string strTemp(szName);
-	bool bNightMode = GET_BOOLVALUE("NIGHTMODE", false);
-	if (bNightMode)
-	{
-		int nIndex = strTemp.find(".png");
-		assert(nIndex != string::npos);
-
-		strTemp = strTemp.substr(0, nIndex) + "_night.png";
-	}
-
-	return strTemp;
-}
-
-
-void CGameScene::ClearTipsRecord()
-{
-	m_nTipType = TIPS_INVALID;
-}
-
-
-void CGameScene::UpdateBtnState(int nBtnIndex, bool bPressedFlag)
-{
-	Button* pButton = nullptr;
-	bool bPortFlag = (m_pPortNode->isVisible());
-	switch (nBtnIndex)
-	{
-	case BTN_DOWN:
-		pButton = bPortFlag ? m_pPortDownBtn : m_pLandDownBtn;
-		break;
-	case BTN_UP:
-		pButton = bPortFlag ? m_pPortUpBtn : m_pLandUpBtn;
-		break;
-	case BTN_LEFT:
-		pButton = bPortFlag ? m_pPortLeftBtn : m_pLandLeftBtn;
-		break;
-	case BTN_RIGHT:
-		pButton = bPortFlag ? m_pPortRightBtn : m_pLandRightBtn;
-		break;
-	default:
-		return;
-		break;
-	}
-
-	if (pButton == nullptr)
-	{
-		return;
-	}
-
-	pButton->setHighlightedWithForce(bPressedFlag);
-}
-
-
-void CGameScene::LaunchQuitRoutine()
-{
-	//如果显示了设置界面，则返回
-	if (CheckSetupLayerVisible())
-	{
-		QuitSetupLayer();
-		return;
-	}
-
-	double lfCurTime = GetMillSecond();
-	if (lfCurTime - m_lfClickExitTime <= CLICK_INTERVAL)
-	{
-		if (m_iSceneIndex == SCENE_TETRIS || m_iSceneIndex == SCENE_TETRIS2)
-		{
-			//保存数据
-			m_mapGameObj[m_iSceneIndex]->SaveGameData();
-		}
-
-#if CC_TARGET_PLATFORM == CC_PLATFORM_WP8
-		Director::getInstance()->getOpenGLView()->OnQuitGame();
-#else
-		DIRECTOR_INSTANCE()->end();
-#endif
-
-		return;
-	}
-
-	m_lfClickExitTime = lfCurTime;
-
-	//显示退出提示
-	ShowTips(TIPS_EXIT);
-}
-
-void CGameScene::InitBgLayer()
-{
-	m_pBgLayer = LayerColor::create(Color4B::WHITE);
-	m_pBgLayer->setContentSize(m_visibleSize);
-	this->addChild(m_pBgLayer);
-
-	m_pBgLayer->setVisible(!GET_BOOLVALUE("NIGHTMODE", false));
-
-	//初始化SetupLayer
-	m_pSetupLayer = CSetupLayer::create();
-	m_pSetupLayer->setPosition(Vec2::ZERO);
-	m_pSetupLayer->Init(this);
-	this->addChild(m_pSetupLayer);
-	m_pSetupLayer->setVisible(false);
-}
-
-
-//更改控制按钮位置
-void CGameScene::ChangeControllerPos()
-{
-	float fBtnPadding = 2.0f;
-	Size oPortBtnSize = GET_CONTENTSIZE(m_pPortUpBtn) * m_fPortBtnScale;
-	Size oLandBtnSize = GET_CONTENTSIZE(m_pLandUpBtn) * m_fLandBtnScale;
-	Size fireBtnSize = GET_CONTENTSIZE(m_pPortFireBtn);
-
-	/////只用于横屏
-	Size oBrickSize = GetBrickSize(true);
-	float fBrickBottomHeight = (m_visibleSize.height - COLUMN_NUM * oBrickSize.width) * 0.5f;
-	float fHeightPadding = (fBrickBottomHeight - m_oSampleBtnSize.height * 2 - fBtnPadding * 2) * 0.5f;
-	float fBrickTopHeight = fBrickBottomHeight + COLUMN_NUM * oBrickSize.width;
-	float fTopCenterY = m_oSampleBtnSize.height + fBrickTopHeight + fHeightPadding;
-	float fBottomCenterY = fBrickBottomHeight * 0.5f;
-
-	if (GET_BOOLVALUE("RHMODE", false))
-	{
-		float fExternPadding = 10.0f;
-		m_pPortLeftBtn->setPositionX(m_visibleSize.width - m_pPortLeftBtn->getPositionX() - oPortBtnSize.height + fBtnPadding * 2 - fExternPadding);
-		m_pPortRightBtn->setPositionX(m_visibleSize.width - m_pPortRightBtn->getPositionX() + oPortBtnSize.height - fBtnPadding * 2 - fExternPadding);
-		m_pPortDownBtn->setPositionX(m_visibleSize.width - m_pPortDownBtn->getPositionX() - fExternPadding);
-		m_pPortUpBtn->setPositionX(m_visibleSize.width - m_pPortUpBtn->getPositionX() - fExternPadding);
-		m_pPortFireBtn->setPositionX(m_visibleSize.width - m_pPortFireBtn->getPositionX() - fExternPadding);
-		m_oControllerCenterPos.x = m_pPortDownBtn->getPositionX();
-
-		m_pLandLeftBtn->setPositionY(fBottomCenterY + m_oSampleBtnSize.height * 0.5f - fBtnPadding);
-		m_pLandRightBtn->setPositionY(fBottomCenterY - m_oSampleBtnSize.height * 0.5f + fBtnPadding);
-		m_pLandDownBtn->setPositionY(fBottomCenterY);
-		m_pLandUpBtn->setPositionY(fBottomCenterY);
-		m_pLandFireBtn->setPositionY(fTopCenterY);
-		m_oControllerLandCenterPos.y = fBottomCenterY;
-	}
-	else
-	{
-		float fPortLeftPosX = oPortBtnSize.height * 1.1f;
-		float fPortRightPosX = m_visibleSize.width - fireBtnSize.width * 0.8f;
-
-		m_pPortLeftBtn->setPositionX(fPortLeftPosX - oPortBtnSize.height * 0.5f + fBtnPadding);
-		m_pPortRightBtn->setPositionX(fPortLeftPosX + oPortBtnSize.height * 0.5f - fBtnPadding);
-		m_pPortDownBtn->setPositionX(fPortLeftPosX);
-		m_pPortUpBtn->setPositionX(fPortLeftPosX);
-		m_pPortFireBtn->setPositionX(fPortRightPosX);
-		m_oControllerCenterPos.x = fPortLeftPosX;
-
-		m_pLandLeftBtn->setPositionY(fTopCenterY + m_oSampleBtnSize.height * 0.5f - fBtnPadding);
-		m_pLandRightBtn->setPositionY(fTopCenterY - m_oSampleBtnSize.height * 0.5f + fBtnPadding);
-		m_pLandDownBtn->setPositionY(fTopCenterY);
-		m_pLandUpBtn->setPositionY(fTopCenterY);
-		m_pLandFireBtn->setPositionY(fBottomCenterY);
-		m_oControllerLandCenterPos.y = fTopCenterY;
-	}
-}

@@ -605,17 +605,9 @@ unsigned char* CCFreeTypeFont::loadSystemFont(const char *pFontName, ssize_t *si
 	std::string fontName(pFontName);
 	if (fontName.find(".ttf") == -1)
 		fontName += ".ttf";
-	log("NOW FontName:%s", fontName.c_str());
+	//CCLog("FontName:%s", fontName.c_str());
 	std::string fontPath = "C:\\Windows\\Fonts\\" + fontName;
-	unsigned char* pContent = FileUtils::getInstance()->getFileData(fontPath.c_str(), "rb", size);
-	if (pContent != nullptr)
-	{
-		return pContent;
-	}
-
-	fontPath = "C:\\Windows\\Fonts\\msyh.ttc";
-	log("BACKUP FontName:msyh.ttc");
-	return FileUtils::getInstance()->getFileData(fontPath.c_str(), "rb", size);
+	return CCFileUtils::sharedFileUtils()->getFileData(fontPath.c_str(), "rb", size);
 #else
     std::string aName(pFontName);
     unsigned char* pBuffer = nullptr;

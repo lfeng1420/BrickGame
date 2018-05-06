@@ -1,31 +1,13 @@
+#include "stdafx.h"
 #include "LoadScene.h"
-#include "GeneralManager.h"
 #include "GameScene.h"
+#include "GameSceneEx.h"
+#include "GameLogic.h"
 
-USING_NS_CC;
-
-CLoadScene::CLoadScene()
-{
-}
-
-
-CLoadScene::~CLoadScene()
-{
-}
-
-
-Scene* CLoadScene::CreateScene()
-{
-	auto scene = Scene::create();
-	auto layer = CLoadScene::create();
-	scene->addChild(layer);
-
-	return scene;
-}
 
 bool CLoadScene::init()
 {
-	if (!LayerColor::initWithColor(Color4B::WHITE))
+	if (!LayerColor::initWithColor(GET_BOOLVALUE("NIGHTMODE", false) ? Color4B::BLACK : Color4B::WHITE))
 	{
 		return false;
 	}
@@ -34,12 +16,27 @@ bool CLoadScene::init()
 	ADD_SPRITEFRAME("Plists/Font.plist");
 	ADD_SPRITEFRAME("Plists/Images.plist");
 
-	//ÒôÁ¿´¦Àí
-	AUDIO_INSTANCE()->setBackgroundMusicVolume(GET_INTVALUE("BGM_VOLUME", 100) * 0.01f);
-	AUDIO_INSTANCE()->setEffectsVolume(GET_INTVALUE("EFFECT_VOLUME", 100) * 0.01f);
+	// Game logic
+	CGameLogic::GetInstance();
 
+	// Volume
+	SET_BGMUSICVOLUME(GET_INTVALUE("BGM_VOLUME", 100) * 0.01f);
+	SET_EFFECTVOLUME(GET_INTVALUE("EFFECT_VOLUME", 100) * 0.01f);
+
+	// UI
+	__InitUI();
+
+	// Delay switch
+	scheduleOnce(schedule_selector(CLoadScene::__SwitchToGameScene), 2.0f);
+
+	return true;
+}
+
+
+void CLoadScene::__InitUI()
+{
 	Size visibleSize = GET_VISIBLESIZE();
-	bool arrBrick[][COLUMN_NUM - 1] =
+	bool arrBrick[UI_BRICKS_ROW_COUNT][UI_BRICKS_COLUMN_COUNT] =
 	{
 		true, true, true, true, true, false, false, false, true, true, true, true, false,
 		false, true, false, false, false, true, false, true, false, false, false, false, false,
@@ -48,62 +45,60 @@ bool CLoadScene::init()
 		true, true, true, true, true, false, false, false, true, true, true, true, false,
 	};
 
-	int nRowCount = sizeof(arrBrick) / sizeof(bool) / (COLUMN_NUM - 1);
+	string strSprName = CGlobalFunc::GetSpriteNameWithMode("black.png");
+	Sprite* pTempSpr = CREATE_SPRITEWITHNAME(strSprName);
+	Size brickSize = GET_CONTENTSIZE(pTempSpr);
+
 	bool bPortraitFlag = GET_BOOLVALUE("PORTRAIT", true);
 	if (bPortraitFlag)
 	{
-		float fStartY = (visibleSize.height - nRowCount * BRICK_HEIGHT) / 2;
-		float fStartX = (visibleSize.width - (COLUMN_NUM - 1) * BRICK_WIDTH) / 2;
-		for (int i = nRowCount - 1; i >= 0; --i)
+		float fStartY = (visibleSize.height - UI_BRICKS_ROW_COUNT * brickSize.height) * 0.5f;
+		float fStartX = (visibleSize.width - UI_BRICKS_COLUMN_COUNT * brickSize.width) * 0.5f;
+		for (int i = UI_BRICKS_ROW_COUNT - 1; i >= 0; --i)
 		{
 			float fCurX = fStartX;
-			for (int j = 0; j < COLUMN_NUM - 1; ++j)
+			for (int j = 0; j < UI_BRICKS_COLUMN_COUNT; ++j)
 			{
 				if (arrBrick[i][j])
 				{
-					auto sprite = CREATE_SPRITEWITHNAME("black.png");
-					sprite->setPosition(fCurX + BRICK_WIDTH / 2, fStartY + BRICK_HEIGHT / 2);
-					this->addChild(sprite);
+					Sprite* pSpr = CREATE_SPRITEWITHNAME(strSprName);
+					pSpr->setPosition(fCurX + brickSize.width * 0.5f, fStartY + brickSize.height * 0.5f);
+					this->addChild(pSpr);
 				}
 
-				fCurX += BRICK_WIDTH;
+				fCurX += brickSize.width;
 			}
 
-			fStartY += BRICK_HEIGHT;
+			fStartY += brickSize.height;
 		}
 	}
 	else
 	{
-		float fStartY = (visibleSize.height - (COLUMN_NUM - 1) * BRICK_HEIGHT) / 2;
-		float fCurX = (visibleSize.width - nRowCount * BRICK_WIDTH) / 2;
-		for (int i = nRowCount - 1; i >= 0; --i)
+		float fStartY = (visibleSize.height - UI_BRICKS_COLUMN_COUNT * brickSize.height) / 2;
+		float fCurX = (visibleSize.width - UI_BRICKS_ROW_COUNT * brickSize.width) / 2;
+		for (int i = UI_BRICKS_ROW_COUNT - 1; i >= 0; --i)
 		{
 			float fCurY = fStartY;
-			for (int j = (COLUMN_NUM - 1) - 1; j >= 0; --j)
+			for (int j = UI_BRICKS_COLUMN_COUNT - 1; j >= 0; --j)
 			{
 				if (arrBrick[i][j])
 				{
-					auto sprite = CREATE_SPRITEWITHNAME("black.png");
-					sprite->setPosition(fCurX + BRICK_WIDTH / 2, fCurY + BRICK_HEIGHT / 2);
+					auto sprite = CREATE_SPRITEWITHNAME(strSprName);
+					sprite->setPosition(fCurX + brickSize.width / 2, fCurY + brickSize.height / 2);
 					this->addChild(sprite);
 				}
 
-				fCurY += BRICK_HEIGHT;
+				fCurY += brickSize.height;
 			}
 
-			fCurX += BRICK_WIDTH;
+			fCurX += brickSize.width;
 		}
 	}
-
-	scheduleOnce(schedule_selector(CLoadScene::ToGameScene), 2.0f);
-
-	return true;
 }
 
 
-void CLoadScene::ToGameScene(float dt)
+void CLoadScene::__SwitchToGameScene(float dt)
 {
-	CGeneralManager::getInstance();
-
-	Director::getInstance()->replaceScene(CGameScene::CreateScene());
+	bool bPortraitFlag = GET_BOOLVALUE("PORTRAIT", true);
+	REPLACE_SCENE(bPortraitFlag ? CGameScene::CreateScene() : CGameSceneEx::CreateScene());
 }

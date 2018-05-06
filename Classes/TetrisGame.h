@@ -1,143 +1,111 @@
 #pragma once
-#include "SceneBase.h"
-class CTetrisGame : public CSceneBase
+#include "GameBase.h"
+
+class CTetrisGame : public CGameBase
 {
 public:
-	CTetrisGame(CGameScene* pGameScene, bool bMode);
-	~CTetrisGame();
+	// Start
+	virtual void Start();
 
-	//---------------------    CSceneBase    ----------------------
-	//初始化
-	void Init();
+	// Update
+	// param: dt, millisecond
+	virtual void Update(float dt);
 
-	//更新
-	void Play(float dt);
+	// Get game id
+	virtual EnGameID GetGameID();
 
-	//获取当前Brick状态
-	bool GetBrickState(int iRowIndex, int iColIndex);
+	// Button event
+	virtual void OnButtonEvent(const SEventContextButton* pButtonEvent);
 
-	//获取小方块序列中的方块状态
-	bool GetSmallBrickState(int iRowIndex, int iColIndex);
-
-	//获取游戏类型
-	SCENE_INDEX GetSceneType();
-
-	//上按下
-	void OnUpBtnPressed();
-
-	//左按下
-	void OnLeftBtnPressed();
-
-	//左释放
-	void OnLeftBtnReleased();
-
-	//右按下
-	void OnRightBtnPressed();
-
-	//右释放
-	void OnRightBtnReleased();
-
-	//下按下
-	void OnDownBtnPressed();
-
-	//下释放
-	void OnDownBtnReleased();
-
-	//Fire按下
-	void OnFireBtnPressed();
-
-	//游戏状态
-	void SaveGameData();
-
-	//---------------------    CSceneBase    ----------------------
-
+	// Save data
+	virtual bool SaveData(bool bForceFlag);
 
 public:
-	//初始化数据，与Init不同，Init在切换到该场景时调用，InitData在重置时调用
-	void InitData();
+	// Get shape count
+	virtual int GetShapeCount();
 
-	//随机产生新的方块形状
-	void RandNewShape();
+	// On tetris move finish
+	virtual void OnTetrisMoveFinish();
 
-	//方块移动
-	bool BrickMove(float dt);
+	// Check game over
+	virtual bool CheckShapePos(const POSITION& stNextPos, int nShapeID);
 
-	//检查位置是否有效
-	bool CheckBrickPos(int iShapeIdx, int iSrcRowIdx, int iSrcColIdx);
+	// Get shape brick state
+	virtual bool GetShapeBrickState(int nShapeID, int nRowIdx, int nColIdx);
 
-	//消行
-	//return:是否消行
-	bool DeleteLine(bool bAddBrickFlag);
+	// Update other
+	virtual void UpdateOther(float dt, bool& bUpdateFlag);
 
-	//消除单行
-	void DeleteSingleLine(int iRowIdx);
+	// Update valid brick state
+	virtual void UpdateValidBricksState();
 
-	//获取可用形状数量
-	inline int GetShapeCount();
+	// Load tetris record
+	virtual bool LoadTetrisData();
 
-	//获取指定列的方块数量
-	int GetNextAddOrSubRowIdx(int iColIdx);
+	// Save tetris record
+	virtual bool SaveTetrisData(bool bForceFlag = false);
 
-	//更新自己的显示状态
-	bool UpdateSelfState(float dt);
+public:
+	// Remove rows
+	bool RemoveRows();
 
-	//检查上方和下方是否有方块
-	int GetEmptyPosRowIdx();
+	// Update tetris shape
+	void UpdateShape(int nShapeID, const POSITION& stNewPos, bool bSyncFlag = false);
 
-	//移动结束处理
-	void OnBrickDoneMove();
+	// Random tetris shape
+	virtual void RandomShape(bool bUpdateFlag = false, int nCurShapeID = TETRIS_SHAPE_COUNT, int nNextShapeID = TETRIS_SHAPE_COUNT);
+
+	// Get shape row offset
+	int GetShapeRowOffset(int nShapeID);
+
+	// Get shape column offset
+	int GetShapeColOffset(int nShapeID);
+
+	// Get shape brick state (origin)
+	bool GetShapeBrickOriginState(int nShapeID, int nRowIdx, int nColIdx);
 
 private:
-	enum 
+	// Update tetris
+	void __TetrisControlMove(float dt, bool& bUpdateFlag);
+
+	// Tetris move down
+	void __TetrisMoveDown(float dt, bool& bUpdateFlag);
+
+	// Check one row full
+	bool __CheckOneRowFull(int nRowIdx);
+
+	// Remove one row
+	void __RemoveOneRow(int nRowIdx);
+
+	// Get next shape id
+	int __GetNextShapeID();
+
+	//////////////////////////////////////////////////////////////////////////
+	// Get move interval
+	int __GetTetrisMoveInterval();
+
+public:
+	enum
 	{
-		BRICK_MOVE_INTERVAL = 500,						//方块移动等待时间
-
-		DELETE_LINE_ADD_SCORE = 10,						//消除行加分
-
-		BTN_CHECK_INTERVAL = 95,						//按钮检查时间间隔
-
-		BOMB_DELETE_LINE_COUNT = 2,						//炸弹默认消除的行数
-
-		SELF_FLASH_INTERVAL = 70,						//闪烁刷新时间
-
-		BOMB_BOOM_FLASH_COUNT = 5,						//炸弹爆炸闪烁次数
+		REMOVE_ONE_ROW_ADD_SCORE = 10,
+		TETRIS_MOVE_INTERVAL = 500,
+		CONTROL_MOVE_INTERVAL = 95,
 	};
 
-private:
-	int m_iSpeed;								//速度
+	struct _TTetrisData
+	{
+		int nShapeID;
+		POSITION stPos;
+		int nMoveInterval;
+		int nDir;
+		int nControlInterval;
+		bool bSpeedUpFlag;
+	};
 
-	int m_iLevel;								//关卡
+protected:
+	// Current tetris data
+	_TTetrisData		m_stTetrisData;
 
-	int m_iScore;								//分数
-
-	bool m_arrBrick[ROW_NUM][COLUMN_NUM];		//方块状态序列
-
-	int m_iNextShape;							//下一个类型
-
-	int m_iCurShape;							//当前类型
-
-	POSITION m_stCurPos;						//当前方块位置
-
-	GAME_STATE m_enGameState;					//游戏状态
-
-	float m_fMoveDownTime;						//下移刷新时间
-
-	float m_fBtnCheckTime;						//按钮检查等待时间
-
-	float m_fSelfFlashTime;						//闪烁等待时间
-
-	bool m_bSelfShowFlag;						//显示标记
-
-	bool m_bFlashFlag;							//是否打开闪烁
-
-	bool m_bLeftBtnPressed;						//左方向按钮按下状态
-
-	bool m_bRightBtnPressed;					//右方向按钮按下状态
-
-	bool m_bFastMoveDown;						//是否加速下降
-
-	bool m_bExtraMode;							//是否开启附加模式
-
-	int m_iSelfFlashCount;						//闪烁次数
+	// Next shape
+	int					m_nNextShapeID;
 };
-

@@ -90,7 +90,7 @@
       <CompileAsWinRT>true</CompileAsWinRT>
       <ForcedIncludeFiles>pch.h</ForcedIncludeFiles>
       <AdditionalOptions>/Zm200 %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalIncludeDirectories>$(ProjectDir)..\..\Classes;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\..\Classes;$(EngineRoot)extensions;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -110,7 +110,7 @@
       <CompileAsWinRT>true</CompileAsWinRT>
       <ForcedIncludeFiles>pch.h</ForcedIncludeFiles>
       <AdditionalOptions>/Zm200 %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalIncludeDirectories>$(ProjectDir)..\..\Classes;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\..\Classes;$(EngineRoot)extensions;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -130,7 +130,7 @@
       <CompileAsWinRT>true</CompileAsWinRT>
       <ForcedIncludeFiles>pch.h</ForcedIncludeFiles>
       <AdditionalOptions>/Zm200 %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalIncludeDirectories>$(ProjectDir)..\..\Classes;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\..\Classes;$(EngineRoot)extensions;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -174,33 +174,66 @@
     <ProjectReference Include="..\..\cocos2d\cocos\audio\proj.wp8\CocosDenshion.vcxproj">
       <Project>{df125891-eee9-4466-b903-f828fd272158}</Project>
     </ProjectReference>
+    <ProjectReference Include="..\..\cocos2d\cocos\editor-support\cocosbuilder\proj.wp8\libCocosBuilder.vcxproj">
+      <Project>{20d4035d-fd3f-4fd3-baba-97bc1c38dfc2}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\cocos2d\cocos\editor-support\cocostudio\proj.wp8\libCocosStudio.vcxproj">
+      <Project>{51e5736e-e1a3-4c94-abb7-e92ecef9c12e}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\cocos2d\cocos\editor-support\spine\proj.wp8\libSpine.vcxproj">
+      <Project>{7d4fc6eb-9497-4804-98f3-3eaedc896154}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\cocos2d\cocos\network\proj.wp8\libNetwork.vcxproj">
+      <Project>{7daa99e7-8e07-4fef-8374-8ec04e395d2e}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\cocos2d\cocos\storage\local-storage\proj.wp8\libLocalStorage.vcxproj">
+      <Project>{88982c27-5a7b-40a8-86e7-b3187b44b322}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\..\cocos2d\cocos\ui\proj.wp8\libGUI.vcxproj">
       <Project>{08fb23e4-1517-4edc-b682-da238cdaa83d}</Project>
     </ProjectReference>
     <ProjectReference Include="..\..\cocos2d\extensions\proj.wp8\libExtensions.vcxproj">
       <Project>{04a0c42f-23bb-469b-a9d8-ca49136adbd4}</Project>
     </ProjectReference>
+    <ProjectReference Include="..\..\cocos2d\external\Box2D\proj.wp8\Box2D.vcxproj">
+      <Project>{c55734a3-702c-4fa1-b950-32c8e169302f}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\..\cocos2d\external\chipmunk\proj.wp8\chipmunk.vcxproj">
       <Project>{ba568a33-98f9-4d2a-bfff-c065adcb447a}</Project>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\Classes\AddBrickGame.cpp" />
     <ClCompile Include="..\..\Classes\AppDelegate.cpp" />
-    <ClCompile Include="..\..\Classes\BGGlobal.cpp" />
-    <ClCompile Include="..\..\Classes\ChooseGame.cpp" />
-    <ClCompile Include="..\..\Classes\FlappyBirdGame.cpp" />
+    <ClCompile Include="..\..\Classes\BarrierLayer.cpp" />
+    <ClCompile Include="..\..\Classes\DataManager.cpp" />
+    <ClCompile Include="..\..\Classes\EventEngine.cpp" />
+    <ClCompile Include="..\..\Classes\FlappybirdGame.cpp" />
     <ClCompile Include="..\..\Classes\FroggerGame.cpp" />
-    <ClCompile Include="..\..\Classes\GameOver.cpp" />
+    <ClCompile Include="..\..\Classes\GameBase.cpp" />
+    <ClCompile Include="..\..\Classes\GameLogic.cpp" />
+    <ClCompile Include="..\..\Classes\GameManager.cpp" />
     <ClCompile Include="..\..\Classes\GameScene.cpp" />
-    <ClCompile Include="..\..\Classes\GeneralManager.cpp" />
+    <ClCompile Include="..\..\Classes\GameSceneEx.cpp" />
+    <ClCompile Include="..\..\Classes\HitBrickGame.cpp" />
     <ClCompile Include="..\..\Classes\LoadScene.cpp" />
     <ClCompile Include="..\..\Classes\MatchGame.cpp" />
+    <ClCompile Include="..\..\Classes\MyListView.cpp" />
+    <ClCompile Include="..\..\Classes\OverGame.cpp" />
     <ClCompile Include="..\..\Classes\PinballGame.cpp" />
-    <ClCompile Include="..\..\Classes\RacingGame.cpp" />
-    <ClCompile Include="..\..\Classes\SceneBase.cpp" />
+    <ClCompile Include="..\..\Classes\PinballGameEx.cpp" />
+    <ClCompile Include="..\..\Classes\RaceGame.cpp" />
+    <ClCompile Include="..\..\Classes\SelectGame.cpp" />
+    <ClCompile Include="..\..\Classes\SetupScene.cpp" />
+    <ClCompile Include="..\..\Classes\SetupSceneEx.cpp" />
     <ClCompile Include="..\..\Classes\SnakeGame.cpp" />
+    <ClCompile Include="..\..\Classes\stdafx.cpp" />
     <ClCompile Include="..\..\Classes\TankGame.cpp" />
     <ClCompile Include="..\..\Classes\TetrisGame.cpp" />
+    <ClCompile Include="..\..\Classes\TetrisGameEx.cpp" />
+    <ClCompile Include="..\..\Classes\TimerManager.cpp" />
+    <ClCompile Include="..\..\Classes\VolumeLayer.cpp" />
+    <ClCompile Include="..\..\Classes\VolumeLayerEx.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">Create</PrecompiledHeader>
@@ -214,22 +247,44 @@
     <ClCompile Include="src\EditBoxEvent.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\Classes\AddBrickGame.h" />
     <ClInclude Include="..\..\Classes\AppDelegate.h" />
-    <ClInclude Include="..\..\Classes\BGGlobal.h" />
-    <ClInclude Include="..\..\Classes\ChooseGame.h" />
-    <ClInclude Include="..\..\Classes\FlappyBirdGame.h" />
+    <ClInclude Include="..\..\Classes\BarrierLayer.h" />
+    <ClInclude Include="..\..\Classes\DataManager.h" />
+    <ClInclude Include="..\..\Classes\DCommon.h" />
+    <ClInclude Include="..\..\Classes\DEvent.h" />
+    <ClInclude Include="..\..\Classes\DGlobalMacro.h" />
+    <ClInclude Include="..\..\Classes\DTypeDef.h" />
+    <ClInclude Include="..\..\Classes\EventEngine.h" />
+    <ClInclude Include="..\..\Classes\FlappybirdGame.h" />
     <ClInclude Include="..\..\Classes\FroggerGame.h" />
-    <ClInclude Include="..\..\Classes\GameOver.h" />
+    <ClInclude Include="..\..\Classes\GameBase.h" />
+    <ClInclude Include="..\..\Classes\GameLogic.h" />
+    <ClInclude Include="..\..\Classes\GameManager.h" />
     <ClInclude Include="..\..\Classes\GameScene.h" />
-    <ClInclude Include="..\..\Classes\GeneralManager.h" />
+    <ClInclude Include="..\..\Classes\GameSceneEx.h" />
+    <ClInclude Include="..\..\Classes\GlobalFunc.h" />
+    <ClInclude Include="..\..\Classes\HitBrickGame.h" />
+    <ClInclude Include="..\..\Classes\IEventHandler.h" />
+    <ClInclude Include="..\..\Classes\ITimerHandler.h" />
     <ClInclude Include="..\..\Classes\LoadScene.h" />
     <ClInclude Include="..\..\Classes\MatchGame.h" />
+    <ClInclude Include="..\..\Classes\MyListView.h" />
+    <ClInclude Include="..\..\Classes\OverGame.h" />
     <ClInclude Include="..\..\Classes\PinballGame.h" />
-    <ClInclude Include="..\..\Classes\RacingGame.h" />
-    <ClInclude Include="..\..\Classes\SceneBase.h" />
+    <ClInclude Include="..\..\Classes\PinballGameEx.h" />
+    <ClInclude Include="..\..\Classes\RaceGame.h" />
+    <ClInclude Include="..\..\Classes\SelectGame.h" />
+    <ClInclude Include="..\..\Classes\SetupScene.h" />
+    <ClInclude Include="..\..\Classes\SetupSceneEx.h" />
     <ClInclude Include="..\..\Classes\SnakeGame.h" />
+    <ClInclude Include="..\..\Classes\stdafx.h" />
     <ClInclude Include="..\..\Classes\TankGame.h" />
     <ClInclude Include="..\..\Classes\TetrisGame.h" />
+    <ClInclude Include="..\..\Classes\TetrisGameEx.h" />
+    <ClInclude Include="..\..\Classes\TimerManager.h" />
+    <ClInclude Include="..\..\Classes\VolumeLayer.h" />
+    <ClInclude Include="..\..\Classes\VolumeLayerEx.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="src\Cocos2dRenderer.h" />
     <ClInclude Include="src\Direct3DContentProvider.h" />

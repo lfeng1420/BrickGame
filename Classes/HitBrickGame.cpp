@@ -1,489 +1,401 @@
+#include "stdafx.h"
 #include "HitBrickGame.h"
 
-const int PASS_SCORE[SPEED_MAX + 1] = {5000, 13000, 23000, 35000, 50000, 65000, 80000, 100000, 120000, 140000, 160000};
-
-CHitBrickGame::CHitBrickGame(CGameScene* pScene, bool bSpecialMode/* = false*/) : CSceneBase(pScene), 
-									m_iSpeed(0), m_iLevel(0), m_iScore(0), m_bSpecialMode(bSpecialMode)
+const static POSITION SELF_SHAPE[] =
 {
+	{ 0, 0 },
+	{ 1, -1 },{ 1, 0 },{ 1, 1 },
+};
+
+
+void CHitBrickGame::Start()
+{
+	CGameBase::Start();
+
+	// Init self data
+	m_stSelfData.bFireFlag = false;
+	m_stSelfData.nDir = DIR_MAX;
+	m_stSelfData.nColIdx = COLUMN_COUNT / 2;
+	m_stSelfData.nFireInterval = 0;
+	m_stSelfData.nMoveInterval = 0;
+	m_stSelfData.nHitBrickCount = 0;
+	__DrawSelf(m_stSelfData.nColIdx);
+
+	// Init bullet data
+	m_stBulletData.nMoveInterval = 0;
+	m_stBulletData.lsPos.clear();
+
+	// Init bricks data
+	__InitBricks();
+
+	// Update immediately
+	UpdateBrickState(0, GetBrickState(0), true);
 }
 
 
-CHitBrickGame::~CHitBrickGame()
+void CHitBrickGame::Update(float dt)
 {
+	bool bUpdateFlag = false;
+
+	switch (m_enGameStage)
+	{
+	case STAGE_FAIL:
+	{
+		UpdateBoomAnim(dt, bUpdateFlag);
+		DrawBoom();
+	}
+	break;
+
+	case STAGE_PASS:
+	{
+		// loop add score util the count is arrived
+		AddScoreInPassStage(dt, HIT_BRICK_ADD_SCORE);
+		return;
+	}
+	break;
+
+	case STAGE_NORMAL:
+	{
+		__UpdateBullets(dt, bUpdateFlag);
+		__UpdateBricks(dt, bUpdateFlag);
+		__SelfMove(dt, bUpdateFlag);
+		__SelfFire(dt, bUpdateFlag);
+		if (bUpdateFlag)
+		{
+			__DrawSelf(m_stSelfData.nColIdx);
+		}
+	}
+	break;
+
+	default:
+		return;
+		break;
+	}
+
+	if (bUpdateFlag)
+	{
+		UpdateBrickState(0, GetBrickState(0), true);
+	}
 }
 
 
-void CHitBrickGame::Init()
+EnGameID CHitBrickGame::GetGameID()
 {
-	//获取在选择游戏界面设置的速度和等级
-	m_iSpeed = GET_INTVALUE("SPEED", 0);
-	m_iLevel = GET_INTVALUE("LEVEL", 0);
-	m_iLife = GET_INTVALUE("LIFE", 4);
-
-	//初始化当前分数
-	m_iScore = 0;
-
-	//更新等级和速度
-	m_pGameScene->UpdateLevel(m_iLevel);
-	m_pGameScene->UpdateSpeed(m_iSpeed);
-	m_pGameScene->UpdateSmallBricks();
-	m_pGameScene->UpdateScore(m_iScore, false);
-
-	//初始化数据
-	initData();
+	return GAMEID_HITBRICK;
 }
 
 
-void CHitBrickGame::Play(float dt)
+void CHitBrickGame::OnButtonEvent(const SEventContextButton* pButtonEvent)
 {
-	if (m_enGameState == GAMESTATE_OVER)
+	if (m_enGameStage != STAGE_NORMAL)
 	{
-		//时间更新
-		m_fWaitTime += dt;
-		if (m_fWaitTime < GAMEOVER_WAIT_INTERVAL)
-		{
-			return;
-		}
-		m_fWaitTime = 0;
-
-		//设置剩余生命
-		if (--m_iLife <= 0)
-		{
-			m_pGameScene->RunScene(SCENE_GAMEOVER);
-			return;
-		}
-
-		//更新显示生命
-		m_pGameScene->UpdateSmallBricks();
-
-		//重置数据
-		initData();
+		return;
 	}
 
-	if (m_enGameState == GAMESTATE_PASS)
+	if (pButtonEvent->nButtonID == BTNID_FIRE)
 	{
-		//时间更新
-		m_fWaitTime += dt;
-		if (m_fWaitTime < GAMEPASS_WAIT_INTERVAL)
-		{
-			return;
-		}
-		m_fWaitTime = 0;
+		m_stSelfData.bFireFlag = pButtonEvent->bPressedFlag;
+		bool bUpdateFlag = false;
 
-		//更新速度和等级
-		if (++m_iSpeed > 10)
+		// Fire
+		if (m_stSelfData.bFireFlag)
 		{
-			m_iSpeed = 0;
-			if (++m_iLevel > 10)
-			{
-				m_iLevel = 0;
-			}
+			m_stSelfData.nFireInterval = __GetControlFirenterval();
+			Update(0);
 		}
 
-		//更新显示
-		m_pGameScene->UpdateLevel(m_iLevel);
-		m_pGameScene->UpdateSpeed(m_iSpeed);
-
-		//重置数据
-		initData();
+		return;
 	}
 
-	if (m_enGameState == GAMESTATE_RUNNING)
+	if (pButtonEvent->nButtonID >= BTNID_DIRMAX)
 	{
-		selfMove(dt);
-
-		bool bRefreshFlag = false;
-		if (bulletsMove(dt))
-		{
-			bRefreshFlag = true;
-		}
-
-		if (fireBricks(dt))
-		{
-			bRefreshFlag = true;
-		}
-
-		if (bricksMoveDown(dt))
-		{
-			bRefreshFlag = true;
-		}
-
-		if (!bRefreshFlag)
-		{
-			return;
-		}
+		return;
 	}
 
-	//更新游戏状态
-	updateGameState();
+	int nDir = BTNID_2_DIR[pButtonEvent->nButtonID];
+	if (nDir == DIR_UP)
+	{
+		SEventContextButton stContext = { BTNID_FIRE, pButtonEvent->bPressedFlag };
+		OnButtonEvent(&stContext);
+		return;
+	}
 
-	m_pGameScene->UpdateBricks();
+	if (nDir != DIR_LEFT && nDir != DIR_RIGHT)
+	{
+		return;
+	}
+
+	if (m_stSelfData.nDir != nDir && pButtonEvent->bPressedFlag)
+	{
+		m_stSelfData.nDir = nDir;
+		m_stSelfData.nMoveInterval = CONTROL_MOVE_INTERVAL;
+		Update(0);
+		return;
+	}
+
+	if (m_stSelfData.nDir == nDir && !pButtonEvent->bPressedFlag)
+	{
+		m_stSelfData.nDir = DIR_MAX;
+		m_stSelfData.nMoveInterval = 0;
+		return;
+	}
 }
 
 
-bool CHitBrickGame::GetBrickState(int iRowIndex, int iColIndex)
+void CHitBrickGame::__InitBricks()
 {
-	//我方所在区域
-	int nSelfRowIdx = m_stSelfPos.m_iRowIdx;
-	int nSelfColIdx = m_stSelfPos.m_iColIdx;
-	if ((iRowIndex == nSelfRowIdx && iColIndex >= nSelfColIdx - 1 && iColIndex <= nSelfColIdx + 1)
-		|| (iRowIndex == nSelfRowIdx - 1 && iColIndex == nSelfColIdx))
+	m_stBricksData.nMoveInterval = 0;
+
+	int nTotalBricksCount = COLUMN_COUNT * ROW_COUNT;
+	for (int nRowIdx = 0; nRowIdx <= m_nLevel; ++nRowIdx)
 	{
-		return true;
+		for (int nColIdx = 0; nColIdx < COLUMN_COUNT; ++nColIdx)
+		{
+			UpdateBrickState(GET_BRICKID(0, nColIdx), Random(0, nTotalBricksCount) <= nTotalBricksCount / 2);
+		}
+	}
+}
+
+
+void CHitBrickGame::__UpdateBricks(float dt, bool& bUpdateFlag)
+{
+	m_stBricksData.nMoveInterval += dt;
+	if (m_stBricksData.nMoveInterval < __GetBricksMoveInterval())
+	{
+		return;
 	}
 
-	//子弹
-	FOR_EACH_CONTAINER (TLIST_POS, m_lsBullets, itBullet)
+	m_stBricksData.nMoveInterval = 0;
+	bUpdateFlag = true;
+
+	// Move rows
+	for (int nRowIdx = ROW_COUNT - 1; nRowIdx > 0; --nRowIdx)
 	{
-		if (itBullet->m_iRowIdx == iRowIndex && itBullet->m_iColIdx == iColIndex)
+		for (int nColIdx = 0; nColIdx < COLUMN_COUNT; ++nColIdx)
+		{
+			UpdateBrickState(GET_BRICKID(nRowIdx, nColIdx), GetBrickState(GET_BRICKID(nRowIdx - 1, nColIdx)));
+		}
+	}
+
+	// Generate new row
+	int nTotalBricksCount = COLUMN_COUNT * ROW_COUNT;
+	for (int nColIdx = 0; nColIdx < COLUMN_COUNT; ++nColIdx)
+	{
+		UpdateBrickState(GET_BRICKID(0, nColIdx), Random(0, nTotalBricksCount) <= nTotalBricksCount / 2);
+	}
+
+	// Check game over
+	if (__CheckGameOver())
+	{
+		m_enGameStage = STAGE_FAIL;
+		POSITION stPos = { SELF_ROW_INDEX, m_stSelfData.nColIdx - 1 };
+		GameOverWithBoomAnim(stPos);
+		return;
+	}
+}
+
+
+void CHitBrickGame::__UpdateBullets(float dt, bool& bUpdateFlag)
+{
+	m_stBulletData.nMoveInterval += dt;
+	if (m_stBulletData.nMoveInterval < __GetBulletMoveInterval())
+	{
+		return;
+	}
+
+	m_stBulletData.nMoveInterval = 0;
+	bUpdateFlag = true;
+
+	int nHitBrickCount = 0;
+	TList_BulletPos::iterator itBullet = m_stBulletData.lsPos.begin();
+	for (; itBullet != m_stBulletData.lsPos.end(); )
+	{
+		// Check hit
+		int nOldBrickID = GET_BRICKIDBYPOS(*itBullet);
+		if (GetBrickState(nOldBrickID))
+		{
+			UpdateBrickState(nOldBrickID, false);
+			++nHitBrickCount;
+			itBullet = m_stBulletData.lsPos.erase(itBullet);
+			continue;
+		}
+
+		// Hide old
+		m_mapUpdateBricks[nOldBrickID] = false;
+
+		// Check new pos
+		int nExtRowIdx = itBullet->x - 1;
+		if (nExtRowIdx < 0)
+		{
+			itBullet = m_stBulletData.lsPos.erase(itBullet);
+			continue;
+		}
+
+		// Check hit
+		int nNewBrickID = GET_BRICKID(nExtRowIdx, itBullet->y);
+		if (GetBrickState(nNewBrickID))
+		{
+			UpdateBrickState(nNewBrickID, false);
+			++nHitBrickCount;
+			itBullet = m_stBulletData.lsPos.erase(itBullet);
+			continue;
+		}
+
+		// Show new
+		m_mapUpdateBricks[nNewBrickID] = true;
+		itBullet->x = nExtRowIdx;
+
+		++itBullet;
+	}
+
+	if (nHitBrickCount > 0)
+	{
+		AddScore(nHitBrickCount * HIT_BRICK_ADD_SCORE);
+		m_stSelfData.nHitBrickCount += nHitBrickCount;
+		if (m_stSelfData.nHitBrickCount >= PASS_HIT_BRICK_COUNT)
+		{
+			m_enGameStage = STAGE_PASS;
+			return;
+		}
+	}
+}
+
+
+void CHitBrickGame::__SelfMove(float dt, bool& bUpdateFlag)
+{
+	if (m_stSelfData.nDir != DIR_LEFT
+		&& m_stSelfData.nDir != DIR_RIGHT)
+	{
+		return;
+	}
+
+	m_stSelfData.nMoveInterval += dt;
+	if (m_stSelfData.nMoveInterval < CONTROL_MOVE_INTERVAL)
+	{
+		return;
+	}
+
+	m_stSelfData.nMoveInterval = 0;
+
+	int nNextColIdx = m_stSelfData.nColIdx + ((m_stSelfData.nDir == DIR_LEFT) ? -1 : 1);
+	if (nNextColIdx < COLUMN_COUNT && nNextColIdx >= 0)
+	{
+		__DrawSelf(nNextColIdx);
+		m_stSelfData.nColIdx = nNextColIdx;
+		bUpdateFlag = true;
+	}
+
+	// Check game over
+	if (__CheckGameOver())
+	{
+		m_enGameStage = STAGE_FAIL;
+		POSITION stPos = { SELF_ROW_INDEX, m_stSelfData.nColIdx - 1 };
+		GameOverWithBoomAnim(stPos);
+		return;
+	}
+}
+
+
+void CHitBrickGame::__SelfFire(float dt, bool& bUpdateFlag)
+{
+	if (!m_stSelfData.bFireFlag)
+	{
+		return;
+	}
+
+	m_stSelfData.nFireInterval += dt;
+	if (m_stSelfData.nFireInterval < __GetControlFirenterval())
+	{
+		return;
+	}
+
+	m_stSelfData.nFireInterval = 0;
+	bUpdateFlag = true;
+
+	// Generate new bullet
+	POSITION stPos = { SELF_ROW_INDEX, m_stSelfData.nColIdx };
+	m_stBulletData.lsPos.push_back(stPos);
+	m_mapUpdateBricks[GET_BRICKIDBYPOS(stPos)] = true;
+}
+
+
+void CHitBrickGame::__DrawSelf(int nNewColIdx)
+{
+	// Hide old
+	for (int nIndex = 0; nIndex < _countof(SELF_SHAPE); ++nIndex)
+	{
+		const POSITION& stOffset = SELF_SHAPE[nIndex];
+		int nColIdx = m_stSelfData.nColIdx + stOffset.y;
+		if (nColIdx < 0 || nColIdx >= COLUMN_COUNT)
+		{
+			continue;
+		}
+
+		int nBrickID = GET_BRICKID(SELF_ROW_INDEX + stOffset.x, nColIdx);
+		m_mapUpdateBricks[nBrickID] = false;
+	}
+
+	// Draw new
+	for (int nIndex = 0; nIndex < _countof(SELF_SHAPE); ++nIndex)
+	{
+		const POSITION& stOffset = SELF_SHAPE[nIndex];
+		int nColIdx = nNewColIdx + stOffset.y;
+		if (nColIdx < 0 || nColIdx >= COLUMN_COUNT)
+		{
+			continue;
+		}
+
+		int nBrickID = GET_BRICKID(SELF_ROW_INDEX + stOffset.x, nColIdx);
+		m_mapUpdateBricks[nBrickID] = true;
+	}
+
+}
+
+
+bool CHitBrickGame::__CheckGameOver()
+{
+	for (int nIndex = 0; nIndex < _countof(SELF_SHAPE); ++nIndex)
+	{
+		const POSITION& stOffset = SELF_SHAPE[nIndex];
+		int nColIdx = m_stSelfData.nColIdx + stOffset.y;
+		if (nColIdx < 0 || nColIdx >= COLUMN_COUNT)
+		{
+			continue;
+		}
+
+		int nBrickID = GET_BRICKID(SELF_ROW_INDEX + stOffset.x, nColIdx);
+		if (GetBrickState(nBrickID))
 		{
 			return true;
 		}
 	}
 
-	return m_arrBrick[iRowIndex][iColIndex];
-}
-
-
-bool CHitBrickGame::GetSmallBrickState(int iRowIndex, int iColIndex)
-{
-	if (iRowIndex == 0 && iColIndex < m_iLife)
+	for (int nIndex = 0; nIndex < COLUMN_COUNT; ++nIndex)
 	{
-		return true;
+		if (GetBrickState(GET_BRICKID(ROW_COUNT - 1, nIndex)))
+		{
+			return true;
+		}
 	}
 
 	return false;
 }
 
 
-SCENE_INDEX CHitBrickGame::GetSceneType()
+int CHitBrickGame::__GetBricksMoveInterval()
 {
-	return SCENE_HITBRICK;
+	return BRICKS_MOVE_INTERVAL - 150 * m_nSpeed;
 }
 
 
-void CHitBrickGame::OnLeftBtnPressed()
+int CHitBrickGame::__GetBulletMoveInterval()
 {
-	if (m_enGameState != GAMESTATE_RUNNING)
-	{
-		return;
-	}
-
-	PLAY_EFFECT(EFFECT_CHANGE2);
-
-	m_arrBtnPressFlag[VBTN_LEFT] = true;
-	selfMove(MOVE_CHECK_INTERVAL * 0.4f);
+	return BULLET_MOVE_INTERVAL - 3 * m_nSpeed;
 }
 
 
-void CHitBrickGame::OnLeftBtnReleased()
+int CHitBrickGame::__GetControlFirenterval()
 {
-	m_arrBtnPressFlag[VBTN_LEFT] = false;
-}
-
-
-void CHitBrickGame::OnRightBtnPressed()
-{
-	if (m_enGameState != GAMESTATE_RUNNING)
-	{
-		return;
-	}
-
-	PLAY_EFFECT(EFFECT_CHANGE2);
-
-	m_arrBtnPressFlag[VBTN_RIGHT] = true;
-	selfMove(MOVE_CHECK_INTERVAL * 0.4f);
-}
-
-
-void CHitBrickGame::OnRightBtnReleased()
-{
-	m_arrBtnPressFlag[VBTN_RIGHT] = false;
-}
-
-
-void CHitBrickGame::OnFireBtnPressed()
-{
-	if (m_enGameState != GAMESTATE_RUNNING)
-	{
-		return;
-	}
-
-	PLAY_EFFECT(EFFECT_CHANGE2);
-
-	m_arrBtnPressFlag[VBTN_FIRE] = true;
-	fireBricks(FIRE_CHECK_INTERVAL * 0.5f);
-}
-
-
-void CHitBrickGame::OnFireBtnReleased()
-{
-	m_arrBtnPressFlag[VBTN_FIRE] = false;
-}
-
-
-void CHitBrickGame::initData()
-{
-	//初始化
-	for (int nRowIdx = 0; nRowIdx < ROW_NUM; ++nRowIdx)
-	{
-		for (int nColIdx = 0; nColIdx < COLUMN_NUM; ++nColIdx)
-		{
-			m_arrBrick[nRowIdx][nColIdx] = ((nRowIdx < m_iLevel) ? randState() : false);
-		}
-	}
-
-	//初始化我方所在位置
-	m_stSelfPos.m_iColIdx = COLUMN_NUM / 2;
-	m_stSelfPos.m_iRowIdx = ROW_NUM - 1;
-
-	//初始化按钮按下标记
-	for (int nIdx = 0; nIdx < VBTN_MAX; ++nIdx)
-	{
-		m_arrBtnPressFlag[nIdx] = false;
-	}
-
-	//游戏状态
-	m_enGameState = GAMESTATE_RUNNING;
-
-	//时间相关
-	m_fBulletMoveTime = 0;
-	m_fFireBtnTime = 0;
-	m_fSelfMoveTime = 0;
-	m_fWaitTime = 0;
-
-	//清空子弹
-	m_lsBullets.clear();
-}
-
-
-bool CHitBrickGame::bricksMoveDown(float dt)
-{
-	m_fWaitTime += dt;
-	if (m_fWaitTime < BRICKS_MOVE_INTERVAL - 120 * m_iSpeed)
-	{
-		return false;
-	}
-
-	m_fWaitTime = 0;
-
-	//下移一行方块
-	for (int nRowIdx = ROW_NUM - 1; nRowIdx > 0; --nRowIdx)
-	{
-		for (int nColIdx = 0; nColIdx < COLUMN_NUM; ++nColIdx)
-		{
-			m_arrBrick[nRowIdx][nColIdx] = m_arrBrick[nRowIdx - 1][nColIdx];
-			
-			//如果正好和子弹重叠，则设置隐藏，删除子弹
-			if (m_arrBrick[nRowIdx][nColIdx])
-			{
-				FOR_EACH_CONTAINER(TLIST_POS, m_lsBullets, itBullet)
-				{
-					if (nRowIdx == itBullet->m_iRowIdx && nColIdx == itBullet->m_iColIdx)
-					{
-						//加分
-						addScore();
-
-						//删除这个子弹
-						m_lsBullets.erase(itBullet);
-						m_arrBrick[nRowIdx][nColIdx] = false;
-
-						break;
-					}
-				}
-			}
-		}
-	}
-
-	//生成第一行方块
-	for (int nColIdx = 0; nColIdx < COLUMN_NUM; ++nColIdx)
-	{
-		m_arrBrick[0][nColIdx] = randState();
-	}
-
-	return true;
-}
-
-
-bool CHitBrickGame::randState()
-{
-	return Random(1, 20) >= 10;
-}
-
-
-void CHitBrickGame::updateGameState()
-{
-	//检查自己区域内是否有方块
-	int nSelfRowIdx = m_stSelfPos.m_iRowIdx;
-	int nSelfColIdx = m_stSelfPos.m_iColIdx;
-	if (m_arrBrick[nSelfRowIdx - 1][nSelfColIdx]
-		|| m_arrBrick[nSelfRowIdx][nSelfColIdx] 
-		|| (nSelfColIdx > 0 && m_arrBrick[nSelfRowIdx][nSelfColIdx - 1])
-		|| (nSelfColIdx + 1 < COLUMN_NUM && m_arrBrick[nSelfRowIdx][nSelfColIdx + 1]))
-	{
-		m_enGameState = GAMESTATE_OVER;
-
-		//振动
-		m_pGameScene->OnLongVibrate();
-
-		return;
-	}
-
-	//检查是否有方块行到达倒数第二行
-	for (int nColIdx = 0; nColIdx < COLUMN_NUM; ++nColIdx)
-	{
-		if (m_arrBrick[ROW_NUM - 1][nColIdx])
-		{
-			m_enGameState = GAMESTATE_OVER;
-
-			//振动
-			m_pGameScene->OnLongVibrate();
-
-			return;
-		}
-	}
-
-	//检查分数
-	if (!m_bSpecialMode && m_iScore >= PASS_SCORE[m_iSpeed])
-	{
-		m_enGameState = GAMESTATE_PASS;
-
-		//振动
-		m_pGameScene->OnLongVibrate();
-
-		return;
-	}
-}
-
-
-bool CHitBrickGame::fireBricks(float dt)
-{
-	if (!m_arrBtnPressFlag[VBTN_FIRE])
-	{
-		m_fFireBtnTime = 0;
-		return false;
-	}
-
-	m_fFireBtnTime += dt;
-	if (m_fFireBtnTime < FIRE_CHECK_INTERVAL - 7 * m_iSpeed)
-	{
-		return false;
-	}
-
-	m_fFireBtnTime = 0;
-
-	//如果正好该位置有个方块，则隐藏并返回
-	int nBulletRowIdx = m_stSelfPos.m_iRowIdx - 2;
-	int nBulletColIdx = m_stSelfPos.m_iColIdx;
-	if (m_arrBrick[nBulletRowIdx][nBulletColIdx])
-	{
-		addScore();
-		m_arrBrick[nBulletRowIdx][nBulletColIdx] = false;
-		m_pGameScene->UpdateBrick(nBulletRowIdx, nBulletRowIdx, false, false);
-		return false;
-	}
-
-	//添加子弹
-	m_lsBullets.push_back(POSITION(nBulletRowIdx, nBulletColIdx));
-	return true;
-}
-
-
-bool CHitBrickGame::selfMove(float dt)
-{
-	if (!m_arrBtnPressFlag[VBTN_LEFT] && !m_arrBtnPressFlag[VBTN_RIGHT])
-	{
-		m_fSelfMoveTime = 0;
-		return false;
-	}
-
-	//时间更新
-	m_fSelfMoveTime += dt;
-	if (m_fSelfMoveTime < MOVE_CHECK_INTERVAL)
-	{
-		return false;
-	}
-
-	m_fSelfMoveTime = 0;
-
-	//按钮检查
-	if (m_arrBtnPressFlag[VBTN_LEFT] && m_stSelfPos.m_iColIdx > 0)
-	{
-		if (m_arrBrick[m_stSelfPos.m_iRowIdx - 1][m_stSelfPos.m_iColIdx - 1])
-		{
-			return false;
-		}
-
-		--m_stSelfPos.m_iColIdx;
-	}
-	else if (m_arrBtnPressFlag[VBTN_RIGHT] && m_stSelfPos.m_iColIdx < COLUMN_NUM - 1)
-	{
-		if (m_arrBrick[m_stSelfPos.m_iRowIdx][m_stSelfPos.m_iColIdx + 1])
-		{
-			return false;
-		}
-
-		++m_stSelfPos.m_iColIdx;
-	}
-
-	//刷新底下两行
-	m_pGameScene->UpdateBricks(ROW_NUM - 2, 0);
-
-	return true;
-}
-
-
-bool CHitBrickGame::bulletsMove(float dt)
-{
-	m_fBulletMoveTime += dt;
-	if (m_fBulletMoveTime < BULLET_MOVE_INTERVAL - 3 * m_iSpeed)
-	{
-		return false;
-	}
-
-	m_fBulletMoveTime = 0;
-
-	//遍历所有子弹
-	for (TLIST_POS_ITER itBullet = m_lsBullets.begin(); itBullet != m_lsBullets.end(); )
-	{
-		//检查位置
-		if (checkBullet(*itBullet))
-		{
-			itBullet = m_lsBullets.erase(itBullet);
-		}
-		else
-		{
-			//移动
-			--itBullet->m_iRowIdx;
-			++itBullet;
-		}
-	}
-
-	return true;
-}
-
-
-bool CHitBrickGame::checkBullet(const POSITION& stPos)
-{
-	if (stPos.m_iRowIdx - 1 < 0)
-	{
-		return true;
-	}
-
-	if (m_arrBrick[stPos.m_iRowIdx - 1][stPos.m_iColIdx])
-	{
-		addScore();
-		m_arrBrick[stPos.m_iRowIdx - 1][stPos.m_iColIdx] = false;
-		return true;
-	}
-
-	return false;
-}
-
-
-void CHitBrickGame::addScore()
-{
-	m_iScore += 10;
-	m_pGameScene->UpdateScore(m_iScore, true);
+	return CONTROL_FIRE_INTERVAL - 10 * m_nSpeed;
 }
 

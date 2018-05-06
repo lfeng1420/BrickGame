@@ -1,133 +1,88 @@
 #pragma once
-#include "SceneBase.h"
+#include "GameBase.h"
 
-class CPinballGame : public CSceneBase
+class CPinballGame : public CGameBase
 {
 public:
-	CPinballGame(CGameScene* pGameScene, bool bExtraMode);
-	~CPinballGame();
+	// Start
+	virtual void Start();
 
-	//---------------------    CSceneBase    ----------------------
-	//初始化
-	void Init();
+	// Update
+	// param: dt, millisecond
+	virtual void Update(float dt);
 
-	//更新
-	void Play(float dt);
+	// Get game id
+	virtual EnGameID GetGameID();
 
-	//获取当前Brick状态
-	bool GetBrickState(int iRowIndex, int iColIndex);
+	// Button event
+	virtual void OnButtonEvent(const SEventContextButton* pButtonEvent);
 
-	//获取小方块序列中的方块状态
-	bool GetSmallBrickState(int iRowIndex, int iColIndex);
+public:
+	// Other udpate logic
+	virtual void UpdateOther(float dt, bool& bUpdateFlag);
 
-	//获取游戏类型
-	SCENE_INDEX GetSceneType();
-
-	//左按下
-	void OnLeftBtnPressed();
-
-	//左释放
-	void OnLeftBtnReleased();
-
-	//右按下
-	void OnRightBtnPressed();
-
-	//右释放
-	void OnRightBtnReleased();
-
-	//Fire按下
-	void OnFireBtnPressed();
-
-	//Fire释放
-	void OnFireBtnReleased();
-
-	//---------------------    CSceneBase    ----------------------
+	// Get bloks start row index
+	int GetBlocksStartRowIdx();
 
 private:
-	//初始化数据，与Init不同，Init在切换到该场景时调用，InitData在重置时调用
-	void InitData();
+	// Init blocks
+	void __InitBlocks();
 
-	//小球移动
-	bool BallMove(float dt);
+	// Update ball
+	void __UpdateBall(float dt, bool& bUpdateFlag);
 
-	//挡板移动
-	bool GuardMove(float dt);
+	// Update guard
+	void __UpdateGuard(float dt, bool& bUpdateFlag);
 
-	//加分
-	void AddScore(int iScore);
+	// Update guard pos
+	void __UpdateGuardPos(const POSITION& stNewPos, bool bClearOldPosFlag = true);
 
-	//检查是否通过
-	bool CheckGamePass();
+	// Update ball pos
+	void __UpdateBallPos(const POSITION& stNewPos, bool bClearOldPosFlag = true);
 
-	//游戏状态
-	void SaveGameData();
+	// Check game pass
+	bool __CheckGamePass();
 
-	//上方方块滚动
-	bool BricksRoll(float dt);
+	//////////////////////////////////////////////////////////////////////////
+	// Get ball move interval
+	int __GetBallMoveInterval();
 
-private:
-	enum 
+	// Get guard move interval
+	int __GetGuardMoveInterval();
+
+protected:
+	enum
 	{
-		GUARD_BRICK_COUNT = 4,				//挡板方块数量
+		BALL_MOVE_INTERVAL = 100,
+		BLOCKS_ROW_COUNT = 5,
+		HIT_BLOCK_ADD_SCORE = 10,
+		GUARD_COLUMN_COUNT = 4,
+		GUARD_ROW_IDX = ROW_COUNT - 1,
+		GUARD_COLUMN_IDX = COLUMN_COUNT / 2 - GUARD_COLUMN_COUNT / 2,
+		GUARD_MOVE_INTERVAL = 50,
+	};
 
-		BALL_MOVE_INTERVAL = 100,			//球移动时间间隔
+	struct _TBallData
+	{
+		POSITION stPos;
+		POSITION stIncr;	// Increment
+		int nMoveInterval;
+	};
 
-		BRICKS_ROWCOUNT = 5,				//方块行数
-
-		BTN_CHECK_INTERVAL = 50,			//按钮检查时间间隔
-
-		GAMEPASS_ADDCOUNT = 10,				//增加10次
-
-		GAMEPASS_ADDSCORE = 10,				//通过时每次增加的分数
-
-		GAMEPASS_REFRESH_INTERVAL = 200,	//通过显示刷新时间
-
-		BOOM_REFRESH_INTERVAL = 50,			//爆炸效果刷新时间
-
-		BOOM_SHOWCOUNT = 16,				//闪烁显示爆炸效果次数
-
-		BRICK_BASE_MOVE_INTERVAL = 500,		//方块移动时间间隔
+	struct _TGuardData
+	{
+		int nDir;
+		int nMoveInterval;
+		POSITION stPos;
 	};
 
 private:
-	int m_iSpeed;											//速度
+	// Ball data
+	_TBallData		m_stBallData;
 
-	int m_iLevel;											//关卡
+	// Guard data
+	_TGuardData		m_stGuardData;
 
-	int m_iLife;											//剩余生命
-
-	int m_iScore;											//分数
-
-	bool m_arrBricks[ROW_NUM][COLUMN_NUM];					//方块状态
-
-	POSITION m_stBallPos;									//球位置
-
-	POSITION m_stBallDis;									//球每次移动的距离
-
-	int m_iGuardColIdx;										//挡板所在列
-
-	GAME_STATE m_enGameState;								//游戏状态
-
-	float m_fWaitTime;										//移动等待时间
-
-	float m_fBtnCheckTime;									//按钮检查时间
-
-	bool bLeftMoveFlag;										//左移标记
-
-	bool bRightMoveFlag;									//右移标记
-
-	bool m_bImproveSpeedFlag;								//加速标记
-
-	bool m_bShowBoom;										//爆炸显示/隐藏标记（闪烁）
-
-	int m_iShowBoomCount;									//闪烁显示爆炸效果次数
-
-	int m_iAddScoreCount;									//当前分数增加次数
-
-	bool m_bExtraMode;										//附加模式
-
-	float m_fRollTime;										//滚动等待时间
-
-	bool m_bLeftRollFlag;									//是否往左滚动，false为往右
+	// Speed up flag
+	bool			m_bSpeedUpFlag;
 };
-

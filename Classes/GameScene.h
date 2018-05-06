@@ -1,337 +1,202 @@
 #pragma once
-#include "BGGlobal.h"
 
-class CSceneBase;
-class CSetupLayer;
-
-class CGameScene : public LayerColor
+class CGameScene : public LayerColor, public IEventHandler
 {
 public:
-	CGameScene();
-	~CGameScene();
+	virtual ~CGameScene();
 
-	static Scene* CreateScene();
+	// Create scene
+	static Scene* CreateScene(const TGameSceneContext* pContext = nullptr);
 
-	//init
-	virtual bool init();
+	// create
+	static LayerColor* create(const TGameSceneContext* pContext = nullptr);
 
-	//更新单个Brick状态，bSmallBrickFlag 是否更新小方块， bShowFlag显示或隐藏
-	void UpdateBrick(int iRowIndex, int iColIndex, bool bSmallBrickFlag, bool bShowFlag);
+	// Init
+	bool init();
 
-	//更新所有Brick状态
-	void UpdateBricks(int iStartRowIdx = -1, int iStartColIdx = -1, int iEndRowIdx = -1, int iEndColIdx = -1);
+	// On event
+	void OnEvent(int nEventID, const char* pContext, int nLen);
 
-	//重置所有Brick
-	void ResetBricks();
+	// On vote
+	bool OnVote(int nEventID, char* pContext, int nLen);
 
-	//显示新场景
-	void RunScene(int iSceneIndex);
-
-	//更新分数显示
-	void UpdateScore(int iScore, bool bPlayEffect = true);
-
-	//更新最高分显示
-	void UpdateHighScore(int iGameIdx, int iHighScore = 0);
-
-	//更新等级显示
-	void UpdateLevel(int iLevel);
-
-	//更新速度显示
-	void UpdateSpeed(int iSpeed);
-
-	//更新小方块序列
-	void UpdateSmallBricks();
-
-	//重置所有小Brick
-	void ResetSmallBricks();
-
-	//按钮按下 iBtnIndex 对应BTN_INDEX索引
-	void OnButtonClick(Ref* pSender, int iBtnIndex);
-
-	//显示提示
-	void ShowTips(int nTipType);
-
-	//Change the background image
-	void ChangeColorMode();
-
-	//俄罗斯方块立即存档
-	void SaveTetrisRecord();
-
-	//评分
-	void GiveRate();
-
-	//查看我的应用
-	void ShowMyApps();
-
-	//振动（短）
-	void OnShortVibrate();
-
-	//振动（长）
-	void OnLongVibrate();
-
-	//检查设置页是否显示
-	bool CheckSetupLayerVisible();
-
-	//退出设置页
-	void QuitSetupLayer();
-
-	//退出流程
-	void LaunchQuitRoutine();
-
-	//更改控制按钮位置
-	void ChangeControllerPos();
-
-	CREATE_FUNC(CGameScene);
-
-private:
-	//初始化数据
-	void InitData();
-
-	//初始化Brick
-	void InitBrick();
-
-	//初始化背景
-	void InitBgLayer();
-
-	//初始化UI:分数、等级等
-	void InitPortUI();
-
-	//初始化横向UI
-	void InitLandUI();
-
-	//根据指定的高度上限创建控制按钮
-	void InitPortController();
-
-	//根据指定的高度上限创建控制按钮
-	void InitLandController();
-
-	//获取方块Size
-	Size GetBrickSize(bool bLandVisible);
-
-	//获取数字Size
-	Size GetNumSize();
-
-	//创建按键监听器
-	void CreateKeyListener();
-
-	//创建各个游戏对象
-	void CreateGameObj();
-
-	//帧更新
+	// frame update
 	void update(float dt);
 
-	//按钮响应  iBtnIndex 对应BTN_INDEX索引
-	void OnButtonEvent(Ref* pSender, Widget::TouchEventType enType, int iBtnIndex);
+	// Import context first step
+	void ImportContextFirst(const TGameSceneContext* pContext);
 
-	//根据位置调整触摸索引
-	bool AdjustClickIndex(Vec2 pos, int& nIndex);
-
-	//按钮按下
-	void OnButtonPressed(int iBtnIndex);
-
-	//按钮释放
-	void OnButtonReleased(int iBtnIndex);
-
-	//Change the play button state when game state changed
-	void ChangePlayState(bool bPlay);
-
-	//获取方块Sprite
-	Sprite* GetBrickSprite(int nRowIdx, int nColIdx, bool bSmallFlag, bool bLandFlag);
-
-	//改变Sprite
-	void ChangeSprite(Sprite* pSprite, bool bNightMode);
-
-	//改变MenuItemSprite
-	void ChangeMenuItemSprite(MenuItemSprite* pMenuItemSpr, bool bNightMode);
-
-	//改变MenuItemToggle
-	void ChangeMenuItemToggle(MenuItemToggle* pMenuItemToggle, bool bNightMode);
-
-	//改变Button
-	void ChangeButton(Button* pButton, bool bNightMode);
-
-	//根据模式返回sprite名字
-	string GetSpriteNameByMode(const char* szName);
-
-	//清除提示记录
-	void ClearTipsRecord();
-
-	//更新按钮状态
-	void UpdateBtnState(int nBtnIndex, bool bPressedFlag);
+	// Import context last step
+	void ImportContextLast(const TGameSceneContext* pContext);
 
 public:
-	//按钮索引
-	enum BTN_INDEX
-	{
-		BTN_INVALID = -1,
-		BTN_UP,
-		BTN_RIGHT,
-		BTN_DOWN,
-		BTN_LEFT,
-		BTN_DIRMAX,
-		BTN_FIRE = BTN_DIRMAX,
-		BTN_START,
-		BTN_SOUND,
-		BTN_RESET,
-		BTN_GIVESCORE,
-	};
+	// Init ui
+	virtual void InitUI();
 
-	//提示类型
-	enum TIPS_TYPE
-	{
-		TIPS_INVALID,
-		TIPS_EXIT,
-		TIPS_SAVEOPEN,
-		TIPS_SAVECLOSE,
-		TIPS_SAVEOK,
-		TIPS_SAVEFAIL,
-	};
+	// Update level or speed
+	virtual void UpdateLevelOrSpeed(Vector<Sprite*> vecSpr, int& nOldVal, int nNewVal);
+
+	// Adjust clicked button id
+	virtual bool AdjustClickBtnID(Vec2 pos, int& nBtnID);
+
+protected:
+	// Create key event listener
+	void __CreateKeyListener();
+
+	// Play bgmusic
+	void __PlayBGM(bool bPlayFlag, bool bLoopFlag = true);
+
+	// On button click
+	void __OnClickButton(Ref* pSender, int nBtnID);
+
+	// On button event
+	void __OnButtonEvent(Ref* pSender, Widget::TouchEventType enType, int nBtnID);
+
+	// Export context
+	void __ExportContext(TGameSceneContext* pContext);
 
 private:
-	typedef map<int, CSceneBase*> TMAP_GAMEOBJ;
-	typedef TMAP_GAMEOBJ::iterator TMAP_GAMEOBJ_ITER;
+	// On game over
+	void __OnGameOver(const char* pContext, int nLen);
 
-	enum 
+	// On game data update
+	void __OnGameDataUpdate(const char* pContext, int nLen);
+
+	// On brick state update
+	void __OnBrickStateUpdate(const char* pContext, int nLen);
+
+	// On bgm update
+	void __OnBGMUpdate(const char* pContext, int nLen);
+
+	// On play effect
+	void __OnPlayEffect(const char* pContext, int nLen);
+
+	// On vibrate
+	void __OnVibrate(const char* pContext, int nLen);
+
+	// Initialize all bricks
+	void __InitAllBricks(float& fLeftX, float& fTopY);
+
+	// Initialize controller
+	void __InitController(float fTopY, float fBottomY);
+
+	// Initialize menu
+	void __InitBottomMenu(float& fBottomY);
+
+	// Initialize all labels
+	void __InitRightUI(float fLeftX, float fBottomY);
+
+	// Initialize tips
+	void __InitTips();
+
+	// Apply right hand mode
+	void __ApplyRightHandMode();
+
+	// Update score, current score or max score
+	void __UpdateScore(Vector<Sprite*>& vecSpr, int& nOldScore, int nNewScore);
+
+	// On press a button
+	void __OnButtonPressed(int nButtonID);
+
+	// On release a button
+	void __OnButtonReleased(int nButtonID);
+
+	// Click start button
+	void __OnClickStartBtn();
+
+	// Click sound button
+	void __OnClickSoundBtn();
+
+	// Click reset button
+	void __OnClickResetBtn();
+
+	// Click setup button
+	void __OnClickSetupBtn();
+
+	// Play effect
+	void __PlayEffect(const char* szEffect);
+
+protected:
+	typedef map<int, int>		TMap_BtnRelation;
+
+	enum
 	{
-		NUM_PADDING = 2,			//数字间距
-
-		BGPIC_COUNT = 1,			//背景图片数量
-
-		CHANGEBG_INTERVAL = 1000,	//更改背景的间隔
-
-		CLICK_INTERVAL = 1200,		//1.2秒
-
-		BTN_HEIGHT = 162,			//按钮高度
+		SCORE_NUM_COUNT = 6,
+		SPEED_NUM_COUNT = 2,
+		LEVEL_NUM_COUNT = 2,
+		LEVEL_SPEED_NUM_PADDING = 2,
+		CONTROLLER_INNER_PADDING = 2,
+		TIPS_LABEL_SIZE = 36,
 	};
 
-	enum BTN_TAG
-	{
-		BTNTAG_PORT_MIN = 100,
-		BTNTAG_PORT_UP = BTNTAG_PORT_MIN,
-		BTNTAG_PORT_DOWN,
-		BTNTAG_PORT_LEFT,
-		BTNTAG_PORT_RIGHT,
-		BTNTAG_PORT_MAX,
+protected:
+	// Bricks state
+	bool				m_arrBrickState[ROW_COUNT * COLUMN_COUNT];
 
-		BTNTAG_LAND_MIN = 200,
-		BTNTAG_LAND_UP = BTNTAG_LAND_MIN,
-		BTNTAG_LAND_DOWN,
-		BTNTAG_LAND_LEFT,
-		BTNTAG_LAND_RIGHT,
-		BTNTAG_LAND_MAX,
-	};
+	// Small bricks state
+	bool				m_arrSmallBrickState[SMALL_BRICK_COUNT];
 
-private:
-	Node* m_pLandNode;									//横向屏幕Node
+	// All bricks sprite
+	Vector<Sprite*>		m_vecBrickSpr;
 
-	Node* m_pPortNode;									//纵向屏幕Node
+	// All small bricks sprite
+	Vector<Sprite*>		m_vecSmallBrickSpr;
 
-	Sprite* m_pArrBrick[ROW_NUM][COLUMN_NUM];			//Sprite数组
+	// Score labels
+	Vector<Sprite*>		m_vecScoreSpr;
 
-	Sprite* m_pArrBrickLand[ROW_NUM][COLUMN_NUM];		//横向屏幕下的方块Sprite数组
+	// Max score labels
+	Vector<Sprite*>		m_vecMaxScoreSpr;
 
-	Size m_visibleSize;									//屏幕大小
+	// Level labels
+	Vector<Sprite*>		m_vecLevelSpr;
 
-	TMAP_GAMEOBJ m_mapGameObj;							//各个游戏对象指针
+	// Speed labels
+	Vector<Sprite*>		m_vecSpeedSpr;
 
-	int m_iSceneIndex;									//当前游戏索引
+	// Start button
+	MenuItemToggle*		m_pStartBtn;
 
-	bool m_arrBrickState[ROW_NUM][COLUMN_NUM];			//保存的当前所有Brick状态
+	// Sound button
+	MenuItemToggle*		m_pSoundBtn;
 
-	Sprite* m_pArrSmallBrick[4][4];						//小方块序列
+	// Reset button
+	MenuItemSprite*		m_pResetBtn;
 
-	Sprite* m_pArrSmallBrickLand[4][4];					//横向小方块序列
+	// Setup button
+	MenuItemSprite*		m_pSetupBtn;
 
-	Sprite* m_pArrSpeed[2];								//速度Sprite序列
+	// Direction button
+	Vector<Button*>		m_vecDirBtn;
 
-	Sprite* m_pArrSpeedLand[2];							//速度Sprite序列
+	// Current game data
+	SEventContextDataUpdate	m_stGameData;
 
-	Sprite* m_pArrLevel[2];								//等级Sprite序列
+	// Controller center pos
+	Vec2				m_oControllerCenterPos;
 
-	Sprite* m_pArrLevelLand[2];							//等级Sprite序列
+	// Controller center area size
+	Size				m_oControllerCenterSize;
 
-	Sprite* m_pArrScore[6];								//分数Sprite序列
+	// Game pause sprite
+	Sprite*				m_pPauseSpr;
 
-	Sprite* m_pArrScoreLand[6];							//分数Sprite序列
+	// Misc sprite vector
+	Vector<Sprite*>		m_vecMiscSpr;
 
-	Sprite* m_pArrHighScore[6];							//最高分Sprite序列
+	// 
+	TMap_BtnRelation	m_mapBtnRelation;
 
-	Sprite* m_pArrHighScoreLand[6];						//最高分Sprite序列
+	// Temp string
+	string				m_strSprName;
 
-	Sprite* m_pPauseSpr;								//暂停图标
+	// Tips
+	Label*				m_pTipsLabel;
 
-	Sprite* m_pPauseSprLand;							//横屏暂停图标
+	// Playing bgm flag
+	bool				m_bPlayingBGMFlag;
 
-	Label* m_pTipsLabel;								//提示
-
-	MenuItemToggle* m_pStartBtn;						//Start Button
-
-	MenuItemToggle* m_pStartBtnLand;					//Start Button
-
-	MenuItemToggle* m_pSoundBtn;						//Sound Button
-
-	MenuItemToggle* m_pSoundBtnLand;					//Sound Button
-
-	bool m_bPauseFlag;									//暂停标志
-
-	int m_iBgColor;										//当前背景颜色序号，0白色，>=1自定义
-
-	double m_lfClickExitTime;							//上一次点击退出时间
-
-	//double m_fClickLoveTime;							//点击心形按钮时间
-
-	//double m_lfClickSndTime;							//上一次点击声音时间
-
-	//double m_lfClickResetTime;						//上一次点击重置时间
-
-	//double m_lfClickStartTime;						//上一次点击开始时间
-
-	int m_nTipType;										//当前提示类型
-
-	Vec2 m_oControllerCenterPos;						//控制器中心位置
-
-	Size m_oControllerCenterSize;						//控制器中心大小
-
-	Vec2 m_oControllerLandCenterPos;					//控制器中心位置
-
-	Size m_oControllerLandCenterSize;					//控制器中心大小
-
-	int m_nRecordBtnIdx;								//记录按钮索引
-
-	Size m_oBrickSize;									//方块大小
-
-	Size m_oNumSize;									//方块大小
-
-	LayerColor* m_pBgLayer;								//背景颜色
-
-	CSetupLayer* m_pSetupLayer;							//设置层
-
-	bool	m_bOldSoundState;							//声音状态记录
-
-	Size	m_oSampleBtnSize;							//按钮大小
-
-	Button*	m_pLandLeftBtn;
-
-	Button*	m_pLandRightBtn;
-
-	Button*	m_pLandUpBtn;
-
-	Button*	m_pLandDownBtn;
-
-	Button* m_pLandFireBtn;
-
-	Button*	m_pPortLeftBtn;
-
-	Button*	m_pPortRightBtn;
-
-	Button*	m_pPortUpBtn;
-
-	Button*	m_pPortDownBtn;
-
-	Button* m_pPortFireBtn;
-
-	float	m_fLandBtnScale;
-
-	float	m_fPortBtnScale;
+	// Controller last pressed button id
+	EnButtonID			m_enLeftBtnID;
+	EnButtonID			m_enRightBtnID;
 };
-

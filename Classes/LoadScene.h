@@ -1,18 +1,22 @@
 #pragma once
-#include "cocos2d.h"
-class CLoadScene : public cocos2d::LayerColor
+
+class CLoadScene : public LayerColor
 {
 public:
-	CLoadScene();
-	~CLoadScene();
+	SCENE_COMMON_FUNC(CLoadScene);
 
-	static cocos2d::Scene* CreateScene();
+private:
+	// Init ui
+	void __InitUI();
 
-	bool init();
+	//Switch to the game scene
+	void __SwitchToGameScene(float dt);
 
-	//跳转至游戏界面
-	void ToGameScene(float dt);
-
-	CREATE_FUNC(CLoadScene);
+private:
+	enum
+	{
+		UI_BRICKS_ROW_COUNT = 5,
+		UI_BRICKS_COLUMN_COUNT = COLUMN_COUNT - 1,
+	};
 };
 

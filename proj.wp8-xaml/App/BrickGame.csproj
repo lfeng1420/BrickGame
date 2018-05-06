@@ -15,7 +15,8 @@
     <TargetFrameworkVersion>v8.0</TargetFrameworkVersion>
     <SilverlightVersion>$(TargetFrameworkVersion)</SilverlightVersion>
     <SilverlightApplication>true</SilverlightApplication>
-    <SupportedCultures>zh</SupportedCultures>
+    <SupportedCultures>
+    </SupportedCultures>
     <XapOutputs>true</XapOutputs>
     <GenerateSilverlightManifest>true</GenerateSilverlightManifest>
     <XapFilename>BrickGame_Release_ARM.xap</XapFilename>
@@ -101,8 +102,6 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="BrickGame_2016_03_20_00_41_12.sap" />
-    <None Include="BrickGame_2016_03_20_00_45_02.sap" />
     <None Include="Properties\AppManifest.xml" />
     <None Include="Properties\WMAppManifest.xml">
       <SubType>Designer</SubType>
@@ -140,7 +139,6 @@
       <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>AppResources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
-    <EmbeddedResource Include="Resources\AppResources.zh.resx" />
   </ItemGroup>
   <ItemGroup>
     <Page Include="App.xaml">
