@@ -188,6 +188,10 @@ void CTankGame::OnButtonEvent(const SEventContextButton* pButtonEvent)
 		return;
 	}
 	int nDir = BTNID_2_DIR[pButtonEvent->nButtonID];
+	if (nDir != DIR_LEFT && nDir != DIR_RIGHT && m_enGameStage == STAGE_BOSS)
+	{
+		return;
+	}
 
 	// Update self tank direction
 	if (pButtonEvent->bPressedFlag)
