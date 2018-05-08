@@ -40,11 +40,14 @@ protected:
 	// Get menu item state
 	int __GetItemStateStrID(int nMenuID);
 
+	// Get menu item value
+	void __GetItemStateStr(int nMenuID, string& strText);
+
 	// Update item state
 	void __UpdateItemState(int nMenuID);
 
 	// Update one menu item
-	void __UpdateOneMenuItem(int nMenuIdx, int nMenuID, bool bUpdateColorFlag = false);
+	void __UpdateOneMenuItem(int nMenuIdx, const char* szText, bool bUpdateColorFlag = false);
 
 	// Show tips
 	void __ShowTips(int nStrID);
@@ -76,6 +79,7 @@ protected:
 		MENU_LABEL_TAG = 1001,
 		TIPS_LABEL_SIZE = 36,
 		BRICKS_OFFSET_MAX = 40,
+		DIRBTN_SCALE_MIN = 80,
 	};
 
 	enum _EnMenu
@@ -88,6 +92,7 @@ protected:
 		enMenu_NightMode,
 		enMenu_RHMode,
 		enMenu_BricksOffset,
+		enMenu_DirBtnScale,
 		enMenu_TetrisSetting,
 		enMenu_AutoRecover,
 		enMenu_SaveNow,

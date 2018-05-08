@@ -8,7 +8,7 @@ void CFlappybirdGame::Start()
 
 	m_stBirdData.nRowIdx = (ROW_COUNT - 1) / 2;
 	m_stBirdData.nInterval = 0;
-	m_stBirdData.nTotalInterval = 0;
+	m_stBirdData.nTotalInterval = __GetBirdMoveInterval();
 	m_stBirdData.nUpInterval = 0;
 	m_stBirdData.bControlUpFlag = false;
 	m_stBirdData.nPassPillarCount = 0;

@@ -18,6 +18,7 @@ cocos2d::Scene* CGameScene::CreateScene(const TGameSceneContext* pContext/* = nu
 	auto scene = Scene::create();
 	auto layer = CGameScene::create(pContext);
 	scene->addChild(layer);
+	scene->setTag(GAME_SCENE_TAG);
 	return scene;
 }
 
@@ -326,10 +327,10 @@ void CGameScene::__OnBrickStateUpdate(const char* pContext, int nLen)
 	{
 		int nBrickID = itBricks->first;
 		bool bStateFlag = itBricks->second;
-		bool& bSrcStateFlag = (pStateUpdate->bSmallBrickFlag) ? m_arrSmallBrickState[nBrickID] : m_arrBrickState[nBrickID];
+		bool& bSrcStateFlag = ((pStateUpdate->bSmallBrickFlag) ? m_arrSmallBrickState[nBrickID] : m_arrBrickState[nBrickID]);
 		if (bSrcStateFlag != bStateFlag)
 		{
-			Sprite* pSpr = (pStateUpdate->bSmallBrickFlag) ? m_vecSmallBrickSpr.at(nBrickID) : m_vecBrickSpr.at(nBrickID);
+			Sprite* pSpr = ((pStateUpdate->bSmallBrickFlag) ? m_vecSmallBrickSpr.at(nBrickID) : m_vecBrickSpr.at(nBrickID));
 			if (pSpr != nullptr)
 			{
 				bSrcStateFlag = bStateFlag;
@@ -423,7 +424,7 @@ void CGameScene::__InitController(float fTopY, float fBottomY)
 {
 	float fBtnInnerPadding = CONTROLLER_INNER_PADDING;
 	float fControllerPadding = 10;
-	const float CONTROLLER_SCALE_MAX = 1.0f;
+	const float CONTROLLER_SCALE_MAX = GET_INTVALUE("DIRBTN_SCALE", DIRBTN_DEFAULT_SCALE) / 100.0f;
 
 	// Up button
 	string strBtn0Name = CGlobalFunc::GetSpriteNameWithMode("btn_0.png");
@@ -1159,6 +1160,11 @@ void CGameScene::__OnButtonPressed(int nButtonID)
 		pBtn->forceSetHighlighted(true);
 	}
 
+	if (m_pPauseSpr->isVisible())
+	{
+		return;
+	}
+
 	SEventContextButton stButtonEvent = { nButtonID, true };
 	g_oEventEngine.FireEvent(EVENT_BUTTON, (const char*)&stButtonEvent, sizeof(stButtonEvent));
 }
@@ -1170,6 +1176,11 @@ void CGameScene::__OnButtonReleased(int nButtonID)
 	if (pBtn != nullptr)
 	{
 		pBtn->forceSetHighlighted(false);
+	}
+
+	if (m_pPauseSpr->isVisible())
+	{
+		return;
 	}
 
 	SEventContextButton stButtonEvent = { nButtonID, false };

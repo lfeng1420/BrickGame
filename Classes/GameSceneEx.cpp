@@ -158,7 +158,7 @@ void CGameSceneEx::__InitControllerEx(float fBottomCenterY, float fTopY)
 	Size visibleSize = GET_VISIBLESIZE();
 	float fBtnInnerPadding = CONTROLLER_INNER_PADDING;
 	float fControllerPadding = 10;
-	const float CONTROLLER_SCALE_MAX = 1.0f;
+	const float CONTROLLER_SCALE_MAX = GET_INTVALUE("DIRBTN_SCALE", DIRBTN_DEFAULT_SCALE) / 100.0f;
 
 	// Up button
 	string strBtn0Name = CGlobalFunc::GetSpriteNameWithMode("btn_0.png");

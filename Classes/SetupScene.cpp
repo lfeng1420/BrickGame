@@ -109,9 +109,12 @@ void CSetupScene::InitMainUI()
 	// Right hand mode
 	AddMenuItem(STRID_RHMODE, __GetItemStateStrID(enMenu_RHMode));
 	// Bricks offset
-	char szText[10] = { 0 };
-	sprintf(szText, "%d", GET_INTVALUE("BRICKS_OFFSET", 0));
-	AddMenuItem(STRID_BRICKSOFFSET, STRID_MAX, szText);
+	string strText;
+	__GetItemStateStr(enMenu_BricksOffset, strText);
+	AddMenuItem(STRID_BRICKSOFFSET, STRID_MAX, strText.c_str());
+	// Direction button scale
+	__GetItemStateStr(enMenu_DirBtnScale, strText);
+	AddMenuItem(STRID_DIRBTNSCALE, STRID_MAX, strText.c_str());
 
 	// Tetris settings
 	AddMenuItem(STRID_TETRISSETTING);
@@ -261,7 +264,9 @@ void CSetupScene::ListViewCallback(Ref* pNode, ui::ListView::EventType enEventTy
 	}
 
 	// Update single item
-	__UpdateOneMenuItem(uiMenuIdx, nMenuID);
+	string strText;
+	__GetItemStateStr(nMenuID, strText);
+	__UpdateOneMenuItem(uiMenuIdx, strText.c_str());
 }
 
 
@@ -360,6 +365,28 @@ int CSetupScene::__GetItemStateStrID(int nMenuID)
 }
 
 
+void CSetupScene::__GetItemStateStr(int nMenuID, string& strText)
+{
+	if (nMenuID == enMenu_BricksOffset)
+	{
+		char szText[10] = { 0 };
+		sprintf(szText, "%d", GET_INTVALUE("BRICKS_OFFSET", 0));
+		strText = szText;
+		return;
+	}
+	else if (nMenuID == enMenu_DirBtnScale)
+	{
+		char szText[10] = { 0 };
+		sprintf(szText, "%d", GET_INTVALUE("DIRBTN_SCALE", DIRBTN_DEFAULT_SCALE));
+		strText = szText;
+		return;
+	}
+
+	int nStrID = __GetItemStateStrID(nMenuID);
+	strText = CGlobalFunc::GetString(__GetItemStateStrID(nMenuID));
+}
+
+
 void CSetupScene::__UpdateItemState(int nMenuID)
 {
 	bool bNowState = __GetItemState(nMenuID);
@@ -400,13 +427,23 @@ void CSetupScene::__UpdateItemState(int nMenuID)
 		}
 		break;
 
+	case enMenu_DirBtnScale:
+		{
+			int nScale = GET_INTVALUE("DIRBTN_SCALE", DIRBTN_DEFAULT_SCALE) - 1;
+			if (nScale < DIRBTN_SCALE_MIN)
+			{
+				nScale = DIRBTN_DEFAULT_SCALE;
+			}
+			SET_INTVALUE("DIRBTN_SCALE", nScale);
+		}
+
 	default:
 		break;
 	}
 }
 
 
-void CSetupScene::__UpdateOneMenuItem(int nMenuIdx, int nMenuID, bool bUpdateColorFlag /*= false*/)
+void CSetupScene::__UpdateOneMenuItem(int nMenuIdx, const char* szText, bool bUpdateColorFlag /*= false*/)
 {
 	Widget* pWidget = m_pListView->getItem(nMenuIdx);
 	if (pWidget == nullptr)
@@ -420,18 +457,10 @@ void CSetupScene::__UpdateOneMenuItem(int nMenuIdx, int nMenuID, bool bUpdateCol
 		return;
 	}
 
-	string strText = CGlobalFunc::GetString(__GetItemStateStrID(nMenuID));
-	if (nMenuID == enMenu_BricksOffset)
-	{
-		char szText[10] = { 0 };
-		sprintf(szText, "%d", GET_INTVALUE("BRICKS_OFFSET", 0));
-		strText.assign(szText);
-	}
-
 	// Update content
 	Text* pText = (Text*)pChild;
 	Size oldSize = GET_CONTENTSIZE(pText);
-	pText->setString(strText);
+	pText->setString(szText);
 	Size newSize = GET_CONTENTSIZE(pText);
 	pText->setPositionX(pText->getPositionX() - (newSize.width * 0.5f - oldSize.width * 0.5f));
 	
@@ -501,7 +530,7 @@ void CSetupScene::__OnNightModeChange()
 			}
 		}
 
-		__UpdateOneMenuItem(uiMenuIdx, nMenuID, true);
+		__UpdateOneMenuItem(uiMenuIdx, CGlobalFunc::GetString(__GetItemStateStrID(nMenuID)), true);
 	}
 }
 
@@ -530,7 +559,7 @@ void CSetupScene::__OnClickSaveMenu()
 		{
 			if (m_vecMenu[uiMenuIdx] == enMenu_AutoRecover)
 			{
-				__UpdateOneMenuItem(uiMenuIdx, enMenu_AutoRecover);
+				__UpdateOneMenuItem(uiMenuIdx, CGlobalFunc::GetString(__GetItemStateStrID(enMenu_AutoRecover)));
 				break;
 			}
 		}
@@ -592,6 +621,9 @@ int CSetupScene::__StrID2MenuID(int nStrID)
 
 	case STRID_LINE:
 		return enMenu_Line;
+
+	case STRID_DIRBTNSCALE:
+		return enMenu_DirBtnScale;
 
 	default:
 		return enMenu_Max;

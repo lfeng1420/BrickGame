@@ -73,6 +73,10 @@ void CSetupSceneEx::InitMainUI()
 	AddMenuItem(STRID_NIGHTMODE, __GetItemStateStrID(enMenu_NightMode));
 	// Right hand mode
 	AddMenuItem(STRID_RHMODE, __GetItemStateStrID(enMenu_RHMode));
+	// Direction button scale
+	string strText;
+	__GetItemStateStr(enMenu_DirBtnScale, strText);
+	AddMenuItem(STRID_DIRBTNSCALE, STRID_MAX, strText.c_str());
 
 	// Tetris settings
 	AddMenuItem(STRID_TETRISSETTING);
