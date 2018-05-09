@@ -7,6 +7,7 @@ cocos2d::Scene* CGameSceneEx::CreateScene(const TGameSceneContext* pContext /*= 
 	auto scene = Scene::create();
 	auto layer = CGameSceneEx::create(pContext);
 	scene->addChild(layer);
+	scene->setTag(GAME_SCENE_TAG);
 	return scene;
 }
 

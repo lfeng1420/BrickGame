@@ -66,7 +66,7 @@ public:
 		bool bFuncExistFlag = JniHelper::getStaticMethodInfo(minfo, "org/cocos2dx/lib/Cocos2dxHelper", "Vibrate", "(I)V");
 		if (bFuncExistFlag)
 		{
-			minfo.env->CallStaticVoidMethod(minfo.classID, minfo.methodID, 80);
+			minfo.env->CallStaticVoidMethod(minfo.classID, minfo.methodID, 70);
 			minfo.env->DeleteLocalRef(minfo.classID);
 		}
 #elif CC_TARGET_PLATFORM == CC_PLATFORM_WP8

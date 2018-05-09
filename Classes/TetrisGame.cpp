@@ -448,7 +448,6 @@ void CTetrisGame::RandomShape(bool bUpdateFlag /*= false*/, int nCurShapeID /*= 
 			UpdateSmallBrickState(GET_SMALLBRICKID(nRowIdx, nColIdx), GetShapeBrickOriginState(m_nNextShapeID, nRowIdx, nColIdx));
 		}
 	}
-	log("size=%d", m_mapUpdateSmallBricks.size());
 	UpdateSmallBrickState(0, GetSmallBrickState(0), true);
 }
 

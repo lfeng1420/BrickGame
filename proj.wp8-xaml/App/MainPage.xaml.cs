@@ -256,7 +256,7 @@ namespace PhoneDirect3DXamlAppInterop
 
         public void OnShortVibrate()
         {
-            Windows.Phone.Devices.Notification.VibrationDevice.GetDefault().Vibrate(TimeSpan.FromMilliseconds(80));
+            Windows.Phone.Devices.Notification.VibrationDevice.GetDefault().Vibrate(TimeSpan.FromMilliseconds(70));
         }
 
         public void OnLongVibrate()
