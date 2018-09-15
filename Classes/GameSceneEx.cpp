@@ -49,6 +49,9 @@ void CGameSceneEx::InitUI()
 	__InitControllerEx(fBottomCenterY, fTopY);
 	__InitRightUIEx(fBottomCenterY, fTopY);
 	__ApplyRightHandModeEx();
+
+	// Tips
+	__InitTips();
 }
 
 
@@ -514,4 +517,17 @@ void CGameSceneEx::__ApplyRightHandModeEx()
 	m_pSoundBtn->setPositionY(visibleSize.height - m_pSoundBtn->getPositionY());
 	m_pResetBtn->setPositionY(visibleSize.height - m_pResetBtn->getPositionY());
 	m_pSetupBtn->setPositionY(visibleSize.height - m_pSetupBtn->getPositionY());
+}
+
+
+void CGameSceneEx::__InitTips()
+{
+	Size visibleSize = GET_VISIBLESIZE();
+	m_pTipsLabel = Label::createWithSystemFont("123", FONT_NAME, TIPS_LABEL_SIZE);
+	Color3B color = GET_BOOLVALUE("NIGHTMODE", false) ? Color3B::WHITE : Color3B::BLACK;
+	m_pTipsLabel->setColor(color);
+	m_pTipsLabel->setOpacity(0);
+	m_pTipsLabel->setPosition(visibleSize.width * 0.5f, visibleSize.height * 0.5f);
+	m_pTipsLabel->setRotation(90);
+	this->addChild(m_pTipsLabel);
 }

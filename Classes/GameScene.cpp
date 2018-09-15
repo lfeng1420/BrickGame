@@ -729,15 +729,7 @@ void CGameScene::__InitTips()
 	Color3B color = GET_BOOLVALUE("NIGHTMODE", false) ? Color3B::WHITE : Color3B::BLACK;
 	m_pTipsLabel->setColor(color);
 	m_pTipsLabel->setOpacity(0);
-	if (GET_BOOLVALUE("PORTRAIT", true))
-	{
-		m_pTipsLabel->setPosition(visibleSize.width * 0.5f, visibleSize.height * 0.5f);
-	}
-	else
-	{
-		m_pTipsLabel->setPosition(visibleSize.height * 0.5f, visibleSize.width * 0.5f);
-	}
-
+	m_pTipsLabel->setPosition(visibleSize.width * 0.5f, visibleSize.height * 0.5f);
 	this->addChild(m_pTipsLabel);
 }
 

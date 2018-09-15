@@ -35,4 +35,7 @@ private:
 
 	// Apply right hand mode
 	void __ApplyRightHandModeEx();
+
+	// Initialize tips
+	void __InitTips();
 };
