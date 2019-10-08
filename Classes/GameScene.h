@@ -37,7 +37,7 @@ public:
 	virtual void UpdateLevelOrSpeed(Vector<Sprite*> vecSpr, int& nOldVal, int nNewVal);
 
 	// Adjust clicked button id
-	virtual bool AdjustClickBtnID(Vec2 pos, int& nBtnID);
+	virtual bool AdjustClickBtnID(const Vec2* pos, int& nBtnID);
 
 protected:
 	// Create key event listener
@@ -49,8 +49,8 @@ protected:
 	// On button click
 	void __OnClickButton(Ref* pSender, int nBtnID);
 
-	// On button event
-	void __OnButtonEvent(Ref* pSender, Widget::TouchEventType enType, int nBtnID);
+    // On menu touch
+    void __OnMenuTouch(Ref* pSender, MenuItem** pSelectedMenuItem, Menu::TouchState enTouchState);
 
 	// Export context
 	void __ExportContext(TGameSceneContext* pContext);
@@ -117,8 +117,6 @@ private:
 	void __PlayEffect(const char* szEffect);
 
 protected:
-	typedef map<int, int>		TMap_BtnRelation;
-
 	enum
 	{
 		SCORE_NUM_COUNT = 6,
@@ -167,7 +165,7 @@ protected:
 	MenuItemSprite*		m_pSetupBtn;
 
 	// Direction button
-	Vector<Button*>		m_vecDirBtn;
+	Vector<MenuItem*>	m_vecDirBtn;
 
 	// Current game data
 	SEventContextDataUpdate	m_stGameData;
@@ -183,9 +181,6 @@ protected:
 
 	// Misc sprite vector
 	Vector<Sprite*>		m_vecMiscSpr;
-
-	// 
-	TMap_BtnRelation	m_mapBtnRelation;
 
 	// Temp string
 	string				m_strSprName;

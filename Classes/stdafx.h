@@ -24,14 +24,12 @@ using namespace std;
 USING_NS_CC;
 #include "cocos-ext.h"
 USING_NS_CC_EXT;
-#include "../cocos/ui/CocosGUI.h"
-using namespace ui;
 
 // json
-#include "json/rapidjson.h"
-#include "json/writer.h"
-#include "json/document.h"
-#include "json/stringbuffer.h"
+#include "external/json/rapidjson.h"
+#include "external/json/writer.h"
+#include "external/json/document.h"
+#include "external/json/stringbuffer.h"
 
 // Global func
 #include "GlobalFunc.h"

@@ -232,7 +232,7 @@ void CGameBase::AddScore(int nAddScore)
 	//Play effect
 	PlayEffect(EFFECT_ADD);
 
-	m_nCurScore = min(m_nCurScore + nAddScore, SCORE_MAX);
+	m_nCurScore = MIN(m_nCurScore + nAddScore, SCORE_MAX);
 	CGameLogic::GetInstance()->GetDataManager()->SetHighScore(GetGameID(), m_nCurScore);
 	
 	UpdateGameData();

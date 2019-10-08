@@ -10,243 +10,228 @@
     <Filter Include="resource">
       <UniqueIdentifier>{715254bc-d70b-4ec5-bf29-467dd3ace079}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Classes\Common">
-      <UniqueIdentifier>{49130cb1-e03f-47fd-8c89-92b4d0267ef2}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Classes\Stdafx">
-      <UniqueIdentifier>{f17aca43-2ff2-4b07-8bc9-101adbb3b3c1}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Classes\Interface">
-      <UniqueIdentifier>{f2dcbd86-a0ed-489c-90a5-d53c24497b12}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Classes\GameLogic">
-      <UniqueIdentifier>{a41d0b21-7f2f-47f8-be10-cdb54ea28740}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Classes\EventEngine">
-      <UniqueIdentifier>{656ed40e-ca5a-4d36-b0e1-a833e586bda2}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Classes\GameLogic\Game">
-      <UniqueIdentifier>{1a181e93-1bea-42f8-8f4a-e44cdb37c89e}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Classes\Scene">
-      <UniqueIdentifier>{cbd5c764-e34b-48ef-906b-7beaa1b901b6}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
       <Filter>win32</Filter>
     </ClCompile>
+    <ClCompile Include="..\Classes\AddBrickGame.cpp">
+      <Filter>Classes</Filter>
+    </ClCompile>
     <ClCompile Include="..\Classes\AppDelegate.cpp">
       <Filter>Classes</Filter>
     </ClCompile>
+    <ClCompile Include="..\Classes\BarrierLayer.cpp">
+      <Filter>Classes</Filter>
+    </ClCompile>
     <ClCompile Include="..\Classes\DataManager.cpp">
-      <Filter>Classes\GameLogic</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Classes\GameLogic.cpp">
-      <Filter>Classes\GameLogic</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Classes\GameManager.cpp">
-      <Filter>Classes\GameLogic</Filter>
+      <Filter>Classes</Filter>
     </ClCompile>
     <ClCompile Include="..\Classes\EventEngine.cpp">
-      <Filter>Classes\EventEngine</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Classes\OverGame.cpp">
-      <Filter>Classes\GameLogic\Game</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Classes\SelectGame.cpp">
-      <Filter>Classes\GameLogic\Game</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Classes\TankGame.cpp">
-      <Filter>Classes\GameLogic\Game</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Classes\LoadScene.cpp">
-      <Filter>Classes\Scene</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Classes\GameScene.cpp">
-      <Filter>Classes\Scene</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Classes\GameSceneEx.cpp">
-      <Filter>Classes\Scene</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Classes\RaceGame.cpp">
-      <Filter>Classes\GameLogic\Game</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Classes\GameBase.cpp">
-      <Filter>Classes\GameLogic\Game</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Classes\SnakeGame.cpp">
-      <Filter>Classes\GameLogic\Game</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Classes\MatchGame.cpp">
-      <Filter>Classes\GameLogic\Game</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Classes\FroggerGame.cpp">
-      <Filter>Classes\GameLogic\Game</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Classes\PinballGame.cpp">
-      <Filter>Classes\GameLogic\Game</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Classes\TetrisGame.cpp">
-      <Filter>Classes\GameLogic\Game</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Classes\stdafx.cpp">
-      <Filter>Classes\Stdafx</Filter>
+      <Filter>Classes</Filter>
     </ClCompile>
     <ClCompile Include="..\Classes\FlappybirdGame.cpp">
-      <Filter>Classes\GameLogic\Game</Filter>
+      <Filter>Classes</Filter>
     </ClCompile>
-    <ClCompile Include="..\Classes\TetrisGameEx.cpp">
-      <Filter>Classes\GameLogic\Game</Filter>
+    <ClCompile Include="..\Classes\FroggerGame.cpp">
+      <Filter>Classes</Filter>
     </ClCompile>
-    <ClCompile Include="..\Classes\PinballGameEx.cpp">
-      <Filter>Classes\GameLogic\Game</Filter>
+    <ClCompile Include="..\Classes\GameBase.cpp">
+      <Filter>Classes</Filter>
     </ClCompile>
-    <ClCompile Include="..\Classes\AddBrickGame.cpp">
-      <Filter>Classes\GameLogic\Game</Filter>
+    <ClCompile Include="..\Classes\GameLogic.cpp">
+      <Filter>Classes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\GameManager.cpp">
+      <Filter>Classes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\GameScene.cpp">
+      <Filter>Classes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\GameSceneEx.cpp">
+      <Filter>Classes</Filter>
     </ClCompile>
     <ClCompile Include="..\Classes\HitBrickGame.cpp">
-      <Filter>Classes\GameLogic\Game</Filter>
+      <Filter>Classes</Filter>
     </ClCompile>
-    <ClCompile Include="..\Classes\TimerManager.cpp">
-      <Filter>Classes\GameLogic</Filter>
+    <ClCompile Include="..\Classes\LoadScene.cpp">
+      <Filter>Classes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\MatchGame.cpp">
+      <Filter>Classes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\OverGame.cpp">
+      <Filter>Classes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\PinballGame.cpp">
+      <Filter>Classes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\PinballGameEx.cpp">
+      <Filter>Classes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\RaceGame.cpp">
+      <Filter>Classes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\SelectGame.cpp">
+      <Filter>Classes</Filter>
     </ClCompile>
     <ClCompile Include="..\Classes\SetupScene.cpp">
-      <Filter>Classes\Scene</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Classes\BarrierLayer.cpp">
-      <Filter>Classes\Scene</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Classes\VolumeLayer.cpp">
-      <Filter>Classes\Scene</Filter>
+      <Filter>Classes</Filter>
     </ClCompile>
     <ClCompile Include="..\Classes\SetupSceneEx.cpp">
-      <Filter>Classes\Scene</Filter>
+      <Filter>Classes</Filter>
     </ClCompile>
-    <ClCompile Include="..\Classes\MyListView.cpp">
-      <Filter>Classes\Scene</Filter>
+    <ClCompile Include="..\Classes\SnakeGame.cpp">
+      <Filter>Classes</Filter>
     </ClCompile>
-    <ClCompile Include="..\Classes\VolumeLayerEx.cpp">
-      <Filter>Classes\Scene</Filter>
+    <ClCompile Include="..\Classes\stdafx.cpp">
+      <Filter>Classes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\TankGame.cpp">
+      <Filter>Classes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\TetrisGame.cpp">
+      <Filter>Classes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\TetrisGameEx.cpp">
+      <Filter>Classes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\TimerManager.cpp">
+      <Filter>Classes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\SetupControlBtn.cpp">
+      <Filter>Classes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\SetupControlBtnEx.cpp">
+      <Filter>Classes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\SetupVolumeEx.cpp">
+      <Filter>Classes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\SetupVolume.cpp">
+      <Filter>Classes</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="main.h">
       <Filter>win32</Filter>
     </ClInclude>
+    <ClInclude Include="..\Classes\AddBrickGame.h">
+      <Filter>Classes</Filter>
+    </ClInclude>
     <ClInclude Include="..\Classes\AppDelegate.h">
       <Filter>Classes</Filter>
     </ClInclude>
-    <ClInclude Include="..\Classes\DCommon.h">
-      <Filter>Classes\Common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Classes\DEvent.h">
-      <Filter>Classes\Common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Classes\DGlobalMacro.h">
-      <Filter>Classes\Common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Classes\DTypeDef.h">
-      <Filter>Classes\Common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Classes\stdafx.h">
-      <Filter>Classes\Stdafx</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Classes\IEventHandler.h">
-      <Filter>Classes\Interface</Filter>
+    <ClInclude Include="..\Classes\BarrierLayer.h">
+      <Filter>Classes</Filter>
     </ClInclude>
     <ClInclude Include="..\Classes\DataManager.h">
-      <Filter>Classes\GameLogic</Filter>
+      <Filter>Classes</Filter>
     </ClInclude>
-    <ClInclude Include="..\Classes\GameLogic.h">
-      <Filter>Classes\GameLogic</Filter>
+    <ClInclude Include="..\Classes\DCommon.h">
+      <Filter>Classes</Filter>
     </ClInclude>
-    <ClInclude Include="..\Classes\GameManager.h">
-      <Filter>Classes\GameLogic</Filter>
+    <ClInclude Include="..\Classes\DEvent.h">
+      <Filter>Classes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\DGlobalMacro.h">
+      <Filter>Classes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\DTypeDef.h">
+      <Filter>Classes</Filter>
     </ClInclude>
     <ClInclude Include="..\Classes\EventEngine.h">
-      <Filter>Classes\EventEngine</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Classes\OverGame.h">
-      <Filter>Classes\GameLogic\Game</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Classes\SelectGame.h">
-      <Filter>Classes\GameLogic\Game</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Classes\TankGame.h">
-      <Filter>Classes\GameLogic\Game</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Classes\LoadScene.h">
-      <Filter>Classes\Scene</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Classes\GameScene.h">
-      <Filter>Classes\Scene</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Classes\GameSceneEx.h">
-      <Filter>Classes\Scene</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Classes\RaceGame.h">
-      <Filter>Classes\GameLogic\Game</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Classes\GameBase.h">
-      <Filter>Classes\GameLogic\Game</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Classes\SnakeGame.h">
-      <Filter>Classes\GameLogic\Game</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Classes\MatchGame.h">
-      <Filter>Classes\GameLogic\Game</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Classes\FroggerGame.h">
-      <Filter>Classes\GameLogic\Game</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Classes\PinballGame.h">
-      <Filter>Classes\GameLogic\Game</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Classes\TetrisGame.h">
-      <Filter>Classes\GameLogic\Game</Filter>
+      <Filter>Classes</Filter>
     </ClInclude>
     <ClInclude Include="..\Classes\FlappybirdGame.h">
-      <Filter>Classes\GameLogic\Game</Filter>
+      <Filter>Classes</Filter>
     </ClInclude>
-    <ClInclude Include="..\Classes\TetrisGameEx.h">
-      <Filter>Classes\GameLogic\Game</Filter>
+    <ClInclude Include="..\Classes\FroggerGame.h">
+      <Filter>Classes</Filter>
     </ClInclude>
-    <ClInclude Include="..\Classes\PinballGameEx.h">
-      <Filter>Classes\GameLogic\Game</Filter>
+    <ClInclude Include="..\Classes\GameBase.h">
+      <Filter>Classes</Filter>
     </ClInclude>
-    <ClInclude Include="..\Classes\AddBrickGame.h">
-      <Filter>Classes\GameLogic\Game</Filter>
+    <ClInclude Include="..\Classes\GameLogic.h">
+      <Filter>Classes</Filter>
     </ClInclude>
-    <ClInclude Include="..\Classes\HitBrickGame.h">
-      <Filter>Classes\GameLogic\Game</Filter>
+    <ClInclude Include="..\Classes\GameManager.h">
+      <Filter>Classes</Filter>
     </ClInclude>
-    <ClInclude Include="..\Classes\ITimerHandler.h">
-      <Filter>Classes\Interface</Filter>
+    <ClInclude Include="..\Classes\GameScene.h">
+      <Filter>Classes</Filter>
     </ClInclude>
-    <ClInclude Include="..\Classes\TimerManager.h">
-      <Filter>Classes\GameLogic</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Classes\SetupScene.h">
-      <Filter>Classes\Scene</Filter>
+    <ClInclude Include="..\Classes\GameSceneEx.h">
+      <Filter>Classes</Filter>
     </ClInclude>
     <ClInclude Include="..\Classes\GlobalFunc.h">
-      <Filter>Classes\Common</Filter>
+      <Filter>Classes</Filter>
     </ClInclude>
-    <ClInclude Include="..\Classes\BarrierLayer.h">
-      <Filter>Classes\Scene</Filter>
+    <ClInclude Include="..\Classes\HitBrickGame.h">
+      <Filter>Classes</Filter>
     </ClInclude>
-    <ClInclude Include="..\Classes\VolumeLayer.h">
-      <Filter>Classes\Scene</Filter>
+    <ClInclude Include="..\Classes\IEventHandler.h">
+      <Filter>Classes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\ITimerHandler.h">
+      <Filter>Classes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\LoadScene.h">
+      <Filter>Classes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\MatchGame.h">
+      <Filter>Classes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\OverGame.h">
+      <Filter>Classes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\PinballGame.h">
+      <Filter>Classes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\PinballGameEx.h">
+      <Filter>Classes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\RaceGame.h">
+      <Filter>Classes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\SelectGame.h">
+      <Filter>Classes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\SetupScene.h">
+      <Filter>Classes</Filter>
     </ClInclude>
     <ClInclude Include="..\Classes\SetupSceneEx.h">
-      <Filter>Classes\Scene</Filter>
+      <Filter>Classes</Filter>
     </ClInclude>
-    <ClInclude Include="..\Classes\MyListView.h">
-      <Filter>Classes\Scene</Filter>
+    <ClInclude Include="..\Classes\SnakeGame.h">
+      <Filter>Classes</Filter>
     </ClInclude>
-    <ClInclude Include="..\Classes\VolumeLayerEx.h">
-      <Filter>Classes\Scene</Filter>
+    <ClInclude Include="..\Classes\stdafx.h">
+      <Filter>Classes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\TankGame.h">
+      <Filter>Classes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\TetrisGame.h">
+      <Filter>Classes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\TetrisGameEx.h">
+      <Filter>Classes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\TimerManager.h">
+      <Filter>Classes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\SetupControlBtn.h">
+      <Filter>Classes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\SetupControlBtnEx.h">
+      <Filter>Classes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\SetupVolumeEx.h">
+      <Filter>Classes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\SetupVolume.h">
+      <Filter>Classes</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

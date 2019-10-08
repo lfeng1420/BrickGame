@@ -18,7 +18,7 @@ public:
 	virtual void UpdateLevelOrSpeed(Vector<Sprite*> vecSpr, int& nOldVal, int nNewVal);
 
 	// Adjust clicked button id
-	virtual bool AdjustClickBtnID(Vec2 pos, int& nBtnID);
+	virtual bool AdjustClickBtnID(const Vec2* pos, int& nBtnID);
 
 private:
 	// Initialize all bricks

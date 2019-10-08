@@ -241,12 +241,14 @@ void CMatchGame::__HandleMatchResult()
 
 	// Add score
 	AddScore(SHAPE_MATCH_ADD_SCORE);
-	// Start next match
-	__InitSrcDestShapes();
+	
 	// Add match succ count
 	if (++m_nMatchSuccCount >= REQUIRE_MATCH_SUCC_COUNT)
 	{
 		m_enGameStage = STAGE_PASS;
 		return;
 	}
+
+    // Start next match
+    __InitSrcDestShapes();
 }

@@ -1,9 +1,10 @@
 #include "stdafx.h"
 #include "SetupScene.h"
 #include "GameLogic.h"
-#include "VolumeLayer.h"
-#include "SetupSceneEx.h"
+#include "SetupVolume.h"
 #include "GameScene.h"
+#include "SetupControlBtn.h"
+#include "SetupSceneEx.h"
 #include "GameSceneEx.h"
 
 
@@ -11,8 +12,191 @@ CSetupScene::~CSetupScene()
 {
 }
 
+Size CSetupScene::tableCellSizeForIndex(TableView *table, ssize_t idx)
+{
+    Size visibleSize = GET_VISIBLESIZE();
+    bool bTitleFlag = (idx == enMenu_GlobalSetting || idx == enMenu_OtherSetting || idx == enMenu_TetrisSetting);
+    return Size(visibleSize.width, bTitleFlag ? MENU_TITLE_HEIGHT : MENU_SPR_HEIGHT);
+}
 
-cocos2d::Scene* CSetupScene::CreateScene(const TGameSceneContext* pContext /*= nullptr*/)
+extension::TableViewCell* CSetupScene::tableCellAtIndex(TableView *table, ssize_t idx)
+{
+    string strText;
+    extension::TableViewCell* pCell = table->dequeueCell();
+    bool bNewCellFlag = false;
+    if (pCell == nullptr)
+    {
+        pCell = new extension::TableViewCell();
+        pCell->autorelease();
+        pCell->setAnchorPoint(Vec2::ZERO);
+        pCell->setPosition(Vec2::ZERO);
+        pCell->setContentSize(tableCellSizeForIndex(table, idx));
+        bNewCellFlag = true;
+    }
+
+    bool bOKFlag = false;
+    switch (idx)
+    {
+    case enMenu_GlobalSetting:
+        // Global settings title
+        bOKFlag = AddMenuItem(pCell, bNewCellFlag, STRID_GLOBALSETTING);
+        break;
+
+    case enMenu_Vibration:
+        // Vibration
+        bOKFlag = AddMenuItem(pCell, bNewCellFlag, STRID_VIBRATION, __GetItemStateStrID(enMenu_Vibration));
+        break;
+
+    case enMenu_Sound:
+        // Sound
+        bOKFlag = AddMenuItem(pCell, bNewCellFlag, STRID_SOUND, STRID_RIGHTARROW);
+        break;
+
+    case enMenu_Orientation:
+        // Orientation
+        bOKFlag = AddMenuItem(pCell, bNewCellFlag, STRID_ORIENTATION, __GetItemStateStrID(enMenu_Orientation));
+        break;
+
+    case enMenu_NightMode:
+        // Night mode
+        bOKFlag = AddMenuItem(pCell, bNewCellFlag, STRID_NIGHTMODE, __GetItemStateStrID(enMenu_NightMode));
+        break;
+
+    case enMenu_RHMode:
+        // Right hand mode
+        bOKFlag = AddMenuItem(pCell, bNewCellFlag, STRID_RHMODE, __GetItemStateStrID(enMenu_RHMode));
+        break;
+
+        // Bricks offset
+    case enMenu_BricksOffset:
+        __GetItemStateStr(enMenu_BricksOffset, strText);
+        bOKFlag = AddMenuItem(pCell, bNewCellFlag, STRID_BRICKSOFFSET, STRID_MAX, strText.c_str());
+        break;
+
+    case enMenu_DirBtn:
+        bOKFlag = AddMenuItem(pCell, bNewCellFlag, STRID_DIRBTN, STRID_RIGHTARROW);
+        break;
+
+    case enMenu_TetrisSetting:
+        // Tetris settings
+        bOKFlag = AddMenuItem(pCell, bNewCellFlag, STRID_TETRISSETTING);
+        break;
+
+    case enMenu_AutoRecover:
+        // Auto recover
+        bOKFlag = AddMenuItem(pCell, bNewCellFlag, STRID_AUTORECOVER, __GetItemStateStrID(enMenu_AutoRecover));
+        break;
+
+    case enMenu_SaveNow:
+        // Save now
+        bOKFlag = AddMenuItem(pCell, bNewCellFlag, STRID_SAVENOW, STRID_RIGHTARROW);
+        break;
+
+    case enMenu_UpBtn:
+        // Up button function
+        bOKFlag = AddMenuItem(pCell, bNewCellFlag, STRID_UPBTN, __GetItemStateStrID(enMenu_UpBtn));
+        break;
+
+    case enMenu_OtherSetting:
+        // Other settings
+        bOKFlag = AddMenuItem(pCell, bNewCellFlag, STRID_OTHER);
+        break;
+
+    case enMenu_Author:
+        // Author
+        bOKFlag = AddMenuItem(pCell, bNewCellFlag, STRID_AUTHOR, STRID_LFENG);
+        break;
+
+    case enMenu_Rate:
+        // Rate
+        bOKFlag = AddMenuItem(pCell, bNewCellFlag, STRID_RATE, STRID_RIGHTARROW);
+        break;
+
+    case enMenu_More:
+        // More
+        bOKFlag = AddMenuItem(pCell, bNewCellFlag, STRID_MORE, STRID_RIGHTARROW);
+        break;
+
+    case enMenu_Back:
+        // Back
+        bOKFlag = AddMenuItem(pCell, bNewCellFlag, STRID_BACK, STRID_RIGHTARROW);
+        break;
+
+    case enMenu_Line:
+        // Unavailable
+        bOKFlag = AddMenuItem(pCell, bNewCellFlag, STRID_LINE, STRID_LINE);
+        break;
+
+    default:
+        break;
+    }
+
+    return bOKFlag ? pCell : nullptr;
+}
+
+ssize_t CSetupScene::numberOfCellsInTableView(TableView *table)
+{
+    return enMenu_Max;
+}
+
+void CSetupScene::tableCellTouched(TableView* table, TableViewCell* cell)
+{
+    ssize_t index = cell->getIdx();
+    __UpdateItemState(index);
+
+    switch (index)
+    {
+    case enMenu_NightMode:
+        __OnNightModeChange(table);
+        return;
+
+    case enMenu_Sound:
+        ShowVolumeLayer();
+        return;
+
+    case enMenu_DirBtn:
+        ShowControlBtnSetup();
+        return;
+
+    case enMenu_Orientation:
+        OnOrientationChange();
+        return;
+
+    case enMenu_Back:
+        __OnClickBackMenu();
+        return;
+
+    case enMenu_SaveNow:
+        __OnClickSaveMenu(cell);
+        return;
+
+    case enMenu_Rate:
+        CGlobalFunc::RateApp();
+        return;
+
+    case enMenu_More:
+        CGlobalFunc::ShowMyApps();
+        return;
+
+    case enMenu_Line:
+        __OnClickBackMenu();
+        return;
+
+    case enMenu_Author:
+        CGlobalFunc::OpenURL("https://www.lfengs.com");
+        return;
+
+    default:
+        break;
+    }
+
+    // Update single item
+    string strText;
+    __GetItemStateStr(index, strText);
+    __UpdateOneMenuItem(cell, strText.c_str());
+}
+
+Scene* CSetupScene::CreateScene(const TGameSceneContext* pContext /*= nullptr*/)
 {
 	auto scene = Scene::create();
 	auto layer = CSetupScene::create(pContext);
@@ -21,7 +205,7 @@ cocos2d::Scene* CSetupScene::CreateScene(const TGameSceneContext* pContext /*= n
 }
 
 
-cocos2d::Layer* CSetupScene::create(const TGameSceneContext* pContext /*= nullptr*/)
+Layer* CSetupScene::create(const TGameSceneContext* pContext /*= nullptr*/)
 {
 	CSetupScene* pLayer = new CSetupScene();
 	if (pLayer == nullptr)
@@ -86,60 +270,17 @@ void CSetupScene::InitMainUI()
 	m_pLayer->setVisible(!__GetItemState(enMenu_NightMode));
 	this->addChild(m_pLayer);
 
-	// ListView
-	m_pListView = ListView::create();
-	m_pListView->setContentSize(visibleSize);
-	m_pListView->setBounceEnabled(false);
-	m_pListView->setGravity(ListView::Gravity::TOP);
-	m_pListView->setPosition(Vec2(0, -MENU_ITEM_MARGIN));
-	m_pListView->setItemsMargin(MENU_ITEM_MARGIN);
-	m_pListView->addEventListener((const ListView::ccListViewCallback&)CC_CALLBACK_2(CSetupScene::ListViewCallback, this));
-	this->addChild(m_pListView);
-
-	// Global settings title
-	AddMenuItem(STRID_GLOBALSETTING);
-	// Vibration
-	AddMenuItem(STRID_VIBRATION, __GetItemStateStrID(enMenu_Vibration));
-	// Sound
-	AddMenuItem(STRID_SOUND, STRID_RIGHTARROW);
-	// Orientation
-	AddMenuItem(STRID_ORIENTATION, __GetItemStateStrID(enMenu_Orientation));
-	// Night mode
-	AddMenuItem(STRID_NIGHTMODE, __GetItemStateStrID(enMenu_NightMode));
-	// Right hand mode
-	AddMenuItem(STRID_RHMODE, __GetItemStateStrID(enMenu_RHMode));
-	// Bricks offset
-	string strText;
-	__GetItemStateStr(enMenu_BricksOffset, strText);
-	AddMenuItem(STRID_BRICKSOFFSET, STRID_MAX, strText.c_str());
-	// Direction button scale
-	__GetItemStateStr(enMenu_DirBtnScale, strText);
-	AddMenuItem(STRID_DIRBTNSCALE, STRID_MAX, strText.c_str());
-
-	// Tetris settings
-	AddMenuItem(STRID_TETRISSETTING);
-	// Auto recover
-	AddMenuItem(STRID_AUTORECOVER, __GetItemStateStrID(enMenu_AutoRecover));
-	// Save now
-	AddMenuItem(STRID_SAVENOW, STRID_RIGHTARROW);
-	// Up button function
-	AddMenuItem(STRID_UPBTN, __GetItemStateStrID(enMenu_UpBtn));
-
-	// Other settings
-	AddMenuItem(STRID_OTHER);
-	// Author
-	AddMenuItem(STRID_AUTHOR, STRID_LFENG);
-	// Rate
-	AddMenuItem(STRID_RATE, STRID_RIGHTARROW);
-	// More
-	AddMenuItem(STRID_MORE, STRID_RIGHTARROW);
-	// Back
-	AddMenuItem(STRID_BACK, STRID_RIGHTARROW);
-	// Unavailable
-	AddMenuItem(STRID_LINE, STRID_LINE);
+	// TableView
+    TableView* pTableView = TableView::create(this, Size(visibleSize.width, visibleSize.height));
+    pTableView->setDirection(extension::ScrollView::Direction::VERTICAL);
+    pTableView->setPosition(Vec2::ZERO);
+    pTableView->setDelegate(this);
+    pTableView->setVerticalFillOrder(TableView::VerticalFillOrder::TOP_DOWN);
+	this->addChild(pTableView);
+    pTableView->reloadData();
 
 	// Tips
-	m_pTipsLabel = Label::createWithSystemFont("123", FONT_NAME, TIPS_LABEL_SIZE);
+	m_pTipsLabel = Label::createWithSystemFont("", FONT_NAME, TIPS_LABEL_SIZE);
 	m_pTipsLabel->setPosition(visibleSize.width * 0.5f, visibleSize.height * 0.5f);
 	m_pTipsLabel->setOpacity(0);
 	this->addChild(m_pTipsLabel);
@@ -158,117 +299,71 @@ void CSetupScene::OnOrientationChange()
 
 void CSetupScene::ShowVolumeLayer()
 {
-	CVolumeLayer* pLayer = CVolumeLayer::create();
+	CSetupVolume* pLayer = CSetupVolume::create();
 	pLayer->setPosition(Vec2::ZERO);
 	this->addChild(pLayer);
 }
 
 
-void CSetupScene::AddMenuItem(int nStrID, int nStatusStrID /*= STRID_MAX*/, const char* szStr /*= nullptr*/)
+void CSetupScene::ShowControlBtnSetup()
 {
-	// Add menu id
-	int nMenuID = __StrID2MenuID(nStrID);
-	if (nMenuID == enMenu_Max)
-	{
-		return;
-	}
-	m_vecMenu.push_back(nMenuID);
+    CSetupControlBtn* pLayer = CSetupControlBtn::create();
+    pLayer->setPosition(Vec2::ZERO);
+    this->addChild(pLayer);
+}
 
+bool CSetupScene::AddMenuItem(extension::TableViewCell* pCell, bool bNewCellFlag,  int nStrID, int nStatusStrID /*= STRID_MAX*/, const char* szStr /*= nullptr*/)
+{
 	Size visibleSize = GET_VISIBLESIZE();
 	float fMenuPosX = MENU_LABEL_PADDING;
 	float fStatusPosX = visibleSize.width - MENU_LABEL_PADDING;
 	bool bNightMode = GET_BOOLVALUE("NIGHTMODE", false);
+    szStr = (szStr == nullptr && nStatusStrID != STRID_MAX) ? CGlobalFunc::GetString(nStatusStrID) : szStr;
 
-	if (nStatusStrID == STRID_MAX && szStr == nullptr)
-	{
-		Text* pTitleText = Text::create(CGlobalFunc::GetString(nStrID), FONT_NAME, TITLE_FONT);
-		pTitleText->setColor(bNightMode ? Color3B::WHITE : Color3B::BLACK);
-		m_pListView->pushBackCustomItem(pTitleText);
-		return;
-	}
+    if (!bNewCellFlag)
+    {
+        Label* pLabel = (Label*)pCell->getChildByTag(MENU_LABEL_TAG);
+        if (pLabel != nullptr)
+        {
+            pLabel->setString(CGlobalFunc::GetString(nStrID));
+            pLabel->setSystemFontSize((szStr == nullptr) ? TITLE_FONT : NORMAL_FONT);
+            pLabel->setColor(bNightMode ? Color3B::WHITE : Color3B::BLACK);
+        }
 
-	Button* pButton = Button::create(BTN_SPR, BTN_CLICK_SPR, "", Widget::TextureResType::PLIST);
-	pButton->setScale9Enabled(true);
+        pLabel = (Label*)pCell->getChildByTag(MENU_STATUS_TAG);
+        if (pLabel != nullptr)
+        {
+            pLabel->setString((szStr != nullptr) ? szStr : "");
+            pLabel->setColor(bNightMode ? Color3B::WHITE : Color3B::BLACK);
+        }
+        return true;
+    }
+
+    Scale9Sprite* pButton = Scale9Sprite::createWithSpriteFrameName(BTN_SPR);
 	pButton->setContentSize(Size(visibleSize.width, MENU_SPR_HEIGHT));
-	Text* pLabel = Text::create(CGlobalFunc::GetString(nStrID), FONT_NAME, NORMAL_FONT);
+    pButton->setPosition(Vec2::ZERO);
+    pCell->addChild(pButton);
+
+	Label* pLabel = Label::createWithSystemFont(CGlobalFunc::GetString(nStrID), FONT_NAME, (szStr == nullptr) ? TITLE_FONT : NORMAL_FONT);
 	Size contentSize = GET_CONTENTSIZE(pLabel);
-	pLabel->setPosition(Vec2(fMenuPosX + contentSize.width * 0.5f, MENU_SPR_HEIGHT * 0.5f));
+    pLabel->setHorizontalAlignment(TextHAlignment::LEFT);
+    pLabel->setAnchorPoint(Vec2::ANCHOR_BOTTOM_LEFT);
+	pLabel->setPosition(Vec2(fMenuPosX, 0));
 	pLabel->setColor(bNightMode ? Color3B::WHITE : Color3B::BLACK);
-	pButton->addChild(pLabel);
+    pCell->addChild(pLabel);
 	pLabel->setTag(MENU_LABEL_TAG);
-	Text* pStatus = Text::create(((szStr == nullptr) ? CGlobalFunc::GetString(nStatusStrID) : szStr), FONT_NAME, NORMAL_FONT);
-	contentSize = GET_CONTENTSIZE(pStatus);
-	pStatus->setPosition(Vec2(fStatusPosX - contentSize.width * 0.5f, MENU_SPR_HEIGHT * 0.5f));
-	pStatus->setColor(bNightMode ? Color3B::WHITE : Color3B::BLACK);
-	pButton->addChild(pStatus);
-	pStatus->setTag(MENU_STATUS_TAG);
-	m_pListView->pushBackCustomItem(pButton);
+    
+    Label* pStatus = Label::createWithSystemFont((szStr != nullptr) ? szStr : "", FONT_NAME, NORMAL_FONT);
+    contentSize = GET_CONTENTSIZE(pStatus);
+    pStatus->setHorizontalAlignment(TextHAlignment::RIGHT);
+    pStatus->setAnchorPoint(Vec2::ANCHOR_BOTTOM_RIGHT);
+    pStatus->setPosition(Vec2(fStatusPosX, 0));
+    pStatus->setColor(bNightMode ? Color3B::WHITE : Color3B::BLACK);
+    pCell->addChild(pStatus);
+    pStatus->setTag(MENU_STATUS_TAG);
+
+    return true;
 }
-
-
-void CSetupScene::ListViewCallback(Ref* pNode, ui::ListView::EventType enEventType)
-{
-	if (enEventType != ListView::EventType::ON_SELECTED_ITEM_END)
-	{
-		return;
-	}
-
-	unsigned int uiMenuIdx = m_pListView->getCurSelectedIndex();
-	if (uiMenuIdx >= m_vecMenu.size())
-	{
-		return;
-	}
-	int nMenuID = m_vecMenu[uiMenuIdx];
-	__UpdateItemState(nMenuID);
-	
-	switch (nMenuID)
-	{
-	case enMenu_NightMode:
-		__OnNightModeChange();
-		return;
-
-	case enMenu_Sound:
-		ShowVolumeLayer();
-		return;
-
-	case enMenu_Orientation:
-		OnOrientationChange();
-		return;
-
-	case enMenu_Back:
-		__OnClickBackMenu();
-		return;
-
-	case enMenu_SaveNow:
-		__OnClickSaveMenu();
-		return;
-
-	case enMenu_Rate:
-		CGlobalFunc::RateApp();
-		return;
-
-	case enMenu_More:
-		CGlobalFunc::ShowMyApps();
-		return;
-
-	case enMenu_Line:
-		__OnClickBackMenu();
-		return;
-
-	case enMenu_Author:
-		CGlobalFunc::OpenURL("https://lfeng1420.github.io");
-		return;
-
-	default:
-		break;
-	}
-
-	// Update single item
-	string strText;
-	__GetItemStateStr(nMenuID, strText);
-	__UpdateOneMenuItem(uiMenuIdx, strText.c_str());
-}
-
 
 bool CSetupScene::__GetItemState(int nMenuID)
 {
@@ -351,6 +446,7 @@ int CSetupScene::__GetItemStateStrID(int nMenuID)
 		break;
 
 	case enMenu_Sound:
+	case enMenu_DirBtn:
 	case enMenu_SaveNow:
 	case enMenu_Rate:
 	case enMenu_More:
@@ -367,20 +463,15 @@ int CSetupScene::__GetItemStateStrID(int nMenuID)
 
 void CSetupScene::__GetItemStateStr(int nMenuID, string& strText)
 {
-	if (nMenuID == enMenu_BricksOffset)
-	{
-		char szText[10] = { 0 };
-		sprintf(szText, "%d", GET_INTVALUE("BRICKS_OFFSET", 0));
-		strText = szText;
-		return;
-	}
-	else if (nMenuID == enMenu_DirBtnScale)
-	{
-		char szText[10] = { 0 };
-		sprintf(szText, "%d", GET_INTVALUE("DIRBTN_SCALE", DIRBTN_DEFAULT_SCALE));
-		strText = szText;
-		return;
-	}
+    switch (nMenuID)
+    {
+    case enMenu_BricksOffset:
+        strText = std::to_string(GET_INTVALUE("BRICKS_OFFSET", 0));
+        return;
+
+    default:
+        break;
+    }
 
 	int nStrID = __GetItemStateStrID(nMenuID);
 	strText = CGlobalFunc::GetString(__GetItemStateStrID(nMenuID));
@@ -427,38 +518,22 @@ void CSetupScene::__UpdateItemState(int nMenuID)
 		}
 		break;
 
-	case enMenu_DirBtnScale:
-		{
-			int nScale = GET_INTVALUE("DIRBTN_SCALE", DIRBTN_DEFAULT_SCALE) - 1;
-			if (nScale < DIRBTN_SCALE_MIN)
-			{
-				nScale = DIRBTN_DEFAULT_SCALE;
-			}
-			SET_INTVALUE("DIRBTN_SCALE", nScale);
-		}
-
 	default:
 		break;
 	}
 }
 
 
-void CSetupScene::__UpdateOneMenuItem(int nMenuIdx, const char* szText, bool bUpdateColorFlag /*= false*/)
+void CSetupScene::__UpdateOneMenuItem(Node* pNode, const char* szText, bool bUpdateColorFlag /*= false*/)
 {
-	Widget* pWidget = m_pListView->getItem(nMenuIdx);
-	if (pWidget == nullptr)
-	{
-		return;
-	}
-
-	Node* pChild = pWidget->getChildByTag(MENU_STATUS_TAG);
+	Node* pChild = pNode->getChildByTag(MENU_STATUS_TAG);
 	if (pChild == nullptr)
 	{
 		return;
 	}
 
 	// Update content
-	Text* pText = (Text*)pChild;
+	Label* pText = (Label*)pChild;
 	Size oldSize = GET_CONTENTSIZE(pText);
 	pText->setString(szText);
 	Size newSize = GET_CONTENTSIZE(pText);
@@ -469,7 +544,7 @@ void CSetupScene::__UpdateOneMenuItem(int nMenuIdx, const char* szText, bool bUp
 	{
 		Color3B color = GET_BOOLVALUE("NIGHTMODE", false) ? Color3B::WHITE : Color3B::BLACK;
 		pText->setColor(color);
-		pChild = pWidget->getChildByTag(MENU_LABEL_TAG);
+		pChild = pNode->getChildByTag(MENU_LABEL_TAG);
 		if (pChild != nullptr)
 		{
 			pChild->setColor(color);
@@ -508,29 +583,21 @@ void CSetupScene::__CreateKeyListener()
 }
 
 
-void CSetupScene::__OnNightModeChange()
+void CSetupScene::__OnNightModeChange(extension::TableView* table)
 {
 	// Update layer visiblity
 	m_pLayer->setVisible(!__GetItemState(enMenu_NightMode));
 
 	// Update labels
-	Color3B color = __GetItemState(enMenu_NightMode) ? Color3B::WHITE : Color3B::BLACK;
-	for (unsigned int uiMenuIdx = 0; uiMenuIdx < m_vecMenu.size(); ++uiMenuIdx)
+    string strText;
+	for (unsigned int u32MenuIdx = 0; u32MenuIdx < enMenu_Max; ++u32MenuIdx)
 	{
-		int nMenuID = m_vecMenu[uiMenuIdx];
-		if (nMenuID == enMenu_GlobalSetting
-			|| nMenuID == enMenu_OtherSetting
-			|| nMenuID == enMenu_TetrisSetting)
-		{
-			Widget* pWidget = m_pListView->getItem(uiMenuIdx);
-			if (pWidget != nullptr)
-			{
-				pWidget->setColor(color);
-				continue;
-			}
-		}
-
-		__UpdateOneMenuItem(uiMenuIdx, CGlobalFunc::GetString(__GetItemStateStrID(nMenuID)), true);
+        TableViewCell* pCell = table->cellAtIndex(u32MenuIdx);
+        if (pCell != nullptr)
+        {
+            __GetItemStateStr(u32MenuIdx, strText);
+            __UpdateOneMenuItem(pCell, strText.c_str(), true);
+        }
 	}
 }
 
@@ -542,7 +609,7 @@ void CSetupScene::__OnClickBackMenu()
 }
 
 
-void CSetupScene::__OnClickSaveMenu()
+void CSetupScene::__OnClickSaveMenu(extension::TableViewCell* cell)
 {
 	// Save now
 	SEventContextSaveData stContext = { true };
@@ -555,14 +622,7 @@ void CSetupScene::__OnClickSaveMenu()
 		// Open auto recover
 		SET_BOOLVALUE("TETRIS_RECORD_VALID", true);
 		// Update auto recover menu
-		for (unsigned int uiMenuIdx = 0; uiMenuIdx < m_vecMenu.size(); ++uiMenuIdx)
-		{
-			if (m_vecMenu[uiMenuIdx] == enMenu_AutoRecover)
-			{
-				__UpdateOneMenuItem(uiMenuIdx, CGlobalFunc::GetString(__GetItemStateStrID(enMenu_AutoRecover)));
-				break;
-			}
-		}
+        __UpdateOneMenuItem(cell, CGlobalFunc::GetString(__GetItemStateStrID(enMenu_AutoRecover)));
 	}
 }
 
@@ -591,6 +651,9 @@ int CSetupScene::__StrID2MenuID(int nStrID)
 
 	case STRID_BRICKSOFFSET:
 		return enMenu_BricksOffset;
+
+    case STRID_DIRBTN:
+        return enMenu_DirBtn;
 
 	case STRID_TETRISSETTING:
 		return enMenu_TetrisSetting;
@@ -621,9 +684,6 @@ int CSetupScene::__StrID2MenuID(int nStrID)
 
 	case STRID_LINE:
 		return enMenu_Line;
-
-	case STRID_DIRBTNSCALE:
-		return enMenu_DirBtnScale;
 
 	default:
 		return enMenu_Max;

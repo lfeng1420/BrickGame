@@ -253,15 +253,15 @@ void CGameScene::UpdateLevelOrSpeed(Vector<Sprite*> vecSpr, int& nOldVal, int nN
 }
 
 
-bool CGameScene::AdjustClickBtnID(Vec2 pos, int& nBtnID)
+bool CGameScene::AdjustClickBtnID(const Vec2* pos, int& nBtnID)
 {
-	//Ö»´¦Àí·½Ïò¼ü
+	//Ö»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	if (nBtnID >= BTNID_DIRMAX)
 	{
 		return true;
 	}
 
-	Vec2 dis = pos - m_oControllerCenterPos;
+	Vec2 dis = *pos - m_oControllerCenterPos;
 	float fFactor = dis.y / dis.x;
 	if (fFactor >= 1 || fFactor <= -1)
 	{
@@ -429,7 +429,10 @@ void CGameScene::__InitController(float fTopY, float fBottomY)
 	// Up button
 	string strBtn0Name = CGlobalFunc::GetSpriteNameWithMode("btn_0.png");
 	string strBtn1Name = CGlobalFunc::GetSpriteNameWithMode("btn_1.png");
-	Button* pUpBtn = Button::create(strBtn0Name, strBtn1Name, "", Widget::TextureResType::PLIST);
+    MenuItemSprite* pUpBtn = MenuItemSprite::create(
+        CREATE_SPRITEWITHNAME(strBtn0Name), 
+        CREATE_SPRITEWITHNAME(strBtn1Name),
+        nullptr);
 	Size btnSize = GET_CONTENTSIZE(pUpBtn);
 	float fControlBtnScale = (fTopY - fBottomY - fControllerPadding * 2) / (2 * btnSize.height);
 	if (fControlBtnScale > CONTROLLER_SCALE_MAX)
@@ -438,57 +441,67 @@ void CGameScene::__InitController(float fTopY, float fBottomY)
 		fControllerPadding = (fTopY - fBottomY - CONTROLLER_SCALE_MAX * btnSize.height * 2) * 0.5f;
 	}
 	pUpBtn->setScale(fControlBtnScale);
-	pUpBtn->addTouchEventListener(CC_CALLBACK_2(CGameScene::__OnButtonEvent, this, BTNID_UP));
-	pUpBtn->setCustomHighlightFlag(true);
 	Size upBtnSize = btnSize * fControlBtnScale;
 
 	// Right button
-	Button* pRightBtn = Button::create(strBtn0Name, strBtn1Name, "", Widget::TextureResType::PLIST);
+    MenuItemSprite* pRightBtn = MenuItemSprite::create(
+        CREATE_SPRITEWITHNAME(strBtn0Name),
+        CREATE_SPRITEWITHNAME(strBtn1Name),
+        nullptr);
 	pRightBtn->setScale(fControlBtnScale);
 	pRightBtn->setRotation(90);
-	pRightBtn->addTouchEventListener(CC_CALLBACK_2(CGameScene::__OnButtonEvent, this, BTNID_RIGHT));
-	pRightBtn->setCustomHighlightFlag(true);
 	Size rightBtnSize = GET_CONTENTSIZE(pRightBtn) * fControlBtnScale;
 
 	// Down button
-	Button* pDownBtn = Button::create(strBtn0Name, strBtn1Name, "", Widget::TextureResType::PLIST);
+    MenuItemSprite* pDownBtn = MenuItemSprite::create(
+        CREATE_SPRITEWITHNAME(strBtn0Name),
+        CREATE_SPRITEWITHNAME(strBtn1Name),
+        nullptr);
 	pDownBtn->setScale(fControlBtnScale);
 	pDownBtn->setRotation(180);
-	pDownBtn->addTouchEventListener(CC_CALLBACK_2(CGameScene::__OnButtonEvent, this, BTNID_DOWN));
-	pDownBtn->setCustomHighlightFlag(true);
 	Size downBtnSize = GET_CONTENTSIZE(pDownBtn) * fControlBtnScale;
 
 	// Left button
-	Button* pLeftBtn = Button::create(strBtn0Name, strBtn1Name, "", Widget::TextureResType::PLIST);
+    MenuItemSprite* pLeftBtn = MenuItemSprite::create(
+        CREATE_SPRITEWITHNAME(strBtn0Name),
+        CREATE_SPRITEWITHNAME(strBtn1Name),
+        nullptr);
 	pLeftBtn->setScale(fControlBtnScale);
 	pLeftBtn->setRotation(-90);
-	pLeftBtn->addTouchEventListener(CC_CALLBACK_2(CGameScene::__OnButtonEvent, this, BTNID_LEFT));
-	pLeftBtn->setCustomHighlightFlag(true);
 	Size leftBtnSize = GET_CONTENTSIZE(pLeftBtn) * fControlBtnScale;
 
 	//Fire button
-	Button* pFireBtn = Button::create(CGlobalFunc::GetSpriteNameWithMode("fire_0.png"), CGlobalFunc::GetSpriteNameWithMode("fire_1.png"), "", Widget::TextureResType::PLIST);
-	pFireBtn->addTouchEventListener(CC_CALLBACK_2(CGameScene::__OnButtonEvent, this, BTNID_FIRE));
+    string strFire0Name = CGlobalFunc::GetSpriteNameWithMode("fire_0.png");
+    string strFire1Name = CGlobalFunc::GetSpriteNameWithMode("fire_1.png");
+    MenuItemSprite* pFireBtn = MenuItemSprite::create(
+        CREATE_SPRITEWITHNAME(strFire0Name),
+        CREATE_SPRITEWITHNAME(strFire1Name),
+        nullptr);
 	Size fireBtnSize = pFireBtn->getContentSize();
+
+    Menu* pMenu = Menu::create(pUpBtn, pRightBtn, pDownBtn, pLeftBtn, nullptr);
+    pMenu->setTouchCallback(CC_CALLBACK_3(CGameScene::__OnMenuTouch, this));
+    pMenu->setPosition(Vec2::ZERO);
+    this->addChild(pMenu);
+
+	Menu* pFireMenu = Menu::create(pFireBtn, nullptr);
+	pFireMenu->setTouchCallback(CC_CALLBACK_3(CGameScene::__OnMenuTouch, this));
+	pFireMenu->setPosition(Vec2::ZERO);
+	this->addChild(pFireMenu);
 
 	// Set position
 	Size visibleSize = GET_VISIBLESIZE();
-	fTopY -= fControllerPadding;
-	pLeftBtn->setPosition(Vec2(upBtnSize.height * 0.6f + fBtnInnerPadding, fTopY - upBtnSize.height));
-	pRightBtn->setPosition(Vec2(upBtnSize.height * 1.6f - fBtnInnerPadding, fTopY - upBtnSize.height));
-	pDownBtn->setPosition(Vec2(upBtnSize.height * 1.1f, fTopY - upBtnSize.height * 1.5f + fBtnInnerPadding));
-	pUpBtn->setPosition(Vec2(upBtnSize.height * 1.1f, fTopY - upBtnSize.height * 0.5f - fBtnInnerPadding));
-	pFireBtn->setPosition(Vec2(visibleSize.width - fireBtnSize.width * 0.8f, fTopY - upBtnSize.height));
+    float fCenterX = upBtnSize.height * 1.1f;
+    float fCenterY = fTopY - fControllerPadding - upBtnSize.height + GET_INTVALUE("DIRBTN_YOFFSET", 0);
+	pLeftBtn->setPosition(Vec2(fCenterX - upBtnSize.height * 0.5f + fBtnInnerPadding, fCenterY));
+	pRightBtn->setPosition(Vec2(fCenterX + upBtnSize.height * 0.5f - fBtnInnerPadding, fCenterY));
+	pDownBtn->setPosition(Vec2(fCenterX, fCenterY - upBtnSize.height * 0.5f + fBtnInnerPadding));
+	pUpBtn->setPosition(Vec2(fCenterX, fCenterY + upBtnSize.height * 0.5f - fBtnInnerPadding));
+	pFireBtn->setPosition(Vec2(visibleSize.width - fireBtnSize.width * 0.8f, fCenterY));
 
 	// Center pos and area size
-	m_oControllerCenterPos = Vec2(upBtnSize.height * 1.1f, fTopY - upBtnSize.height);
+	m_oControllerCenterPos = Vec2(fCenterX, fCenterY);
 	m_oControllerCenterSize = Size(upBtnSize.width, upBtnSize.width);
-
-	this->addChild(pLeftBtn);
-	this->addChild(pRightBtn);
-	this->addChild(pDownBtn);
-	this->addChild(pUpBtn);
-	this->addChild(pFireBtn);
 
 	// Add all buttons to vector
 	// Order: BTNID_RIGHT -> BTNID_DOWN -> BTNID_LEFT -> BTNID_UP -> BTNID_FIRE
@@ -741,15 +754,15 @@ void CGameScene::__ApplyRightHandMode()
 		return;
 	}
 
-	Button* pRightBtn = m_vecDirBtn.at(BTNID_RIGHT);
+	MenuItem* pRightBtn = m_vecDirBtn.at(BTNID_RIGHT);
 	RETURN_IF_NULLPTR(pRightBtn);
-	Button* pDownBtn = m_vecDirBtn.at(BTNID_DOWN);
+    MenuItem* pDownBtn = m_vecDirBtn.at(BTNID_DOWN);
 	RETURN_IF_NULLPTR(pDownBtn);
-	Button* pLeftBtn = m_vecDirBtn.at(BTNID_LEFT);
+    MenuItem* pLeftBtn = m_vecDirBtn.at(BTNID_LEFT);
 	RETURN_IF_NULLPTR(pLeftBtn);
-	Button* pUpBtn = m_vecDirBtn.at(BTNID_UP);
+    MenuItem* pUpBtn = m_vecDirBtn.at(BTNID_UP);
 	RETURN_IF_NULLPTR(pUpBtn);
-	Button* pFireBtn = m_vecDirBtn.at(BTNID_FIRE);
+    MenuItem* pFireBtn = m_vecDirBtn.at(BTNID_FIRE);
 	RETURN_IF_NULLPTR(pFireBtn);
 
 	Size btnSize = GET_CONTENTSIZE(pUpBtn);
@@ -852,7 +865,7 @@ void CGameScene::__CreateKeyListener()
 	_eventDispatcher->addEventListenerWithSceneGraphPriority(keyListener, this);
 
 
-	// ÊÖ±ú´¦Àí
+	// ï¿½Ö±ï¿½ï¿½ï¿½ï¿½ï¿½
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_ANDROID)
 	m_enLeftBtnID = BTNID_MAX;
 	m_enRightBtnID = BTNID_MAX;
@@ -1034,61 +1047,51 @@ void CGameScene::__OnClickButton(Ref* pSender, int nBtnID)
 	}
 }
 
-
-void CGameScene::__OnButtonEvent(Ref* pSender, Widget::TouchEventType enType, int nBtnID)
+void CGameScene::__OnMenuTouch(Ref* pSender, MenuItem** pSelectedMenuItem, Menu::TouchState enTouchState)
 {
-	if (m_pPauseSpr != nullptr && m_pPauseSpr->isVisible())
-	{
-		return;
-	}
+    if (m_pPauseSpr != nullptr && m_pPauseSpr->isVisible())
+    {
+        return;
+    }
 
-	Button* pButton = (Button*)pSender;
-	Vec2 oPos = Vec2::ZERO;
+    const Vec2* pPos = nullptr;
+    Menu* pMenu = (Menu*)pSender;
+    int nBtnID = m_vecDirBtn.getIndex(*pSelectedMenuItem);
+    if (nBtnID == -1)
+    {
+        return;
+    }
 
-	switch (enType)
-	{
-	case Widget::TouchEventType::BEGAN:
-	{
-		//log("-----------------\n[BEGAN]  nBtnID=%d", nBtnID);
-		oPos = pButton->getTouchBeganPosition();
-		int nOldBtnID = nBtnID;
-		if (!AdjustClickBtnID(oPos, nBtnID))
-		{
-			return;
-		}
+    switch (enTouchState)
+    {
+    case Menu::TouchState::BEGIN:
+    {
+        //log("-----------------\n[BEGAN]  nBtnID=%d", nBtnID);
+        pPos = pMenu->getTouchBeganPos();
+        if (!AdjustClickBtnID(pPos, nBtnID))
+        {
+            return;
+        }
 
-		// Record relation
-		//log("m_mapBtnRelation[%d]=%d", nOldBtnID, nBtnID);
-		m_mapBtnRelation[nOldBtnID] = nBtnID;
-		__OnButtonPressed(nBtnID);
-	}
-	break;
+        // Record relation
+        //log("m_mapBtnRelation[%d]=%d", nOldBtnID, nBtnID);
+        __OnButtonPressed(nBtnID);
+        *pSelectedMenuItem = m_vecDirBtn.at(nBtnID);
+    }
+    break;
 
-	case Widget::TouchEventType::MOVED:
-		//log("-----------------\n[MOVED]  nBtnID=%d", nBtnID);
-		break;
+    case Menu::TouchState::MOVE:
+        //log("-----------------\n[MOVED]  nBtnID=%d", nBtnID);
+        break;
 
-	case Widget::TouchEventType::ENDED:
-	case Widget::TouchEventType::CANCELED:
-	{
-		// log("-----------------\n[ENDED/CANCELED]  nBtnID=%d", nBtnID);
-		oPos = pButton->getTouchEndPosition();
-
-		// Get relation
-		TMap_BtnRelation::iterator itBtnRelation = m_mapBtnRelation.find(nBtnID);
-		if (itBtnRelation != m_mapBtnRelation.end())
-		{
-			//log("RELEASE %d", itBtnRelation->second);
-			__OnButtonReleased(itBtnRelation->second);
-			m_mapBtnRelation.erase(itBtnRelation);
-		}
-
-		__OnButtonReleased(nBtnID);
-	}
-	break;
-	}
+    case Menu::TouchState::END:
+    case Menu::TouchState::CANCEL:
+    {
+        __OnButtonReleased(nBtnID);
+    }
+    break;
+    }
 }
-
 
 void CGameScene::__ExportContext(TGameSceneContext* pContext)
 {
@@ -1146,38 +1149,22 @@ void CGameScene::__OnButtonPressed(int nButtonID)
 	// Vibrate
 	CGlobalFunc::ShortVibrate();
 
-	Button* pBtn = m_vecDirBtn.at(nButtonID);
-	if (pBtn != nullptr)
+	// Fire event except pause state
+	if (!m_pPauseSpr->isVisible())
 	{
-		pBtn->forceSetHighlighted(true);
+        SEventContextButton stButtonEvent = { nButtonID, true };
+        g_oEventEngine.FireEvent(EVENT_BUTTON, (const char*)&stButtonEvent, sizeof(stButtonEvent));
 	}
-
-	if (m_pPauseSpr->isVisible())
-	{
-		return;
-	}
-
-	SEventContextButton stButtonEvent = { nButtonID, true };
-	g_oEventEngine.FireEvent(EVENT_BUTTON, (const char*)&stButtonEvent, sizeof(stButtonEvent));
 }
 
 
 void CGameScene::__OnButtonReleased(int nButtonID)
 {
-	Button* pBtn = m_vecDirBtn.at(nButtonID);
-	if (pBtn != nullptr)
+	if (!m_pPauseSpr->isVisible())
 	{
-		pBtn->forceSetHighlighted(false);
+        SEventContextButton stButtonEvent = { nButtonID, false };
+        g_oEventEngine.FireEvent(EVENT_BUTTON, (const char*)&stButtonEvent, sizeof(stButtonEvent));
 	}
-
-	if (m_pPauseSpr->isVisible())
-	{
-		return;
-	}
-
-	SEventContextButton stButtonEvent = { nButtonID, false };
-	g_oEventEngine.FireEvent(EVENT_BUTTON, (const char*)&stButtonEvent, sizeof(stButtonEvent));
-
 }
 
 

@@ -86,6 +86,7 @@ GLView::GLView()
     , m_delegate(nullptr)
     , m_messageBoxDelegate(nullptr)
     , m_orientation(DisplayOrientations::Landscape)
+	, m_lfClickBackBtnTime(0)
 {
 	s_pEglView = this;
     _viewName =  "cocos2dx";
@@ -176,8 +177,8 @@ void GLView::OnResuming(Platform::Object^ sender, Platform::Object^ args)
 // user pressed the Back Key on the phone
 void GLView::OnBackKeyPress()
 {
-	EventKeyboard event(EventKeyboard::KeyCode::KEY_ESCAPE, false);
-	Director::getInstance()->getEventDispatcher()->dispatchEvent(&event);
+	cocos2d::EventKeyboard event(cocos2d::EventKeyboard::KeyCode::KEY_ESCAPE, false);
+	cocos2d::Director::getInstance()->getEventDispatcher()->dispatchEvent(&event);
 }
 
 void GLView::OnPointerPressed(CoreWindow^ sender, PointerEventArgs^ args)
@@ -263,6 +264,15 @@ void GLView::setFrameZoomFactor(float fZoomFactor)
     _frameZoomFactor = fZoomFactor;
     Director::getInstance()->setProjection(Director::getInstance()->getProjection());
     //resize(m_obScreenSize.width * fZoomFactor, m_obScreenSize.height * fZoomFactor);
+}
+
+double cocos2d::GLView::GetMillSecond()
+{
+	struct timeval tv;
+	gettimeofday(&tv, nullptr);
+
+	//log("CurrentTime MillSecond %f", (double)tv.tv_sec * 1000 + (double)tv.tv_usec / 1000);
+	return (double)tv.tv_sec * 1000 + (double)tv.tv_usec / 1000;
 }
 
 float GLView::getFrameZoomFactor()
@@ -542,6 +552,15 @@ void GLView::ProcessEvents()
 }
 
 
+void GLView::OnGiveScore()
+{
+	if (m_delegate)
+	{
+		m_delegate->Invoke(Cocos2dEvent::GiveScore);
+	}
+}
+
+
 void GLView::QuitGame()
 {
 	if (m_delegate)
@@ -550,26 +569,7 @@ void GLView::QuitGame()
 	}
 }
 
-
-void cocos2d::GLView::OpenURL()
-{
-	if (m_delegate)
-	{
-		m_delegate->Invoke(Cocos2dEvent::OpenURL);
-	}
-}
-
-
-void GLView::Vibrate(bool bShortFlag)
-{
-	if (m_delegate)
-	{
-		m_delegate->Invoke(bShortFlag ? Cocos2dEvent::ShortVibrate : Cocos2dEvent::LongVibrate);
-	}
-}
-
-
-void GLView::ShowMyApps()
+void GLView::OnShowMyApps()
 {
 	if (m_delegate)
 	{
@@ -577,13 +577,22 @@ void GLView::ShowMyApps()
 	}
 }
 
-
-void GLView::RateApp()
+void cocos2d::GLView::OnLongVibrate()
 {
 	if (m_delegate)
 	{
-		m_delegate->Invoke(Cocos2dEvent::RateApp);
+		m_delegate->Invoke(Cocos2dEvent::LongVibration);
+	}
+}
+
+
+void cocos2d::GLView::OnShortVibrate()
+{
+	if (m_delegate)
+	{
+		m_delegate->Invoke(Cocos2dEvent::ShortVibration);
 	}
 }
 
 NS_CC_END
+

@@ -1,9 +1,20 @@
 #pragma once
 
-class CSetupScene : public Layer
+class CSetupScene : public Layer, public cocos2d::extension::TableViewDataSource, 
+    public cocos2d::extension::TableViewDelegate
 {
 public:
 	virtual ~CSetupScene();
+
+    //////////////////////////////////////////////////////////////////////////
+
+    virtual Size tableCellSizeForIndex(TableView *table, ssize_t idx);
+    virtual TableViewCell* tableCellAtIndex(TableView *table, ssize_t idx);
+    virtual ssize_t numberOfCellsInTableView(TableView *table);
+
+    virtual void tableCellTouched(TableView* table, TableViewCell* cell);
+
+    //////////////////////////////////////////////////////////////////////////
 
 	// Create scene
 	static Scene* CreateScene(const TGameSceneContext* pContext = nullptr);
@@ -20,18 +31,18 @@ public:
 	// On orientation change
 	virtual void OnOrientationChange();
 
-	// Show volume layer
+	// Show volume setup
 	virtual void ShowVolumeLayer();
 
+    // Show control button setup
+    virtual void ShowControlBtnSetup();
+
 	// Add menu item
-	virtual void AddMenuItem(int nStrID, int nStatusStrID = STRID_MAX, const char* szStr = nullptr);
+	virtual bool AddMenuItem(extension::TableViewCell* pCell, bool bNewCellFlag, int nStrID, int nStatusStrID = STRID_MAX, const char* szStr = nullptr);
 
 public:
 	// Import game scene context
 	void ImportGameSceneContext(const TGameSceneContext* pContext = nullptr);
-
-	// Scorll view callback
-	void ListViewCallback(Ref* pNode, ui::ListView::EventType enEventType);
 
 protected:
 	// Get menu item state
@@ -47,7 +58,7 @@ protected:
 	void __UpdateItemState(int nMenuID);
 
 	// Update one menu item
-	void __UpdateOneMenuItem(int nMenuIdx, const char* szText, bool bUpdateColorFlag = false);
+	void __UpdateOneMenuItem(Node* pNode, const char* szText, bool bUpdateColorFlag = false);
 
 	// Show tips
 	void __ShowTips(int nStrID);
@@ -56,13 +67,13 @@ protected:
 	void __CreateKeyListener();
 
 	// On night mode change
-	void __OnNightModeChange();
+	void __OnNightModeChange(extension::TableView* table);
 
 	// On click back menu
 	void __OnClickBackMenu();
 
 	// On click save menu
-	void __OnClickSaveMenu();
+	void __OnClickSaveMenu(extension::TableViewCell* cell);
 
 	// StrID to MenuID
 	int __StrID2MenuID(int nStrID);
@@ -70,9 +81,10 @@ protected:
 protected:
 	enum
 	{
-		TITLE_FONT = 40,
+		TITLE_FONT = 38,
 		NORMAL_FONT = 30,
 		MENU_SPR_HEIGHT = 55,
+        MENU_TITLE_HEIGHT = 70,
 		MENU_ITEM_MARGIN = 10,
 		MENU_LABEL_PADDING = 20,
 		MENU_STATUS_TAG = 1000,
@@ -80,6 +92,7 @@ protected:
 		TIPS_LABEL_SIZE = 36,
 		BRICKS_OFFSET_MAX = 40,
 		DIRBTN_SCALE_MIN = 80,
+        MENU_TITLE_COUNT = 3,
 	};
 
 	enum _EnMenu
@@ -92,7 +105,7 @@ protected:
 		enMenu_NightMode,
 		enMenu_RHMode,
 		enMenu_BricksOffset,
-		enMenu_DirBtnScale,
+		enMenu_DirBtn,
 		enMenu_TetrisSetting,
 		enMenu_AutoRecover,
 		enMenu_SaveNow,
@@ -106,21 +119,13 @@ protected:
 		enMenu_Max,
 	};
 
-	typedef vector<int>		TVec_Menu;
-
 protected:
 	// Game scene context
 	TGameSceneContext		m_stGameSceneContext;
-
-	// ListView
-	ListView*				m_pListView;
 
 	// White layer
 	LayerColor*				m_pLayer;
 
 	// Tips label
 	Label*					m_pTipsLabel;
-
-	// Menu
-	TVec_Menu				m_vecMenu;
 };

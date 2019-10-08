@@ -1,30 +1,5 @@
 #pragma once
 
-// Row and column num
-#define ROW_COUNT           			20
-#define COLUMN_COUNT        			14
-
-// Small bricks count
-#define SMALL_BRICK_ROW_COUNT			4
-#define SMALL_BRICK_COLUMN_COUNT		4
-#define SMALL_BRICK_COUNT   			16
-
-// One game animation count
-#define GAMEID_ANIM_COUNT				4
-
-// Level max
-#define LEVEL_MAX						10
-
-// Speed max
-#define SPEED_MAX						10
-
-// Score max
-#define SCORE_MAX						999999
-
-// INFINITY CALL
-#define INFINITY_CALL					-1
-
-
 // Game ID
 enum EnGameID
 {
@@ -102,7 +77,9 @@ enum EnStrID
 	STRID_LANDSCAPE,
 	STRID_RHMODE,
 	STRID_BRICKSOFFSET,
+    STRID_DIRBTN,
 	STRID_DIRBTNSCALE,
+    STRID_DIRBTNYOFFSET,
 	STRID_TETRISSETTING,
 	STRID_AUTORECOVER,
 	STRID_SAVENOW,
@@ -146,4 +123,16 @@ enum
 	GAME_PASS_ADD_SCORE_INTERVAL = 200,
 	GAME_SCENE_TAG = 10000,
 	DIRBTN_DEFAULT_SCALE = 100,
+
+	ROW_COUNT = 20,
+	COLUMN_COUNT = 14,
+	SMALL_BRICK_ROW_COUNT = 4,
+	SMALL_BRICK_COLUMN_COUNT = 4,
+	SMALL_BRICK_COUNT = 16,
+	GAMEID_ANIM_COUNT = 4,
+	LEVEL_MAX = 10,
+	SPEED_MAX = 10,
+	SCORE_MAX = 999999,
+
+	INFINITY_CALL = -1,
 };

@@ -120,11 +120,12 @@ public:
     void ProcessEvents();
     void AddPointerEvent(PointerEventType type, Windows::UI::Core::PointerEventArgs^ args);
 
-	void RateApp();
-	void ShowMyApps();
-	void Vibrate(bool bShortFlag);
+	void OnGiveScore();
+	void OnShowMyApps();
+	void OnLongVibrate();
+	void OnShortVibrate();
+
 	void QuitGame();
-	void OpenURL();
 
 protected:
     GLView();
@@ -144,7 +145,7 @@ protected:
     bool _supportTouch;
     bool _isRetina;
 
-
+	double GetMillSecond();
 private:
     CC_DISALLOW_COPY_AND_ASSIGN(GLView);
 
@@ -187,6 +188,7 @@ private:
     std::queue<std::shared_ptr<InputEvent>> mInputEvents;
     std::mutex mMutex;
 
+	double m_lfClickBackBtnTime;
 };
 
 NS_CC_END

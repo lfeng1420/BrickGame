@@ -20,6 +20,13 @@ public:
 	// Show volume layer
 	virtual void ShowVolumeLayer();
 
+    // Show control button setup
+    virtual void ShowControlBtnSetup();
+
 	// Add menu item
-	virtual void AddMenuItem(int nStrID, int nStatusStrID = STRID_MAX, const char* szStr = nullptr);
+	virtual bool AddMenuItem(extension::TableViewCell* pCell, bool bNewCellFlag, int nStrID, int nStatusStrID = STRID_MAX, const char* szStr = nullptr);
+
+    //////////////////////////////////////////////////////////////////////////
+
+    virtual Size tableCellSizeForIndex(TableView *table, ssize_t idx);
 };

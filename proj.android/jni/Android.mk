@@ -26,7 +26,6 @@ LOCAL_SRC_FILES := hellocpp/main.cpp \
 					../../Classes/HitBrickGame.cpp \
 					../../Classes/LoadScene.cpp \
 					../../Classes/MatchGame.cpp \
-					../../Classes/MyListView.cpp \
 					../../Classes/OverGame.cpp \
 					../../Classes/PinballGame.cpp \
 					../../Classes/PinballGameEx.cpp \
@@ -40,32 +39,22 @@ LOCAL_SRC_FILES := hellocpp/main.cpp \
 					../../Classes/TetrisGame.cpp \
 					../../Classes/TetrisGameEx.cpp \
 					../../Classes/TimerManager.cpp \
-					../../Classes/VolumeLayer.cpp \
-					../../Classes/VolumeLayerEx.cpp
+					../../Classes/SetupVolume.cpp \
+					../../Classes/SetupVolumeEx.cpp \
+					../../Classes/SetupControlBtn.cpp \
+                    ../../Classes/SetupControlBtnEx.cpp
+
 
 LOCAL_C_INCLUDES := $(LOCAL_PATH)/../../Classes
-LOCAL_C_INCLUDES += $(LOCAL_PATH)/../../cocos2d/cocos/ui 
 LOCAL_C_INCLUDES += $(LOCAL_PATH)/../../cocos2d/extensions
 
 LOCAL_WHOLE_STATIC_LIBRARIES := cocos2dx_static
 LOCAL_WHOLE_STATIC_LIBRARIES += cocosdenshion_static
-
-# LOCAL_WHOLE_STATIC_LIBRARIES += box2d_static
-# LOCAL_WHOLE_STATIC_LIBRARIES += cocosbuilder_static
-# LOCAL_WHOLE_STATIC_LIBRARIES += spine_static
- LOCAL_WHOLE_STATIC_LIBRARIES += cocostudio_static
-# LOCAL_WHOLE_STATIC_LIBRARIES += cocos_network_static
- LOCAL_WHOLE_STATIC_LIBRARIES += cocos_extension_static
+LOCAL_WHOLE_STATIC_LIBRARIES += cocos_extension_static
 
 
 include $(BUILD_SHARED_LIBRARY)
 
 $(call import-module,.)
 $(call import-module,audio/android)
-
-# $(call import-module,Box2D)
-# $(call import-module,editor-support/cocosbuilder)
-# $(call import-module,editor-support/spine)
- $(call import-module,editor-support/cocostudio)
-# $(call import-module,network)
- $(call import-module,extensions)
+$(call import-module,extensions)

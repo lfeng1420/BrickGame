@@ -11,6 +11,7 @@ bool CBarrierLayer::init()
 
 	EventListenerTouchOneByOne* pListener = EventListenerTouchOneByOne::create();
 	pListener->onTouchBegan = [](Touch* pTouch, Event* pEvent) {return true; };
+    pListener->onTouchEnded = [&](Touch* pTouch, Event* pEvent) { getParent()->removeFromParent(); };
 	pListener->setSwallowTouches(true);
 	_eventDispatcher->addEventListenerWithSceneGraphPriority(pListener, this);
 	return true;

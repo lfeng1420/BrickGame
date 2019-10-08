@@ -151,7 +151,7 @@ void CFroggerGame::__InitRivers()
 	}
 	std::random_shuffle(vecRiverIdx.begin(), vecRiverIdx.end());
 
-	for (int nRowIdx = nStartRowIdx, nIndex = 0; nRowIdx < min(nStartRowIdx + RIVER_COUNT * 2, ROW_COUNT) && nIndex < RIVER_COUNT; nRowIdx += 2, ++nIndex)
+	for (int nRowIdx = nStartRowIdx, nIndex = 0; nRowIdx < MIN(nStartRowIdx + RIVER_COUNT * 2, ROW_COUNT) && nIndex < RIVER_COUNT; nRowIdx += 2, ++nIndex)
 	{
 		_TRiverData& stRiverData = m_arrRiverData[nIndex];
 		stRiverData.bLeftFlag = bLeftFlag;
